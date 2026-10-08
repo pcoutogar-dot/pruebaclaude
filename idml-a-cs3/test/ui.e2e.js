@@ -86,9 +86,42 @@ const { buildIdml } = require('./fixture');
     // 6) sin INX
     await page.uncheck('#opt-inx');
     await page.setInputFiles('#file', idml);
-    await page.waitForSelector('#result:not([hidden])');
+    // el resultado anterior sigue visible hasta que termina la nueva conversión: se espera al nombre del archivo nuevo
+    await page.waitForFunction(() => document.getElementById('r-file').textContent.includes('mi documento'));
     const files = await page.textContent('#r-files');
     assert.ok(!/EXPERIMENTAL/.test(files), 'no debería incluir el INX');
+    await ctx.close();
+  }
+  // ---- dentro de Claude (artefacto): la descarga pasa por la capacidad "downloads"
+  for (const mode of ['acepta', 'rechaza', 'sin-capacidad']) {
+    const ctx = await browser.newContext({ viewport: { width: 900, height: 800 }, acceptDownloads: true });
+    await ctx.addInitScript((m) => {
+      window.__saved = [];
+      window.claude = {
+        use: async (name) => {
+          if (name !== 'downloads' || m === 'sin-capacidad') return null;
+          return { save: async (req) => { window.__saved.push({ filename: req.filename, isBlob: req.data instanceof Blob, size: req.data.size }); if (m === 'rechaza') { const e = new Error('no'); e.code = 'declined'; throw e; } return { status: 'saved' }; } };
+        },
+      };
+    }, mode);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => problems.push(mode + ' error: ' + e.message));
+    await page.goto(url);
+    await page.setInputFiles('#file', idml);
+    await page.waitForSelector('#result:not([hidden])');
+    if (mode === 'sin-capacidad') {
+      const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#download')]);
+      assert.equal(dl.suggestedFilename(), 'mi_documento_n_para_CS3.zip');
+    } else {
+      await page.click('#download');
+      await page.waitForFunction(() => window.__saved.length === 1);
+      const saved = await page.evaluate(() => window.__saved[0]);
+      assert.equal(saved.filename, 'mi_documento_n_para_CS3.zip');
+      assert.equal(saved.isBlob, true);
+      assert.ok(saved.size > 10000, 'zip con contenido');
+      const toastHidden = await page.$eval('#toast', (t) => t.hidden || !t.textContent.trim() || /Guardado/.test(t.textContent));
+      assert.ok(toastHidden, 'si el usuario rechaza no debe salir ningún error');
+    }
     await ctx.close();
   }
   await browser.close();

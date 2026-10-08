@@ -34,8 +34,19 @@ function styleList(arr) {
   });
 }
 
+// Une rangos contiguos con el mismo estilo y las mismas anulaciones (menos llamadas dentro de InDesign).
+function mergeRanges(list) {
+  const out = [];
+  for (const r of list) {
+    const last = out[out.length - 1];
+    if (last && last[1] === r[0] && last[2] === r[2] && JSON.stringify(last[3]) === JSON.stringify(r[3])) last[1] = r[1];
+    else out.push(r.slice());
+  }
+  return out;
+}
+
 function prRanges(model, pr) {
-  return pr.map((r) => [r.s, r.e, r.style || null, nonEmpty(r.props)]);
+  return mergeRanges(pr.map((r) => [r.s, r.e, r.style || null, nonEmpty(r.props)]));
 }
 function crRanges(model, cr, cstyleById) {
   const out = [];
@@ -46,7 +57,7 @@ function crRanges(model, cr, cstyleById) {
     if (isNone && !props) continue;
     out.push([r.s, r.e, isNone ? null : r.style, props]);
   }
-  return out;
+  return mergeRanges(out);
 }
 
 function buildData(model) {
