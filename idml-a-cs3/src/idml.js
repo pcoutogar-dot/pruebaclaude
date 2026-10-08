@@ -164,6 +164,7 @@ function buildModel(pkg, opts) {
   }
   let gi = 0;
   for (const sp of model.spreads) for (const pg of sp.pages) { pg.index = gi++; model.pages.push(pg); }
+  if (!model.pages.length) throw new UserError('nopages', 'El IDML no contiene ninguna página que se pueda leer (no hay spreads en el paquete).');
   linkStories(model, frameIndex, ctx);
   resolveFontStyles(model);
   collectFonts(model);
@@ -364,7 +365,8 @@ function readPath(el) {
   const arr = X.firstEl(first, 'PathPointArray');
   if (!arr) return null;
   const pts = [];
-  for (const pp of X.kidsEl(arr, 'PathPointType')) {
+  for (const pp of X.kidsEl(arr)) {                      // PathPointType (también se admite PathPoint)
+    if (pp.attrs.Anchor === undefined) continue;
     const a = nums(pp.attrs.Anchor); const l = nums(pp.attrs.LeftDirection); const r = nums(pp.attrs.RightDirection);
     if (a.length !== 2 || a.some((v) => !Number.isFinite(v))) continue;
     pts.push({ a, l: l.length === 2 ? l : a, r: r.length === 2 ? r : a });
@@ -561,7 +563,7 @@ function readGraphic(gel, T, C, d, item, env) {
     img.embedded = link.attrs.StoredState === 'Embedded';
   }
   // imagen incrustada: sus bytes van como base64 en Properties/Contents
-  const cont = P_ && X.firstEl(P_, 'Contents');
+  const cont = (P_ && X.firstEl(P_, 'Contents')) || X.firstEl(gel, 'Contents');
   if (cont) {
     const txt = X.textOf(cont);
     if (txt.trim()) {
@@ -581,7 +583,7 @@ function readGraphic(gel, T, C, d, item, env) {
       } catch (e) { ctx.warn('No se pudo extraer una imagen incrustada: ' + e.message); }
     }
   }
-  const gb = P_ && X.firstEl(P_, 'GraphicBounds');
+  const gb = (P_ && X.firstEl(P_, 'GraphicBounds')) || X.firstEl(gel, 'GraphicBounds');
   const gm = G.parseMatrix(gel.attrs.ItemTransform);
   if (gb && C) {
     const l = P.num(gb.attrs.Left) || 0; const t = P.num(gb.attrs.Top) || 0; const r = P.num(gb.attrs.Right); const b = P.num(gb.attrs.Bottom);
@@ -601,7 +603,8 @@ function readGraphic(gel, T, C, d, item, env) {
     const pa = X.firstEl(gel, 'PDFAttribute') || pdfAttr;
     if (pa && P.num(pa.attrs.PageNumber) > 1) img.page = P.num(pa.attrs.PageNumber);
   }
-  if (!img.name && !img.saved) { ctx.count('noLink'); }
+  if (!img.name && !img.saved) ctx.count('noLink');
+  else if (!img.b) ctx.count('imgNoBounds');
   model.links.push({ name: img.name || '(sin nombre)', uri: img.uri || '', embedded: !!img.embedded, saved: img.saved || null, itemId: item.id, spreadId: env.sp.id, tag: gel.name });
   return img;
 }
@@ -829,6 +832,7 @@ function finish(pkg, model, counters, ctx) {
   msg('textVars', 'Hay 1 variable de texto: se ha sustituido por su texto actual.', 'Hay {n} variables de texto: se han sustituido por su texto actual.');
   msg('footnotes', 'Hay 1 nota al pie. CS3 no tiene notas al pie automáticas: queda como un número en superíndice y su texto está en los archivos de textos y en el informe.', 'Hay {n} notas al pie. CS3 no tiene notas al pie automáticas: quedan como un número en superíndice y su texto está en los archivos de textos y en el informe.');
   msg('tables', 'Hay 1 tabla: se recrea de forma básica (contenido, anchos, altos y celdas combinadas); revisa los bordes y fondos.', 'Hay {n} tablas: se recrean de forma básica (contenido, anchos, altos y celdas combinadas); revisa los bordes y fondos.');
+  msg('imgNoBounds', '1 imagen no trae su tamaño y posición dentro del marco: se ajusta al marco.', '{n} imágenes no traen su tamaño y posición dentro del marco: se ajustan al marco.');
   msg('noLink', '1 imagen no tiene vínculo a un archivo: se deja como marco vacío.', '{n} imágenes no tienen vínculo a un archivo: se dejan como marcos vacíos.');
   msg('u:DropShadow', 'Hay 1 objeto con sombra paralela: CS3 no la recibe (efecto omitido).', 'Hay {n} objetos con sombra paralela: CS3 no las recibe (efecto omitido).');
   msg('u:Feather', 'Hay 1 objeto con degradado de pluma o transparencia direccional: efecto omitido.', 'Hay {n} objetos con degradado de pluma o transparencia direccional: efecto omitido.');

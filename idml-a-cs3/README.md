@@ -12,6 +12,7 @@ script que lo reconstruye dentro de CS3**, junto con un informe y todos los text
 
 1. En **CS6**: abre el documento, `Archivo › Exportar…`, tipo **InDesign Markup (IDML)**.
 2. Abre `dist/idml-a-cs3.html` en un navegador (doble clic; funciona sin internet y **el archivo no sale de tu ordenador**).
+   En GitHub: abre ese archivo, pulsa «Download raw file» (el icono de descarga) y ábrelo desde tu carpeta de descargas.
 3. Suelta el `.idml` y pulsa **Descargar carpeta para CS3 (.zip)**.
 4. En el ordenador con **CS3**:
    1. Copia el zip, descomprímelo y mete dentro las imágenes enlazadas (la carpeta `Links` del documento).

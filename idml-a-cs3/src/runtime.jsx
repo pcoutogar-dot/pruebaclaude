@@ -657,26 +657,29 @@ function writeLog(lines) {
   } catch (e) { return null; }
 }
 
+function phase(name, fn) {
+  try { fn(); } catch (e) { log("ERROR en la fase «" + name + "»: " + e.message + (e.line ? " (línea " + e.line + ")" : "")); }
+}
+
 function main() {
   var oldLevel = null, oldRedraw = null, oldUnit = null, lines, shown, i, lf;
   try { SCRIPT_FOLDER = File($.fileName).parent; } catch (e0) { SCRIPT_FOLDER = null; }
   try { oldLevel = app.scriptPreferences.userInteractionLevel; app.scriptPreferences.userInteractionLevel = en("UserInteractionLevels", "NeverInteract"); } catch (e1) { }
   try { oldUnit = app.scriptPreferences.measurementUnit; app.scriptPreferences.measurementUnit = en("MeasurementUnits", "Points"); } catch (e1b) { }
   try { oldRedraw = app.scriptPreferences.enableRedraw; app.scriptPreferences.enableRedraw = false; } catch (e2) { }
-  try {
-    loadInstalledFonts();
-    setupDocument();
-    buildLayers();
-    buildColors();
-    buildStyles();
-    buildMasters();
-    buildPages();
-    askImagesFolder();
-    buildSpreads();
-    buildStories();
-    finishDocument();
-  } catch (e) {
-    log("ERROR GRAVE: " + e.message + (e.line ? " (linea " + e.line + ")" : ""));
+  // cada fase va por separado: si una falla, las demás se intentan igualmente
+  phase("fuentes instaladas", loadInstalledFonts);
+  phase("documento", setupDocument);
+  if (DOC) {
+    phase("capas", buildLayers);
+    phase("colores", buildColors);
+    phase("estilos", buildStyles);
+    phase("páginas maestras", buildMasters);
+    phase("páginas", buildPages);
+    phase("imágenes", askImagesFolder);
+    phase("objetos", buildSpreads);
+    phase("textos", buildStories);
+    phase("final", finishDocument);
   }
   try { if (oldRedraw !== null) { app.scriptPreferences.enableRedraw = oldRedraw; } } catch (e3) { }
   try { if (oldUnit !== null) { app.scriptPreferences.measurementUnit = oldUnit; } } catch (e3b) { }

@@ -291,3 +291,11 @@ test('rejilla de líneas base, texto borrado con control de cambios y texto sobr
   assert.equal(m.stories.get('u1f3').text, 'Visible añadido');
   assert.match(m.warnings.map((w) => w.text).join('\n'), /texto sobre un trazado/);
 });
+
+test('un IDML sin páginas da un error claro; una imagen sin GraphicBounds avisa', () => {
+  assert.throws(() => load(buildIdmlWith((p) => { p['Spreads/Spread_ud8.xml'] = null; p['Spreads/Spread_ud9.xml'] = null; })), (e) => e.code === 'nopages');
+  const m = load(buildIdmlWith((p) => { p['Spreads/Spread_ud8.xml'] = p['Spreads/Spread_ud8.xml'].replace('<GraphicBounds Left="0" Top="0" Right="2" Bottom="2"/>', ''); }));
+  assert.match(m.warnings.map((w) => w.text).join('\n'), /1 imagen no trae su tamaño/);
+  const it = allItems(m.spreads[0].items).find((i) => i.id === 'ur1');
+  assert.equal(it.img.b, undefined);
+});
