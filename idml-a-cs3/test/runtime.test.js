@@ -264,3 +264,18 @@ test('alternativas si CS3 no acepta la forma habitual: add() sin argumentos, con
   assert.equal(st.paras[0], 'Titulo');
   assert.equal(st.cstyles[42], 'Negrita');
 });
+
+test('las muestras de fábrica se reconocen aunque InDesign esté en otro idioma (Negro, Papel, Ninguno)', () => {
+  const r = run({ enumStyle: 'upper', cs3: true, localizedBuiltins: true });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó|Muestra|muestra/);
+  const s = M.snapshot(r.doc);
+  const frame = s.pages[0].items[0];                         // marco de texto con contorno negro y relleno ninguno
+  assert.equal(frame.stroke, 'Negro');
+  assert.equal(frame.fill, 'Ninguno');
+  const grp = s.pages[1].items.find((i) => i.kind === 'group');
+  assert.equal(grp.kids[1].fill, 'Papel');
+  assert.equal(s.colors.length, 4, 'las de fábrica no se duplican');
+  // y el estilo básico usa el negro de fábrica
+  assert.equal(s.pstyles.find((x) => x.name === '[Basic Paragraph]').props.fillColor, 'obj:Negro');
+});

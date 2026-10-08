@@ -85,6 +85,7 @@ function createMock(opts) {
         if (k === '__self') return p;
         if (extra && Object.prototype.hasOwnProperty.call(extra, k)) { const v = extra[k]; return typeof v === 'function' && v.__getter ? v() : v; }
         if (k === 'isValid') return true;
+        if (k === 'reflect') return { name: type };
         return store[k];
       },
       set(t, k, v) {
@@ -239,6 +240,13 @@ function createMock(opts) {
     st.paragraphStyles = [mkStyle('[No paragraph style]', 'ParagraphStyle'), mkStyle('[Basic Paragraph]', 'ParagraphStyle')].map(withTabs);
     st.characterStyles = [mkStyle('[No character style]', 'CharacterStyle')].map(withTabs);
     st.colors = []; st.tints = []; st.gradients = [];
+    // muestras de fábrica (con nombre localizado si se pide), reconocibles por su valor
+    const loc = opts.localizedBuiltins ? { Black: 'Negro', Paper: 'Papel', Registration: 'Registro', None: 'Ninguno' } : { Black: 'Black', Paper: 'Paper', Registration: 'Registration', None: 'None' };
+    const factory = (name, model, value) => { const c = obj('Color', ['name', 'model', 'space', 'colorValue'], { name, model, space: enumObjs.ColorSpace.CMYK, colorValue: value, builtin: true }); return c; };
+    st.colors.push(factory(loc.Paper, enumObjs.ColorModel[style === 'camel' ? 'process' : 'PROCESS'], [0, 0, 0, 0]));
+    st.colors.push(factory(loc.Black, enumObjs.ColorModel[style === 'camel' ? 'process' : 'PROCESS'], [0, 0, 0, 100]));
+    st.colors.push(factory(loc.Registration, enumObjs.ColorModel[style === 'camel' ? 'registration' : 'REGISTRATION'], [100, 100, 100, 100]));
+    st.noneName = loc.None;
     const mkLayer = (init) => {
       const l = obj('Layer', cs3 ? ['name', 'visible', 'locked'] : ['name', 'visible', 'locked', 'printable'], { visible: true, locked: false, printable: true }, {
         move(to) {
@@ -471,8 +479,8 @@ function createMock(opts) {
     // las layers se añaden "encima" del todo; el objeto Document usa una vista de swatches calculada
     Object.defineProperty(ex, 'swatches', {
       get() {
-        const builtin = ['None', 'Paper', 'Black', 'Registration'].map((n) => obj('Swatch', [], { name: n }));
-        return coll(builtin.concat(st.colors, st.tints, st.gradients));
+        const none = obj('Swatch', [], { name: st.noneName });
+        return coll([none].concat(st.colors, st.tints, st.gradients));
       },
       enumerable: true,
     });
@@ -593,7 +601,7 @@ function snapshotRaw(doc) {
     layers: st.layers.map((l) => ({ name: l.name, visible: l.visible, locked: l.locked })),
     section: { start: doc.sections.item(0).pageNumberStart, cont: doc.sections.item(0).continueNumbering },
     grid: { start: doc.gridPreferences.baselineStart, division: doc.gridPreferences.baselineDivision },
-    colors: st.colors.map((c) => ({ name: c.name, model: enumOf(c.model), space: enumOf(c.space), v: c.colorValue })),
+    colors: st.colors.filter((c) => !c.__store.builtin).map((c) => ({ name: c.name, model: enumOf(c.model), space: enumOf(c.space), v: c.colorValue })),
     tints: st.tints.map((t) => ({ name: t.name, base: t.baseColor.name, v: t.tintValue })),
     gradients: st.gradients.map((g) => ({ name: g.name, stops: Array.from({ length: g.gradientStops.length }, (_, i) => [g.gradientStops.item(i).stopColor && g.gradientStops.item(i).stopColor.name, g.gradientStops.item(i).location]) })),
     pstyles: st.paragraphStyles.map((s) => ({ name: s.name, basedOn: s.basedOn && s.basedOn.name, next: s.nextStyle && s.nextStyle.name, props: plain(s.__store), tabs: s.__store.tabs })),

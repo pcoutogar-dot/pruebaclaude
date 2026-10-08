@@ -47,9 +47,37 @@ function en(c, v) {
 }
 
 // ---------------------------------------------------------------- muestras y estilos
+// Las muestras de fábrica (Ninguno, Papel, Negro, Registro) se reconocen por lo que son y no por su nombre,
+// que cambia según el idioma de InDesign.
+var BUILT = {};
+function findBuiltins() {
+  var cols, i, c, v, s, reg = en("ColorModel", "Registration");
+  try {
+    cols = DOC.colors;
+    for (i = 0; i < cols.length; i++) {
+      c = cols.item(i);
+      try {
+        if (reg !== undefined && c.model == reg) { if (!BUILT.Registration) { BUILT.Registration = c; } continue; }
+        v = c.colorValue;
+        if (v && v.length === 4 && v[0] === 0 && v[1] === 0 && v[2] === 0) {
+          if (v[3] === 100 && !BUILT.Black) { BUILT.Black = c; }
+          if (v[3] === 0 && !BUILT.Paper) { BUILT.Paper = c; }
+        }
+      } catch (e1) { }
+    }
+  } catch (e) { }
+  try {
+    for (i = 0; i < DOC.swatches.length; i++) {
+      s = DOC.swatches.item(i);
+      if (s.reflect.name === "Swatch") { BUILT.None = s; break; }
+    }
+  } catch (e2) { }
+}
+
 function swatch(name) {
   var s = null;
   if (SW.hasOwnProperty(name)) { return SW[name]; }
+  if (BUILT[name]) { SW[name] = BUILT[name]; return SW[name]; }
   try { s = DOC.swatches.item(name); s.name; } catch (e) { s = null; }
   if (!s && name === "None") { try { s = DOC.swatches.item(0); s.name; } catch (e1) { s = null; } }
   if (!s) { try { s = DOC.colors.item(name); s.name; } catch (e2) { s = null; } }
@@ -671,6 +699,7 @@ function main() {
   phase("fuentes instaladas", loadInstalledFonts);
   phase("documento", setupDocument);
   if (DOC) {
+    phase("muestras de fábrica", findBuiltins);
     phase("capas", buildLayers);
     phase("colores", buildColors);
     phase("estilos", buildStyles);
