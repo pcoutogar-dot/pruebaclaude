@@ -32,17 +32,23 @@ const ENUMS = {
   VerticalJustification: ['TopAlign', 'CenterAlign', 'BottomAlign', 'JustifyAlign'],
   FirstBaselineOffset: ['AscentOffset', 'CapHeight', 'LeadingOffset', 'XHeight', 'FixedHeight'],
   TextWrapModes: ['None', 'BoundingBoxTextWrap', 'Contour', 'JumpObjectTextWrap', 'NextColumnTextWrap'],
-  TextWrapSideOptions: ['BothSides', 'LeftSide', 'RightSide', 'LargestArea'],
+  TextWrapTypes: ['None', 'BoundingBoxTextWrap', 'Contour', 'JumpObjectTextWrap', 'NextColumnTextWrap', 'UserModified'],
+  TextWrapSideOptions: ['BothSides', 'LeftSide', 'RightSide', 'SideTowardsSpine', 'SideAwayFromSpine', 'LargestArea'],
   Leading: ['Auto'],
+  ListType: ['NoList', 'BulletList', 'NumberedList'],
+  BulletCharacterType: ['UnicodeOnly', 'UnicodeWithFont', 'GlyphWithFont'],
+  RuleWidth: ['ColumnWidth', 'TextWidth'],
 };
 
 const SPECIAL_CHAR = { AutoPageNumber: '\u0018', NextPageNumber: '\u0019', PreviousPageNumber: '\u0017', IndentHereTab: '\u0007', RightIndentTab: '\u0008' };
 
-const TEXT_PROPS = ['pointSize', 'leading', 'fontStyle', 'appliedFont', 'tracking', 'horizontalScale', 'verticalScale', 'baselineShift', 'skew', 'kerningValue', 'capitalization', 'position', 'underline', 'strikeThru', 'noBreak', 'ligatures', 'overprintFill', 'fillColor', 'strokeColor', 'fillTint', 'strokeTint', 'strokeWeight', 'justification', 'firstLineIndent', 'leftIndent', 'rightIndent', 'lastLineIndent', 'spaceBefore', 'spaceAfter', 'keepWithNext', 'keepLinesTogether', 'keepAllLinesTogether', 'keepFirstLines', 'keepLastLines', 'startParagraph', 'hyphenation', 'hyphenateWordsLongerThan', 'hyphenateAfterFirst', 'hyphenateBeforeLast', 'hyphenateLadderLimit', 'hyphenateCapitalizedWords', 'dropCapCharacters', 'dropCapLines', 'autoLeading', 'alignToBaseline', 'minimumWordSpacing', 'desiredWordSpacing', 'maximumWordSpacing', 'minimumLetterSpacing', 'desiredLetterSpacing', 'maximumLetterSpacing', 'minimumGlyphScaling', 'desiredGlyphScaling', 'maximumGlyphScaling', 'singleWordJustification'];
+const TEXT_PROPS = ['pointSize', 'leading', 'fontStyle', 'appliedFont', 'tracking', 'horizontalScale', 'verticalScale', 'baselineShift', 'skew', 'kerningValue', 'capitalization', 'position', 'underline', 'strikeThru', 'noBreak', 'ligatures', 'overprintFill', 'fillColor', 'strokeColor', 'fillTint', 'strokeTint', 'strokeWeight', 'justification', 'firstLineIndent', 'leftIndent', 'rightIndent', 'lastLineIndent', 'spaceBefore', 'spaceAfter', 'keepWithNext', 'keepLinesTogether', 'keepAllLinesTogether', 'keepFirstLines', 'keepLastLines', 'startParagraph', 'hyphenation', 'hyphenateWordsLongerThan', 'hyphenateAfterFirst', 'hyphenateBeforeLast', 'hyphenateLadderLimit', 'hyphenateCapitalizedWords', 'dropCapCharacters', 'dropCapLines', 'autoLeading', 'alignToBaseline', 'minimumWordSpacing', 'desiredWordSpacing', 'maximumWordSpacing', 'minimumLetterSpacing', 'desiredLetterSpacing', 'maximumLetterSpacing', 'minimumGlyphScaling', 'desiredGlyphScaling', 'maximumGlyphScaling', 'singleWordJustification', 'ruleAbove', 'ruleAboveColor', 'ruleAboveTint', 'ruleAboveLineWeight', 'ruleAboveOffset', 'ruleAboveLeftIndent', 'ruleAboveRightIndent', 'ruleAboveWidth', 'ruleBelow', 'ruleBelowColor', 'ruleBelowTint', 'ruleBelowLineWeight', 'ruleBelowOffset', 'ruleBelowLeftIndent', 'ruleBelowRightIndent', 'ruleBelowWidth', 'bulletsAndNumberingListType', 'bulletsTextAfter'];
 const ITEM_PROPS = ['geometricBounds', 'fillColor', 'fillTint', 'strokeColor', 'strokeTint', 'strokeWeight', 'strokeAlignment', 'endCap', 'endJoin', 'miterLimit', 'overprintFill', 'overprintStroke', 'gradientFillAngle', 'gradientStrokeAngle', 'topLeftCornerOption', 'topRightCornerOption', 'bottomLeftCornerOption', 'bottomRightCornerOption', 'topLeftCornerRadius', 'topRightCornerRadius', 'bottomLeftCornerRadius', 'bottomRightCornerRadius', 'itemLayer', 'label', 'visible', 'locked', 'rotationAngle', 'nextTextFrame', 'previousTextFrame', 'contents'];
 
 function createMock(opts) {
   opts = opts || {};
+  // cs3: imita las diferencias de la versión 5.0 (CS3) respecto a CS6 que se han podido comprobar en su referencia
+  const cs3 = !!opts.cs3;
   const style = opts.enumStyle || 'camel';
   const reject = new Set(opts.rejectProps || []);
   const state = { docs: [], alerts: [], confirms: [], dialogs: [], placed: [] };
@@ -54,6 +60,7 @@ function createMock(opts) {
   // ---- enumeraciones
   const enumObjs = {};
   for (const cls of Object.keys(ENUMS)) {
+    if (cs3 && cls === 'TextWrapModes') continue;
     const o = {};
     for (const v of ENUMS[cls]) {
       const val = { __enum: cls + '.' + v, valueOf() { return this.__enum; }, toString() { return this.__enum; } };
@@ -214,8 +221,10 @@ function createMock(opts) {
     const st = doc.__store;
     st.facing = true;
     const mkStyle = (name, kind) => {
-      const s = obj(kind, ['name', 'basedOn', 'nextStyle'].concat(TEXT_PROPS), { name }, {});
+      const bulletChar = obj('BulletChar', ['bulletCharacterType', 'bulletCharacterValue']);
+      const s = obj(kind, ['name', 'basedOn', 'nextStyle'].concat(TEXT_PROPS), { name }, { bulletChar });
       s.__store.tabs = [];
+      s.__store.bulletRef = bulletChar;
       Object.defineProperty(s.__store, 'tabStops', { enumerable: false, value: null, writable: true });
       return s;
     };
@@ -228,7 +237,7 @@ function createMock(opts) {
     st.characterStyles = [mkStyle('[No character style]', 'CharacterStyle')].map(withTabs);
     st.colors = []; st.tints = []; st.gradients = [];
     const mkLayer = (init) => {
-      const l = obj('Layer', ['name', 'visible', 'locked', 'printable'], { visible: true, locked: false, printable: true }, {
+      const l = obj('Layer', cs3 ? ['name', 'visible', 'locked'] : ['name', 'visible', 'locked', 'printable'], { visible: true, locked: false, printable: true }, {
         move(to) {
           const i = st.layers.indexOf(l);
           st.layers.splice(i, 1);
@@ -242,7 +251,7 @@ function createMock(opts) {
 
     const prefs = (name, props, init) => obj(name, props, init || {});
     const view = prefs('ViewPreferences', ['horizontalMeasurementUnits', 'verticalMeasurementUnits', 'rulerOrigin']);
-    const dp = obj('DocumentPreferences', ['pageWidth', 'pageHeight', 'pageBinding', 'startPageNumber', 'documentBleedUniformSize', 'documentBleedTopOffset', 'documentBleedBottomOffset', 'documentBleedInsideOrLeftOffset', 'documentBleedOutsideOrRightOffset', 'documentSlugUniformSize', 'slugTopOffset', 'slugBottomOffset', 'slugInsideOrLeftOffset', 'slugRightOrOutsideOffset'], { pageWidth: 612, pageHeight: 792 }, {
+    const dp = obj('DocumentPreferences', ['pageWidth', 'pageHeight'].concat(cs3 ? [] : ['pageBinding', 'startPageNumber']).concat(['documentBleedUniformSize', 'documentBleedTopOffset', 'documentBleedBottomOffset', 'documentBleedInsideOrLeftOffset', 'documentBleedOutsideOrRightOffset', 'documentSlugUniformSize', 'slugTopOffset', 'slugBottomOffset', 'slugInsideOrLeftOffset', 'slugRightOrOutsideOffset']), { pageWidth: 612, pageHeight: 792 }, {
       __set(k, v) { if (k === 'facingPages') { st.facing = v; resizeMasters(); return true; } return false; },
       facingPages: getter(() => st.facing),
     });
@@ -291,7 +300,8 @@ function createMock(opts) {
     function makeItem(kind, page, init, owner) {
       const store = { kind, kids: null, graphics: [], paths: null, story: null, rot: 0 };
       const graphics = [];
-      const it = obj('PageItem:' + kind, ITEM_PROPS, { kind, layer: null, props: {} }, {
+      const itemProps = cs3 ? ITEM_PROPS.filter((x) => !/^(topLeft|topRight|bottomLeft|bottomRight)Corner/.test(x)).concat(['cornerOption', 'cornerRadius']) : ITEM_PROPS;
+      const it = obj('PageItem:' + kind, itemProps, { kind, layer: null, props: {} }, {
         __kind: kind,
         __set(k, v, self) {
           if (k === 'itemLayer') { if (v && v.isValid === false) throw new Error('invalid layer'); self.__store.layer = v; return true; }
@@ -313,7 +323,7 @@ function createMock(opts) {
         contents: getter(() => (kind === 'text' ? storyOf(it).text : fail('contents'))),
         rotationAngle: getter(() => it.__store.rot),
         textFramePreferences: kind === 'text' ? obj('TextFramePreferences', ['textColumnCount', 'textColumnGutter', 'textColumnFixedWidth', 'useFixedColumnWidth', 'verticalJustification', 'firstBaselineOffset', 'minimumFirstBaselineOffset', 'ignoreWrap', 'insetSpacing']) : undefined,
-        textWrapPreferences: obj('TextWrapPreferences', ['textWrapMode', 'textWrapSide', 'textWrapOffset', 'inverse']),
+        textWrapPreferences: obj('TextWrapPreferences', cs3 ? ['textWrapType', 'textWrapSide', 'textWrapOffset', 'inverse'] : ['textWrapMode', 'textWrapType', 'textWrapSide', 'textWrapOffset', 'inverse']),
         transparencySettings: { blendingSettings: obj('BlendingSettings', ['opacity']) },
         paths: getter(() => coll([pathObj(it)])),
         graphics: coll(graphics),
@@ -424,7 +434,19 @@ function createMock(opts) {
       documentPreferences: dp,
       marginPreferences: st.margin,
       colors: coll(st.colors, { add: (init) => { if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
-      tints: coll(st.tints, { add: (init) => { if (!init.baseColor || init.baseColor.isValid === false) throw new Error('bad base'); const c = named(init, ['name', 'baseColor', 'tintValue'], 'Tint'); st.tints.push(c); return c; } }),
+      tints: coll(st.tints, {
+        add: (a, b) => {
+          const twoArgs = a && a.__type === 'Color';
+          const init = twoArgs ? Object.assign({}, b, { baseColor: a }) : a;
+          if (!twoArgs && cs3) fail('baseColor');                         // CS3: baseColor es de solo lectura
+          if (!init || !init.baseColor || init.baseColor.isValid === false) throw new Error('bad base');
+          if (st.tints.some((t) => t.name === init.name)) throw new Error('name must be unique');
+          const c = named(init, ['name', 'baseColor', 'tintValue'], 'Tint');
+          st.tints.push(c);
+          return c;
+        },
+      }),
+      sections: coll([obj('Section', ['continueNumbering', 'pageNumberStart'], { continueNumbering: true, pageNumberStart: 1 })]),
       gradients: coll(st.gradients, {
         add: (init) => {
           const stops = [obj('GradientStop', ['stopColor', 'location'], { location: 0 }), obj('GradientStop', ['stopColor', 'location'], { location: 100 })];
@@ -540,9 +562,13 @@ function snapshotRaw(doc) {
     if (s.path && s.path.open) o.open = true;
     if (s.path && Object.keys(s.path.dirs).length) o.dirs = s.path.dirs;
     for (const k of Object.keys(s)) {
-      if (/^(topLeft|topRight|bottomLeft|bottomRight)Corner|fillTint|strokeWeight|gradientFillAngle|strokeAlignment/.test(k)) o[k] = s[k] && s[k].__enum ? s[k].__enum : s[k];
+      if (/^(topLeft|topRight|bottomLeft|bottomRight)Corner|^corner(Option|Radius)$|fillTint|strokeWeight|gradientFillAngle|strokeAlignment/.test(k)) o[k] = s[k] && s[k].__enum ? s[k].__enum : s[k];
     }
     if (it.graphics.length) o.graphic = { file: it.graphics.item(0).geometricBounds && it.graphics.item(0).__store.file, bounds: num(it.graphics.item(0).geometricBounds) };
+    const wrapStore = it.textWrapPreferences && it.textWrapPreferences.__store;
+    if (wrapStore && Object.keys(wrapStore).length) o.wrap = plain(wrapStore);
+    const tfpStore = it.textFramePreferences && it.textFramePreferences.__store;
+    if (tfpStore && Object.keys(tfpStore).length) o.tfp = plain(tfpStore);
     if (s.fitted) o.fitted = s.fitted;
     if (s.removed) o.removed = true;
     return o;
@@ -559,6 +585,7 @@ function snapshotRaw(doc) {
       units: enumOf(doc.viewPreferences.horizontalMeasurementUnits), origin: enumOf(doc.viewPreferences.rulerOrigin),
     },
     layers: st.layers.map((l) => ({ name: l.name, visible: l.visible, locked: l.locked })),
+    section: { start: doc.sections.item(0).pageNumberStart, cont: doc.sections.item(0).continueNumbering },
     colors: st.colors.map((c) => ({ name: c.name, model: enumOf(c.model), space: enumOf(c.space), v: c.colorValue })),
     tints: st.tints.map((t) => ({ name: t.name, base: t.baseColor.name, v: t.tintValue })),
     gradients: st.gradients.map((g) => ({ name: g.name, stops: Array.from({ length: g.gradientStops.length }, (_, i) => [g.gradientStops.item(i).stopColor && g.gradientStops.item(i).stopColor.name, g.gradientStops.item(i).location]) })),
@@ -573,6 +600,7 @@ function plain(store) {
   const o = {};
   for (const k of Object.keys(store)) {
     if (k === 'name' || k === 'basedOn' || k === 'nextStyle' || k === 'tabs') continue;
+    if (k === 'bulletRef') { const b = store[k].__store; if (Object.keys(b).length) o.bulletChar = { type: b.bulletCharacterType && b.bulletCharacterType.__enum, value: b.bulletCharacterValue }; continue; }
     const v = store[k];
     o[k] = v && v.__enum ? v.__enum : v && v.__store && v.__store.fontFamily ? 'font:' + v.__store.name : v && v.name && typeof v === 'object' ? 'obj:' + v.name : v;
   }

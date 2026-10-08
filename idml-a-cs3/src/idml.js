@@ -38,7 +38,10 @@ function readPackage(bytes, zipOpts) {
     pkg.texts.push(text);
     return { text, root: X.parseXml(text) };
   };
-  const dm = parse('designmap.xml');
+  let dm;
+  try { dm = parse('designmap.xml'); } catch (e) {
+    throw new UserError('nodesignmap', 'El IDML está dañado: no se puede leer designmap.xml (' + e.message + '). Prueba a exportarlo de nuevo desde CS6.');
+  }
   pkg.designmap = dm.root;
   pkg.designmapText = dm.text;
   const seen = new Set();
@@ -397,6 +400,7 @@ function resolveObjectStyle(model, styleById, id, seen) {
 function readSpread(el, isMaster, model, ctx, styleById, frameIndex) {
   const sp = {
     id: el.attrs.Self, master: isMaster, name: noId(el.attrs.Name || ''), prefix: el.attrs.NamePrefix, baseName: el.attrs.BaseName,
+    appliedMaster: isMaster && el.attrs.AppliedMaster && el.attrs.AppliedMaster !== 'n' ? el.attrs.AppliedMaster : null,
     pages: [], items: [], guides: 0,
   };
   const margins0 = model.doc.margins;
@@ -488,6 +492,7 @@ function parseItem(el, M, env) {
     const fs = X.firstEl(ts, 'FeatherSetting');
     if (fs && fs.attrs.Mode && fs.attrs.Mode !== 'None') ctx.unsupported('Feather');
   }
+  if (el.attrs.StrokeType && !/\/Solid$/.test(el.attrs.StrokeType) && el.attrs.StrokeColor && el.attrs.StrokeColor !== 'Swatch/None') ctx.count('strokeStyle');
   if (!item.props.fillColor) item.props.fillColor = ['sw', 'None'];
   if (!item.props.strokeColor) {
     if (kind === 'line') item.props.strokeColor = ['sw', 'Black'];
@@ -733,6 +738,14 @@ function resolveFontStyles(model) {
       if (inh !== undefined) st.props.fontStyle = inh;
     }
   }
+  const cover = (arr, pos) => {                       // rango (ordenado por inicio) que contiene pos
+    let lo = 0; let hi = arr.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[mid].e <= pos) lo = mid + 1; else if (arr[mid].s > pos) hi = mid - 1; else return arr[mid];
+    }
+    return null;
+  };
   const fix = (pr, cr) => {
     for (const r of pr) {
       if (r.props.appliedFont && r.props.fontStyle === undefined) {
@@ -744,7 +757,7 @@ function resolveFontStyles(model) {
       if (!r.props.appliedFont || r.props.fontStyle !== undefined) continue;
       let inh = r.style ? chain(r.style, 'fontStyle') : undefined;
       if (inh === undefined) {
-        const p = pr.find((x) => x.s <= r.s && r.s < x.e);
+        const p = cover(pr, r.s);
         if (p) inh = p.props.fontStyle !== undefined ? p.props.fontStyle : chain(p.style, 'fontStyle');
       }
       if (inh !== undefined) r.props.fontStyle = inh;
@@ -788,6 +801,7 @@ function finish(pkg, model, counters, ctx) {
   f.textVariables = has(/<TextVariableInstance /);
   f.conditions = has(/<Condition /);
   f.articles = has(/<Article /);
+  f.nestedStyles = has(/<NestedStyle |<NestedGrepStyle |<GrepStyle |<NestedLineStyle /);
 
   const page = model.pages;
   const sizes = new Set(page.map((p) => Math.round(p.w) + 'x' + Math.round(p.h)));
@@ -795,23 +809,25 @@ function finish(pkg, model, counters, ctx) {
   if (model.sections.length > 1 || (model.sections[0] && model.sections[0].style !== 'Arabic')) ctx.warn('El documento tiene varias secciones o numeración especial de páginas: solo se conserva el número de inicio de la primera sección.');
   if (model.spreads.some((sp) => sp.pages.length > 2)) ctx.warn('Hay pliegos con más de dos páginas; CS3 los coloca de otra forma y los objetos podrían descolocarse.');
 
-  const msg = (key, text) => { if (counters[key]) ctx.warn(text.replace('{n}', counters[key])); };
-  msg('interactive', 'Hay {n} objetos interactivos (botones, formularios, multimedia…) que CS3 no admite: se han omitido.');
-  msg('compound', 'Hay {n} objetos con trazado compuesto: se ha conservado solo el primer trazado.');
-  msg('flipped', '{n} objetos están reflejados (espejo); CS3 los recibirá sin el reflejo.');
-  msg('imgRotated', '{n} imágenes están giradas o inclinadas dentro de su marco: se colocan sin girar.');
-  msg('anchored', 'Hay {n} objetos anclados dentro del texto (en línea); no se recrean.');
+  const msg = (key, one, many) => {
+    const n = counters[key];
+    if (n) ctx.warn((n === 1 ? one : many || one).replace('{n}', n));
+  };
+  msg('interactive', 'Hay 1 objeto interactivo (botón, formulario, multimedia…) que CS3 no admite: se ha omitido.', 'Hay {n} objetos interactivos (botones, formularios, multimedia…) que CS3 no admite: se han omitido.');
+  msg('compound', 'Hay 1 objeto con trazado compuesto: se ha conservado solo el primer trazado.', 'Hay {n} objetos con trazado compuesto: se ha conservado solo el primer trazado de cada uno.');
+  msg('flipped', '1 objeto está reflejado (espejo); CS3 lo recibirá sin el reflejo.', '{n} objetos están reflejados (espejo); CS3 los recibirá sin el reflejo.');
+  msg('imgRotated', '1 imagen está girada o inclinada dentro de su marco: se coloca sin girar.', '{n} imágenes están giradas o inclinadas dentro de su marco: se colocan sin girar.');
+  msg('anchored', 'Hay 1 objeto anclado dentro del texto (en línea); no se recrea.', 'Hay {n} objetos anclados dentro del texto (en línea); no se recrean.');
   msg('mixedInk', 'Hay tintas mixtas: no se recrean.');
-  msg('textVars', 'Hay {n} variables de texto: se han sustituido por su texto actual.');
-  msg('footnotes', 'Hay {n} notas al pie. CS3 no tiene notas al pie automáticas: quedan como un número en superíndice y su texto está en los archivos de textos y en el informe.');
-  msg('tables', 'Hay {n} tabla(s): se recrean de forma básica (contenido, anchos, altos y celdas combinadas); revisa los bordes y fondos.');
-  msg('noLink', '{n} imágenes no tienen vínculo a un archivo: se dejan como marcos vacíos.');
-  msg('u:DropShadow', 'Hay {n} objetos con sombra paralela: CS3 no las recibe (efecto omitido).');
-  msg('u:Feather', 'Hay {n} objetos con degradado de pluma o transparencia direccional: efecto omitido.');
-  msg('u:AutoSizingType', 'Hay {n} marcos con ajuste automático de tamaño (función de CS6): se dejan con tamaño fijo.');
-  msg('u:BulletsAndNumberingListType', 'Hay estilos con viñetas o numeración automática: no se recrean (el texto sí se conserva).');
-  msg('u:RuleAbove', 'Hay párrafos con filete superior: no se recrea.');
-  msg('u:RuleBelow', 'Hay párrafos con filete inferior: no se recrea.');
+  msg('strokeStyle', 'Hay 1 objeto con contorno discontinuo, punteado o de otro estilo: se recrea con contorno continuo.', 'Hay {n} objetos con contorno discontinuo, punteado o de otro estilo: se recrean con contorno continuo.');
+  msg('textVars', 'Hay 1 variable de texto: se ha sustituido por su texto actual.', 'Hay {n} variables de texto: se han sustituido por su texto actual.');
+  msg('footnotes', 'Hay 1 nota al pie. CS3 no tiene notas al pie automáticas: queda como un número en superíndice y su texto está en los archivos de textos y en el informe.', 'Hay {n} notas al pie. CS3 no tiene notas al pie automáticas: quedan como un número en superíndice y su texto está en los archivos de textos y en el informe.');
+  msg('tables', 'Hay 1 tabla: se recrea de forma básica (contenido, anchos, altos y celdas combinadas); revisa los bordes y fondos.', 'Hay {n} tablas: se recrean de forma básica (contenido, anchos, altos y celdas combinadas); revisa los bordes y fondos.');
+  msg('noLink', '1 imagen no tiene vínculo a un archivo: se deja como marco vacío.', '{n} imágenes no tienen vínculo a un archivo: se dejan como marcos vacíos.');
+  msg('u:DropShadow', 'Hay 1 objeto con sombra paralela: CS3 no la recibe (efecto omitido).', 'Hay {n} objetos con sombra paralela: CS3 no las recibe (efecto omitido).');
+  msg('u:Feather', 'Hay 1 objeto con degradado de pluma o transparencia direccional: efecto omitido.', 'Hay {n} objetos con degradado de pluma o transparencia direccional: efecto omitido.');
+  msg('u:AutoSizingType', 'Hay 1 marco con ajuste automático de tamaño (función de CS6): se deja con tamaño fijo.', 'Hay {n} marcos con ajuste automático de tamaño (función de CS6): se dejan con tamaño fijo.');
+  msg('u:BulletsAndNumberingListType', 'Hay estilos o párrafos con numeración automática: no se recrea (el texto sí se conserva).');
   msg('u:ParagraphShadingOn', 'Hay párrafos con sombreado (función de CS5.5): no se recrea.');
   msg('u:ParagraphBorderOn', 'Hay párrafos con bordes (función de CS5.5): no se recrea.');
   msg('u:SpanColumnType', 'Hay párrafos que abarcan varias columnas (función de CS5): se dejan en una sola columna.');
@@ -819,6 +835,7 @@ function finish(pkg, model, counters, ctx) {
   if (f.hyperlinks) ctx.warn('El documento tiene hipervínculos: no se recrean.');
   if (f.conditions) ctx.warn('El documento usa texto condicional (CS4): se muestra todo el texto.');
   if (f.articles) ctx.warn('El documento tiene artículos (CS6): se ignoran.');
+  if (f.nestedStyles) ctx.warn('Hay estilos anidados o estilos GREP: no se recrean (el texto y su formato directo sí).');
   const guides = model.spreads.reduce((n, s) => n + s.guides, 0) + model.masters.reduce((n, s) => n + s.guides, 0);
   if (guides) ctx.info('Hay ' + guides + ' guías: no se recrean.');
 

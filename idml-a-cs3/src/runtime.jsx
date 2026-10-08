@@ -12,6 +12,7 @@ var MISSING_IMAGES = [];
 var DOC = null;
 var LAY = {}, SW = {}, PS = {}, CS = {}, MS = {}, FR = {}, MI = {};
 var STAT = { items: 0, stories: 0, images: 0, tables: 0 };
+var LOCKED = [];         // objetos que se bloquean al final (un objeto bloqueado ya no se puede tocar)
 var SCRIPT_FOLDER = null;
 var IDX = null;
 var INSTALLED = null;
@@ -125,6 +126,14 @@ function applyProps(t, p, what) {
     if (k === "appliedFont") { continue; }
     if (k === "fontStyle" && hadFont) { continue; }
     if (k === "tabStops") { setTabs(t, p[k]); continue; }
+    if (k === "locked") { LOCKED.push(t); continue; }
+    if (k === "bulletChar") {
+      try {
+        t.bulletChar.bulletCharacterType = en("BulletCharacterType", p[k].type);
+        t.bulletChar.bulletCharacterValue = p[k].value;
+      } catch (eb) { failProp(what, "bulletChar"); }
+      continue;
+    }
     try {
       val = dec(p[k]);
       if (val === undefined || val === null) { continue; }
@@ -141,12 +150,26 @@ function applyProps(t, p, what) {
   }
 }
 
+function setWrapMode(target, v) {
+  var val = dec(v), names = ["TextWrapTypes", "TextWrapType", "TextWrapModes"], i;
+  if (val !== undefined) { try { target.textWrapMode = val; return; } catch (e) { } }
+  for (i = 0; i < names.length; i++) {
+    val = en(names[i], v[2]);
+    if (val !== undefined) { target.textWrapType = val; return; }
+  }
+  throw new Error("textWrap");
+}
+
 function applyPrefs(target, p, what) {
   var k, val;
   if (!p) { return; }
   for (k in p) {
     if (!p.hasOwnProperty(k)) { continue; }
-    try { val = dec(p[k]); if (val !== undefined && val !== null) { target[k] = val; } } catch (e) { failProp(what, k); }
+    try {
+      if (k === "textWrapMode") { setWrapMode(target, p[k]); continue; }
+      val = dec(p[k]);
+      if (val !== undefined && val !== null) { target[k] = val; }
+    } catch (e) { failProp(what, k); }
   }
 }
 
@@ -157,11 +180,19 @@ function setupDocument() {
   vp = DOC.viewPreferences;
   try { vp.horizontalMeasurementUnits = en("MeasurementUnits", "Points"); vp.verticalMeasurementUnits = en("MeasurementUnits", "Points"); } catch (e) { log("No se pudieron fijar las unidades en puntos."); }
   try { vp.rulerOrigin = en("RulerOrigin", "SpreadOrigin"); } catch (e1) { log("No se pudo fijar el origen de reglas."); }
+  try { DOC.zeroPoint = [0, 0]; } catch (e1z) { }
   dp = DOC.documentPreferences;
   try { dp.facingPages = d.facing; } catch (e2) { log("facingPages"); }
   try { dp.pageWidth = d.w; dp.pageHeight = d.h; } catch (e3) { log("No se pudo fijar el tamaño de página."); }
-  try { dp.pageBinding = en("PageBindingOptions", d.binding); } catch (e4) { }
-  try { dp.startPageNumber = d.startPage; } catch (e5) { }
+  try { dp.pageBinding = en("PageBindingOptions", d.binding); } catch (e4) {
+    if (d.binding !== "LeftToRight") { log("CS3 no deja cambiar desde un script la encuadernación de derecha a izquierda: hazlo en Archivo > Ajustar documento."); }
+  }
+  try { dp.startPageNumber = d.startPage; } catch (e5) {
+    if (d.startPage !== 1) {
+      try { DOC.sections.item(0).continueNumbering = false; DOC.sections.item(0).pageNumberStart = d.startPage; }
+      catch (e5b) { log("No se pudo fijar el número de la primera página (" + d.startPage + ")."); }
+    }
+  }
   try {
     dp.documentBleedUniformSize = false;
     dp.documentBleedTopOffset = d.bleed.top; dp.documentBleedBottomOffset = d.bleed.bottom;
@@ -202,7 +233,12 @@ function buildColors() {
     }
   }
   for (i = 0; i < T.length; i++) {
-    try { DOC.tints.add({ name: T[i].n, baseColor: swatch(T[i].b), tintValue: T[i].v }); } catch (e2) { log("No se pudo crear el tono \"" + T[i].n + "\"."); }
+    try {
+      DOC.tints.add(swatch(T[i].b), { name: T[i].n, tintValue: T[i].v });     // CS3: el color base es el primer argumento
+    } catch (e2) {
+      try { DOC.tints.add({ name: T[i].n, baseColor: swatch(T[i].b), tintValue: T[i].v }); }   // versiones posteriores
+      catch (e2b) { log("No se pudo crear el tono \"" + T[i].n + "\"."); }
+    }
   }
   for (i = 0; i < Gd.length; i++) {
     g = Gd[i];
@@ -324,7 +360,7 @@ function askImagesFolder() {
   for (i = 0; i < DATA.spreads.length; i++) { scan(DATA.spreads[i].items); }
   if (missing === 0) { return; }
   try {
-    if (confirm("No se encuentran " + missing + " de " + needed + " imágenes enlazadas.\n\nAhora puedes elegir la carpeta donde están (por ejemplo la carpeta \"Links\" del paquete).\nSi pulsas No, se crearán los marcos vacíos.")) {
+    if (confirm("No se encuentran " + missing + " de " + needed + " imágenes enlazadas.\n\nAhora puedes elegir la carpeta donde están: la carpeta descomprimida si has metido ahí las imágenes (y la carpeta imagenes_incrustadas), o la carpeta Links del documento original.\n\nSi pulsas No, se crearán los marcos vacíos.")) {
       x = Folder.selectDialog("Elige la carpeta con las imágenes");
       if (x) { indexFolder(x, 0); }
     }
@@ -388,6 +424,9 @@ function buildMasters() {
     for (j = 0; j < m.pages.length && j < obj.pages.length; j++) { applyMargins(obj.pages.item(j), m.pages[j].m); }
   }
   for (i = 0; i < M.length; i++) {
+    if (M[i].am && MS[M[i].am] && MS[M[i].id]) { try { MS[M[i].id].appliedMaster = MS[M[i].am]; } catch (e3) { failProp("maestra", "basada en otra"); } }
+  }
+  for (i = 0; i < M.length; i++) {
     m = M[i]; obj = MS[m.id];
     if (!obj) { continue; }
     for (j = 0; j < m.items.length; j++) {
@@ -403,7 +442,8 @@ function buildPages() {
   for (i = 0; i < n; i++) {
     p = P[i]; pg = DOC.pages.item(i);
     try {
-      if (p.master && MS[p.master]) { pg.appliedMaster = MS[p.master]; } else { pg.appliedMaster = en("NothingEnum", "Nothing"); }
+      if (p.master && MS[p.master]) { pg.appliedMaster = MS[p.master]; }
+      else { try { pg.appliedMaster = en("NothingEnum", "Nothing"); } catch (e0) { pg.appliedMaster = null; } }
     } catch (e) { log("No se pudo aplicar la maestra a la página " + p.label); }
     applyMargins(pg, p.m);
   }
@@ -554,6 +594,7 @@ function finishDocument() {
     try { if (L[i].lock) { LAY[L[i].id].locked = true; } } catch (e1) { }
     try { if (!L[i].print) { LAY[L[i].id].printable = false; } } catch (e2) { }
   }
+  for (i = 0; i < LOCKED.length; i++) { try { LOCKED[i].locked = true; } catch (e0) { failProp("objeto", "bloqueo"); } }
   try {
     DOC.viewPreferences.horizontalMeasurementUnits = en("MeasurementUnits", d.units.h);
     DOC.viewPreferences.verticalMeasurementUnits = en("MeasurementUnits", d.units.v);
@@ -574,11 +615,14 @@ function summary() {
   return lines;
 }
 
+// el registro completo va al escritorio (la carpeta de scripts de InDesign queda muy escondida)
 function writeLog(lines) {
-  var f;
+  var f, base = null;
+  try { if (Folder.desktop && Folder.desktop.exists) { base = Folder.desktop; } } catch (e0) { }
+  if (!base) { base = SCRIPT_FOLDER; }
+  if (!base) { return null; }
   try {
-    if (!SCRIPT_FOLDER) { return null; }
-    f = new File(SCRIPT_FOLDER.fsName + "/resultado_reconstruccion.txt");
+    f = new File(base.fsName + "/resultado_reconstruccion.txt");
     f.encoding = "UTF-8";
     f.open("w");
     f.write(lines.join("\r\n"));
@@ -615,7 +659,7 @@ function main() {
   lines = summary();
   lf = writeLog(lines);
   shown = lines.slice(0, 14);
-  if (lines.length > 14) { shown.push("... (" + (lines.length - 14) + " avisos más" + (lf ? " en resultado_reconstruccion.txt" : "") + ")"); }
+  if (lines.length > 14) { shown.push("... (" + (lines.length - 14) + " avisos más" + (lf ? ": mira resultado_reconstruccion.txt en el escritorio" : "") + ")"); }
   alert(shown.join("\n\n"));
 }
 

@@ -67,7 +67,7 @@ function buildData(model) {
     ps: styleList(model.pstyles),
     cs: styleList(model.cstyles),
     masters: model.masters.map((m) => ({
-      id: m.id, n: m.name, pre: m.prefix, base: m.baseName,
+      id: m.id, n: m.name, pre: m.prefix, base: m.baseName, am: m.appliedMaster || undefined,
       pages: m.pages.map((p) => ({ m: p.margins })),
       items: m.items.map(cleanItem),
     })),

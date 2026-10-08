@@ -167,7 +167,7 @@ test('tablas: filas, columnas, medidas y celdas', () => {
 test('avisos: solo lo relevante', () => {
   const warns = model.warnings.filter((w) => w.level === 'warn').map((w) => w.text);
   assert.equal(warns.length, 1);
-  assert.match(warns[0], /tabla/);
+  assert.match(warns[0], /1 tabla/);
 });
 
 // ------------------------------------------------------------------ errores de entrada
@@ -216,9 +216,9 @@ test('texto con envoltorios (XML, hipervínculos), notas al pie, variables y obj
   const sup = s.cr.find((r) => r.props.position);
   assert.equal(s.text.slice(sup.s, sup.e), '1');
   const w = m.warnings.map((x) => x.text).join('\n');
-  assert.match(w, /notas al pie/);
-  assert.match(w, /objetos anclados/);
-  assert.match(w, /variables de texto/);
+  assert.match(w, /1 nota al pie/);
+  assert.match(w, /1 objeto anclado/);
+  assert.match(w, /1 variable de texto/);
 });
 
 test('documento sin caras enfrentadas, una página por pliego, origen en el centro de la página', () => {
@@ -254,7 +254,7 @@ test('objetos reflejados, inclinados y con curvas', () => {
   const it = (id) => allItems(m.spreads[0].items).find((i) => i.id === id);
   assert.equal(it('rf').g.m, 'b');
   assert.equal(it('rf').g.r, undefined, 'un reflejo simple no es un giro');
-  assert.match(m.warnings.map((x) => x.text).join(' '), /reflejados/);
+  assert.match(m.warnings.map((x) => x.text).join(' '), /1 objeto está reflejado/);
   assert.equal(it('sh').g.m, 'p');
   assert.deepEqual(it('sh').g.pts[0], [100 + 0.5 * 300, 300]);          // x' = x + 0.5*y
   assert.equal(it('cv').g.m, 'p');

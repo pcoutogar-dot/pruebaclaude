@@ -64,10 +64,18 @@ function segmentsOf(model, text, pr, cr) {
   for (const r of cr) { cuts.add(r.s); cuts.add(r.e); }
   const pts = Array.from(cuts).filter((x) => x >= 0 && x <= text.length).sort((a, b) => a - b);
   const segs = [];
+  const cover = (arr, pos) => {
+    let lo = 0; let hi = arr.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (arr[mid].e <= pos) lo = mid + 1; else if (arr[mid].s > pos) hi = mid - 1; else return arr[mid];
+    }
+    return null;
+  };
   for (let i = 0; i + 1 < pts.length; i++) {
     const a = pts[i]; const b = pts[i + 1];
-    const p = pr.find((r) => r.s <= a && a < r.e);
-    const c = cr.find((r) => r.s <= a && a < r.e);
+    const p = cover(pr, a);
+    const c = cover(cr, a);
     const props = Object.assign({},
       p ? chainProps(map, p.style) : {}, p ? p.props : {},
       c && c.style ? chainProps(map, c.style) : {}, c ? c.props : {});
@@ -182,8 +190,9 @@ function storyRtf(model, st) {
   for (const seg of segs) {
     const parts = seg.text.split('\r');
     for (let k = 0; k < parts.length; k++) {
-      if (!paraOpen) openPara(seg);
-      if (parts[k]) {
+      // un párrafo toma su formato del primer trozo que lo compone (no del trozo anterior, que acaba en \r)
+      if (parts[k] !== '') {
+        if (!paraOpen) openPara(seg);
         const p = seg.props;
         const fam = p.appliedFont || 'Times New Roman';
         const sty = String(p.fontStyle || '');
@@ -202,7 +211,11 @@ function storyRtf(model, st) {
         if (rgb) fmt += '\\cf' + colorIdx(rgb);
         body += '{' + fmt + ' ' + rtfEscape(parts[k]) + '}';
       }
-      if (k < parts.length - 1) { body += '\\par\n'; paraOpen = false; }
+      if (k < parts.length - 1) {
+        if (!paraOpen) openPara(seg);          // párrafo vacío
+        body += '\\par\n';
+        paraOpen = false;
+      }
     }
   }
   const fontTbl = '{\\fonttbl' + fonts.map((f, i) => '{\\f' + i + '\\fnil ' + rtfEscape(f) + ';}').join('') + '}';
@@ -273,7 +286,8 @@ function reportHtml(model, ctx) {
   const excerpts = new Map();
   for (const st of model.stories.values()) {
     const t = plainText(st.text).replace(/\s+/g, ' ').trim();
-    if (t) excerpts.set(st.id, t.slice(0, 80));
+    if (/^#+$/.test(t)) excerpts.set(st.id, '(número de página)');
+    else if (t) excerpts.set(st.id, t.slice(0, 80));
   }
   const s = model.stats;
   const warn = model.warnings.filter((w) => w.level === 'warn');
@@ -311,7 +325,7 @@ function reportHtml(model, ctx) {
     '<div class="grid"><div class="stat"><b>' + s.pages + '</b>páginas</div><div class="stat"><b>' + (p0 ? mm(p0.w) + ' × ' + mm(p0.h) : '—') + '</b>mm por página</div><div class="stat"><b>' + s.items + '</b>objetos</div><div class="stat"><b>' + s.stories + '</b>textos</div><div class="stat"><b>' + s.images + '</b>imágenes</div><div class="stat"><b>' + s.fonts + '</b>fuentes</div></div>' +
     '<h2>Avisos</h2>' + (warn.length ? '<ul>' + warn.map((w) => '<li>' + esc(w.text) + '</li>').join('') + '</ul>' : '<p>Sin avisos.</p>') + (info.length ? '<p class="sub">' + info.map((w) => esc(w.text)).join(' ') + '</p>' : '') +
     '<h2>Fuentes que hay que instalar en el ordenador con CS3</h2><table><tr><th>Familia</th><th>Estilos usados</th><th></th></tr>' + (fontsTable || '<tr><td colspan="3">—</td></tr>') + '</table>' +
-    '<h2>Imágenes enlazadas</h2><p class="sub">Copia estos archivos a la carpeta donde pongas el script (o elige su carpeta cuando el script lo pida).</p><table><tr><th>Archivo</th><th>Ruta original</th></tr>' + (imgs || '<tr><td colspan="2">—</td></tr>') + '</table>' +
+    '<h2>Imágenes enlazadas</h2><p class="sub">Mételos en la carpeta descomprimida (o elige la carpeta donde estén cuando el script la pida).</p><table><tr><th>Archivo</th><th>Ruta original</th></tr>' + (imgs || '<tr><td colspan="2">—</td></tr>') + '</table>' +
     '<h2>Colores</h2><table><tr><th>Nombre</th><th>Valor</th></tr>' + (colorsTable || '<tr><td colspan="2">—</td></tr>') + '</table>' +
     '<h2>Textos</h2><table><tr><th>Dónde</th><th>Comienzo</th></tr>' + (storiesRows || '<tr><td colspan="2">—</td></tr>') + '</table>' +
     '<h2>Mapa de páginas</h2><p class="sub">Azul: marcos de texto · Verde: imágenes · Gris: formas.</p>' + spreads + (masters ? '<h2>Páginas maestras</h2>' + masters : '') +
@@ -336,16 +350,18 @@ function leeme(model, names, ctx) {
   L.push('');
   L.push('PASOS EN EL ORDENADOR CON CS3');
   L.push('  1. Copia esta carpeta entera al ordenador viejo (memoria USB, red...).');
-  L.push('     Copia TAMBIEN las imagenes enlazadas del documento (la carpeta "Links"');
-  L.push('     o las que aparecen en informe.html) dentro de esta misma carpeta.');
+  L.push('     Copia TAMBIEN las imagenes enlazadas del documento (la carpeta "Links" o las');
+  L.push('     que aparecen en informe.html) y metelas dentro de esta carpeta.');
   L.push('  2. Instala en ese ordenador las fuentes que indica informe.html.');
   L.push('     Si falta alguna, el script usa otra y te lo avisa al terminar.');
   L.push('  3. Abre InDesign CS3 y ve a  Ventana > Automatizacion > Scripts.');
   L.push('  4. En el panel Scripts, clic derecho sobre "Usuario" > "Mostrar en el Explorador"');
-  L.push('     (Mac: "Mostrar en el Finder"). Copia ahi el archivo ' + names.jsx + '.');
+  L.push('     (Mac: "Mostrar en el Finder"). Copia ahi SOLO el archivo ' + names.jsx + '.');
   L.push('  5. Vuelve a InDesign: el script aparece dentro de "Usuario". Haz doble clic.');
-  L.push('     Si pide la carpeta de imagenes, eligela. Se crea un DOCUMENTO NUEVO.');
+  L.push('     Si no encuentra las imagenes, te pide la carpeta: elige esta carpeta');
+  L.push('     (o la carpeta Links). Se crea un DOCUMENTO NUEVO.');
   L.push('  6. Revisa el resultado con el informe al lado y guarda como .indd.');
+  L.push('     Si hay avisos, el detalle esta en resultado_reconstruccion.txt (en el escritorio).');
   L.push('');
   L.push('IMPORTANTE');
   L.push('  - El script no modifica ningun documento existente: siempre crea uno nuevo.');

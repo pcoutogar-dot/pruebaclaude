@@ -4,9 +4,10 @@ const { readPackage, buildModel, UserError } = require('./idml');
 const { buildScript } = require('./jsxgen');
 const { buildInx } = require('./inx');
 const R = require('./report');
+const { writeZip } = require('./zip');
 
 function safeName(name) {
-  const n = String(name || 'documento').replace(/\.(idml|zip)$/i, '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+  const n = String(name || 'documento').replace(/\.(idml|zip)$/i, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');
   return n || 'documento';
 }
@@ -44,4 +45,4 @@ function convert(bytes, options) {
   };
 }
 
-module.exports = { convert, safeName, UserError };
+module.exports = { convert, safeName, UserError, writeZip };

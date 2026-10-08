@@ -199,3 +199,55 @@ test('se registra el resultado en un archivo junto al script', () => {
   const r = run({ enumStyle: 'camel' });
   assert.match(r.state.logFile, /^Documento reconstruido/);
 });
+
+test('CS3 estricto: esquinas, ajuste de texto, tonos y numeración con las diferencias propias de CS3', () => {
+  const bytes = buildIdmlWith((p) => { p['designmap.xml'] = p['designmap.xml'].replace('PageNumberStart="1"', 'PageNumberStart="5"'); });
+  const sc = J.buildScript(build(bytes), { date: new Date('2026-10-08T00:00:00Z') });
+  const r = M.runJsx(sc, { enumStyle: 'upper', cs3: true, vfs: VFS });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó|ERROR/);
+  const s = M.snapshot(r.doc);
+  assert.deepEqual(s.tints, [{ name: 'Rojo 50%', base: 'Rojo', v: 50 }]);
+  const rr = s.pages[0].items[1];
+  assert.equal(rr.cornerOption, 'CornerOptions.RoundedCorner');
+  assert.equal(rr.cornerRadius, 8);
+  assert.equal(rr.topLeftCornerOption, undefined);
+  assert.deepEqual(s.pages[0].items[0].wrap, { textWrapType: 'TextWrapTypes.BoundingBoxTextWrap', textWrapSide: 'TextWrapSideOptions.BothSides', textWrapOffset: [3, 4, 5, 6] });
+  assert.deepEqual(s.section, { start: 5, cont: false });
+  assert.equal(s.pages[0].items[0].tfp.insetSpacing.join(), '6,5,4,3');
+});
+
+test('CS3 estricto: si hay encuadernación de derecha a izquierda se avisa (CS3 no deja fijarla)', () => {
+  const bytes = buildIdmlWith((p) => { p['Resources/Preferences.xml'] = p['Resources/Preferences.xml'].replace('PageBinding="LeftToRight"', 'PageBinding="RightToLeft"'); });
+  const r = M.runJsx(J.buildScript(build(bytes)), { enumStyle: 'upper', cs3: true, vfs: VFS });
+  assert.match(r.state.alerts[0], /encuadernación de derecha a izquierda/);
+});
+
+test('filetes y viñetas de los estilos de párrafo llegan a CS3', () => {
+  const bytes = buildIdmlWith((p) => {
+    p['Resources/Styles.xml'] = p['Resources/Styles.xml'].replace('KeepWithNext="1" Hyphenation="true">',
+      'KeepWithNext="1" Hyphenation="true" RuleBelow="true" RuleBelowLineWeight="0.5" RuleBelowOffset="3" RuleBelowColor="Color/Rojo" RuleBelowWidth="ColumnWidth" BulletsAndNumberingListType="BulletList" BulletsTextAfter="^t">')
+      .replace('<Leading type="unit">12.5</Leading>', '<Leading type="unit">12.5</Leading><BulletChar BulletCharacterType="UnicodeOnly" BulletCharacterValue="8226"/>');
+  });
+  const m = build(bytes);
+  const warns = m.warnings.map((w) => w.text).join('\n');
+  assert.doesNotMatch(warns, /filete|viñetas/);
+  const r = run({ enumStyle: 'camel' }, J.buildScript(m, { date: new Date('2026-10-08T00:00:00Z') }));
+  assert.equal(r.error, null);
+  const cuerpo = M.snapshot(r.doc).pstyles.find((x) => x.name === 'Cuerpo');
+  assert.equal(cuerpo.props.ruleBelow, true);
+  assert.equal(cuerpo.props.ruleBelowLineWeight, 0.5);
+  assert.equal(cuerpo.props.ruleBelowColor, 'obj:Rojo');
+  assert.equal(cuerpo.props.ruleBelowWidth, 'RuleWidth.ColumnWidth');
+  assert.equal(cuerpo.props.bulletsAndNumberingListType, 'ListType.BulletList');
+  assert.equal(cuerpo.props.bulletsTextAfter, '^t');
+  assert.deepEqual(cuerpo.props.bulletChar, { type: 'BulletCharacterType.UnicodeOnly', value: 8226 });
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó/);
+});
+
+test('numeración automática: se avisa de que no se recrea', () => {
+  const m = build(buildIdmlWith((p) => {
+    p['Resources/Styles.xml'] = p['Resources/Styles.xml'].replace('KeepWithNext="1" Hyphenation="true">', 'KeepWithNext="1" Hyphenation="true" BulletsAndNumberingListType="NumberedList">');
+  }));
+  assert.match(m.warnings.map((w) => w.text).join('\n'), /numeración automática/);
+});

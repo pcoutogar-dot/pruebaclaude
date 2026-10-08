@@ -64,13 +64,20 @@ const TEXT_ATTRS = {
   DesiredGlyphScaling: ['desiredGlyphScaling', 'n'],
   MaximumGlyphScaling: ['maximumGlyphScaling', 'n'],
   SingleWordJustification: ['singleWordJustification', 'e', 'SingleWordJustification'],
+  // filetes de párrafo
+  RuleAbove: ['ruleAbove', 'b'], RuleAboveColor: ['ruleAboveColor', 'c'], RuleAboveTint: ['ruleAboveTint', 'tint'],
+  RuleAboveLineWeight: ['ruleAboveLineWeight', 'n'], RuleAboveOffset: ['ruleAboveOffset', 'n'],
+  RuleAboveLeftIndent: ['ruleAboveLeftIndent', 'n'], RuleAboveRightIndent: ['ruleAboveRightIndent', 'n'],
+  RuleAboveWidth: ['ruleAboveWidth', 'e', 'RuleWidth'],
+  RuleBelow: ['ruleBelow', 'b'], RuleBelowColor: ['ruleBelowColor', 'c'], RuleBelowTint: ['ruleBelowTint', 'tint'],
+  RuleBelowLineWeight: ['ruleBelowLineWeight', 'n'], RuleBelowOffset: ['ruleBelowOffset', 'n'],
+  RuleBelowLeftIndent: ['ruleBelowLeftIndent', 'n'], RuleBelowRightIndent: ['ruleBelowRightIndent', 'n'],
+  RuleBelowWidth: ['ruleBelowWidth', 'e', 'RuleWidth'],
 };
 
 // Atributos de texto que existen en IDML pero CS3 no sabe reproducir con este conversor.
 const TEXT_UNSUPPORTED = {
-  BulletsAndNumberingListType: (v) => v !== 'NoList',
-  RuleAbove: (v) => v === 'true',
-  RuleBelow: (v) => v === 'true',
+  BulletsAndNumberingListType: (v) => v === 'NumberedList',
   ParagraphShadingOn: (v) => v === 'true',
   ParagraphBorderOn: (v) => v === 'true',
   SpanColumnType: (v) => v !== 'SingleColumn',
@@ -86,6 +93,8 @@ const OBJECT_ATTRS = {
   GradientFillAngle: ['gradientFillAngle', 'n'],
   GradientStrokeAngle: ['gradientStrokeAngle', 'n'],
   StrokeAlignment: ['strokeAlignment', 'e', 'StrokeAlignment'],
+  LeftLineEnd: ['leftLineEnd', 'e', 'ArrowHead'],
+  RightLineEnd: ['rightLineEnd', 'e', 'ArrowHead'],
   EndCap: ['endCap', 'e', 'EndCap'],
   EndJoin: ['endJoin', 'e', 'EndJoin'],
   MiterLimit: ['miterLimit', 'n'],
@@ -196,6 +205,18 @@ function textProps(el, ctx) {
     }
     if (tabs.length) props.tabStops = tabs;
   }
+  // viñetas (la numeración automática no se recrea)
+  if (el.attrs.BulletsAndNumberingListType === 'BulletList') {
+    props.bulletsAndNumberingListType = ['e', 'ListType', 'BulletList'];
+    const bc = P.BulletChar;
+    if (bc && bc.attrs && num(bc.attrs.BulletCharacterValue) !== undefined) {
+      props.bulletChar = { type: String(bc.attrs.BulletCharacterType || 'UnicodeOnly'), value: num(bc.attrs.BulletCharacterValue) };
+    }
+    const after = el.attrs.BulletsTextAfter !== undefined ? el.attrs.BulletsTextAfter : (typeof P.BulletsTextAfter === 'string' ? P.BulletsTextAfter : undefined);
+    if (after) props.bulletsTextAfter = after;
+  } else if (el.attrs.BulletsAndNumberingListType === 'NoList') {
+    props.bulletsAndNumberingListType = ['e', 'ListType', 'NoList'];
+  }
   for (const k of Object.keys(TEXT_UNSUPPORTED)) {
     if (el.attrs[k] !== undefined && TEXT_UNSUPPORTED[k](el.attrs[k]) && ctx.unsupported) ctx.unsupported(k);
   }
@@ -216,6 +237,10 @@ function objectProps(el, ctx) {
   }
   // tinta -1 = sin tinta
   if (el.attrs.Visible === 'false') props.visible = false;
+  if (el.attrs.Locked === 'true') props.locked = true;
+  for (const k of ['leftLineEnd', 'rightLineEnd']) {
+    if (props[k] && props[k][2] === 'None') delete props[k];
+  }
   return props;
 }
 

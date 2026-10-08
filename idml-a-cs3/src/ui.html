@@ -1,0 +1,327 @@
+<title>De CS6 a CS3</title>
+<style>
+/* Concepto: una mesa de trabajo de maquetación. Papel neutro, tinta casi negra, y los colores de las
+   guías de InDesign (magenta de márgenes, cian de reglas). Marcas de corte alrededor de la zona de carga. */
+:root {
+  --paper: #f5f6f8;
+  --panel: #ffffff;
+  --ink: #15171c;
+  --muted: #5a616d;
+  --line: #d6dae1;
+  --magenta: #c8006a;
+  --on-magenta: #ffffff;
+  --cyan: #0a7fae;
+  --tint: rgba(200, 0, 106, 0.07);
+  --ok: #17703f;
+  --warn: #8a4b00;
+  --bad: #b3261e;
+  --mark: #15171c;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111317; --panel: #1a1d23; --ink: #eceff4; --muted: #a0a8b5; --line: #2c313b;
+    --magenta: #ff5aa5; --on-magenta: #1b0610; --cyan: #56c4f0; --tint: rgba(255, 90, 165, 0.1);
+    --ok: #62d596; --warn: #f2b455; --bad: #ff8179; --mark: #eceff4; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111317; --panel: #1a1d23; --ink: #eceff4; --muted: #a0a8b5; --line: #2c313b;
+  --magenta: #ff5aa5; --on-magenta: #1b0610; --cyan: #56c4f0; --tint: rgba(255, 90, 165, 0.1);
+  --ok: #62d596; --warn: #f2b455; --bad: #ff8179; --mark: #eceff4; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--sans); }
+[hidden] { display: none !important; }
+.wrap { max-width: 780px; margin-inline: auto; padding-inline: 20px; padding-block: 0 64px; }
+.ruler { height: 14px; border-bottom: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px 80px) 0 100% / 100% 14px no-repeat,
+    repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px 16px) 0 100% / 100% 6px no-repeat;
+  opacity: 0.55; }
+header { padding-block: 40px 8px; }
+.kicker { font: 600 12px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--magenta); margin: 0 0 14px; }
+h1 { font-size: clamp(28px, 5.4vw, 44px); line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 14px; font-weight: 750; text-wrap: balance; }
+.lede { max-width: 62ch; color: var(--muted); margin: 0; }
+section { margin-top: 36px; }
+h2 { display: flex; gap: 12px; align-items: center; font-size: 20px; line-height: 1.25; margin: 0 0 10px; font-weight: 700; }
+.num { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--ink); font: 600 13px/1 var(--mono); }
+p { margin: 0 0 10px; max-width: 66ch; }
+.muted { color: var(--muted); }
+kbd, code { font: 13px/1 var(--mono); background: var(--panel); border: 1px solid var(--line); padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+a { color: var(--cyan); }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible + .drop-body { outline: 3px solid var(--cyan); outline-offset: 3px; }
+
+/* zona de carga con marcas de corte */
+.drop { position: relative; display: block; margin: 22px 11px 0; cursor: pointer; background: var(--panel); border: 1px solid var(--line); }
+.drop input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.drop-body { display: flex; gap: 20px; align-items: center; padding: 34px 28px; }
+.drop[data-over="true"] { background: var(--tint); border-color: var(--magenta); }
+.drop[data-over="true"] .mk { --mark: var(--magenta); }
+.mk { position: absolute; width: 22px; height: 22px; pointer-events: none; }
+.mk::before, .mk::after { content: ""; position: absolute; background: var(--mark); }
+.mk::before { width: 10px; height: 1px; top: 11px; }
+.mk::after { width: 1px; height: 10px; left: 11px; }
+.mk.tl { top: -11px; left: -11px; } .mk.tl::before { left: 0; } .mk.tl::after { top: 0; }
+.mk.tr { top: -11px; right: -11px; } .mk.tr::before { right: 0; } .mk.tr::after { top: 0; }
+.mk.bl { bottom: -11px; left: -11px; } .mk.bl::before { left: 0; } .mk.bl::after { bottom: 0; }
+.mk.br { bottom: -11px; right: -11px; } .mk.br::before { right: 0; } .mk.br::after { bottom: 0; }
+.target { flex: none; width: 54px; height: 54px; color: var(--ink); }
+.drop[data-over="true"] .target { color: var(--magenta); }
+.drop-title { font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+.drop-sub { margin: 0; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; margin-top: 18px; }
+label.opt { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; color: var(--muted); max-width: 52ch; }
+label.opt input { margin-top: 4px; accent-color: var(--magenta); }
+button { font: inherit; cursor: pointer; }
+.link { background: none; border: 0; padding: 0; color: var(--cyan); text-decoration: underline; font-size: 14px; }
+.btn { display: inline-flex; gap: 10px; align-items: center; background: var(--magenta); color: var(--on-magenta); border: 0; padding: 12px 20px; font-weight: 700; border-radius: 4px; }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+
+/* estados */
+.busy { display: flex; gap: 14px; align-items: center; padding: 18px 0; color: var(--muted); }
+.spin { width: 20px; height: 20px; border: 2px solid var(--line); border-top-color: var(--magenta); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+.error { border: 1px solid var(--bad); border-left-width: 4px; padding: 14px 16px; background: var(--panel); }
+.error h2 { color: var(--bad); font-size: 17px; margin-bottom: 4px; }
+
+/* resultado */
+.done-head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; margin-bottom: 14px; }
+.done-head h2 { margin: 0; }
+.file { font: 13px/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 0 0 22px; }
+.stats div { background: var(--panel); border: 1px solid var(--line); padding: 12px 14px; }
+.stats dt { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.stats dd { margin: 0; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.warns { list-style: none; padding: 0; margin: 0 0 22px; border-top: 1px solid var(--line); }
+.warns li { position: relative; padding: 9px 0 9px 26px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.warns li::before { content: ""; position: absolute; left: 3px; top: 15px; width: 0; height: 0; border-inline: 6px solid transparent; border-bottom: 10px solid var(--warn); }
+.ok-note { color: var(--ok); font-weight: 600; margin: 0 0 22px; }
+.files { margin: 14px 0 0; padding: 0; list-style: none; font: 13px/1.7 var(--mono); color: var(--muted); columns: 2 260px; }
+.files b { color: var(--ink); font-weight: 600; }
+details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+summary { cursor: pointer; font-weight: 600; }
+iframe { width: 100%; height: 520px; border: 1px solid var(--line); background: #fff; margin-top: 12px; }
+ol.steps { padding-left: 0; margin: 0; list-style: none; counter-reset: s; }
+ol.steps li { counter-increment: s; position: relative; padding: 0 0 12px 40px; max-width: 66ch; }
+ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--ink); font: 600 13px/1 var(--mono); }
+.expect { display: grid; gap: 14px 32px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.expect h3 { font: 600 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 8px; }
+.expect p { font-size: 15px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 4px; font-size: 14px; max-width: calc(100% - 32px); }
+@media (max-width: 520px) { .drop-body { flex-direction: column; align-items: flex-start; padding: 26px 20px; } }
+</style>
+
+<div class="ruler" aria-hidden="true"></div>
+<main class="wrap">
+  <header>
+    <p class="kicker">InDesign CS6 → CS3</p>
+    <h1>Lleva un documento de CS6 a CS3</h1>
+    <p class="lede">CS3 no abre archivos de CS6. Esta herramienta lee el documento exportado como IDML y prepara un script que lo reconstruye dentro de CS3: páginas, maestras, textos con su formato, estilos, colores, imágenes y formas. Todo ocurre en este navegador; el archivo no se envía a ningún sitio.</p>
+  </header>
+
+  <section aria-labelledby="h-1">
+    <h2 id="h-1"><span class="num">1</span> Exporta el documento desde CS6</h2>
+    <p>En CS6 abre el archivo y elige <kbd>Archivo › Exportar…</kbd>. En «Guardar como tipo» (en Mac, «Formato») selecciona <b>InDesign Markup (IDML)</b> y guarda.</p>
+  </section>
+
+  <section aria-labelledby="h-2">
+    <h2 id="h-2"><span class="num">2</span> Suelta aquí el archivo .idml</h2>
+    <label class="drop" id="drop">
+      <i class="mk tl"></i><i class="mk tr"></i><i class="mk bl"></i><i class="mk br"></i>
+      <input type="file" id="file" accept=".idml,.zip,application/vnd.adobe.indesign-idml-package">
+      <span class="drop-body">
+        <svg class="target" viewBox="0 0 54 54" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="27" cy="27" r="13"/><circle cx="27" cy="27" r="4"/><path d="M27 2v18M27 34v18M2 27h18M34 27h18"/>
+        </svg>
+        <span>
+          <p class="drop-title">Arrastra aquí el archivo .idml</p>
+          <p class="drop-sub">o haz clic para elegirlo en tu ordenador</p>
+        </span>
+      </span>
+    </label>
+    <div class="row">
+      <label class="opt"><input type="checkbox" id="opt-inx" checked> <span>Incluir también el INX experimental. Es un intento de conversión directa que puede que CS3 no abra.</span></label>
+      <button type="button" class="link" id="sample">Probar con un documento de ejemplo</button>
+    </div>
+  </section>
+
+  <section id="busy" hidden aria-live="polite">
+    <div class="busy"><span class="spin" aria-hidden="true"></span><span>Convirtiendo…</span></div>
+  </section>
+
+  <section id="error" hidden aria-live="assertive">
+    <div class="error"><h2 id="error-title">No se pudo convertir</h2><p id="error-text" style="margin:0"></p></div>
+  </section>
+
+  <section id="result" hidden aria-labelledby="h-done">
+    <div class="done-head"><h2 id="h-done">Listo para CS3</h2><span class="file" id="r-file"></span></div>
+    <dl class="stats" id="r-stats"></dl>
+    <div id="r-warn-box">
+      <h3 style="margin:0 0 8px;font-size:16px">Lo que CS3 no puede recibir</h3>
+      <ul class="warns" id="r-warns"></ul>
+    </div>
+    <p class="ok-note" id="r-clean" hidden>No hay avisos: todo lo que tiene el documento se puede reconstruir.</p>
+    <button type="button" class="btn" id="download">Descargar carpeta para CS3 (.zip)</button>
+    <ul class="files" id="r-files" aria-label="Contenido del zip"></ul>
+    <details>
+      <summary>Ver el informe aquí</summary>
+      <iframe id="r-report" title="Informe de la conversión" sandbox></iframe>
+    </details>
+
+    <section aria-labelledby="h-3" style="margin-top:32px">
+      <h2 id="h-3"><span class="num">3</span> Ahora, en el ordenador con CS3</h2>
+      <ol class="steps">
+        <li>Copia el zip a ese ordenador y descomprímelo. Mete dentro de la carpeta las imágenes enlazadas del documento (normalmente su carpeta <code>Links</code>).</li>
+        <li>Instala las fuentes que indica el informe. Si falta alguna, el script usa otra y lo avisa al terminar.</li>
+        <li>En InDesign CS3 abre <kbd>Ventana › Automatización › Scripts</kbd>. Clic derecho sobre «Usuario» › «Mostrar en el Explorador» (Mac: «Finder») y copia ahí solo <code>1_reconstruir_en_CS3.jsx</code>.</li>
+        <li>Haz doble clic sobre el script en el panel. Se crea un <b>documento nuevo</b>. Si no encuentra las imágenes, pide la carpeta: elige la carpeta descomprimida.</li>
+        <li>Compara con el informe y guarda como .indd.</li>
+      </ol>
+    </section>
+  </section>
+
+  <section aria-labelledby="h-exp">
+    <h2 id="h-exp">Qué esperar</h2>
+    <div class="expect">
+      <div><h3>Se conserva</h3><p>Páginas y maestras, capas, colores, estilos de párrafo y de carácter, textos con su formato, marcos enlazados, imágenes, formas y tablas sencillas.</p></div>
+      <div><h3>Se avisa</h3><p>Lo que CS3 no tiene: efectos y funciones de CS5 y CS6, notas al pie, hipervínculos, objetos interactivos. Quedan anotados en el informe.</p></div>
+      <div><h3>Sin comprobar</h3><p>Se ha probado con documentos de ejemplo y un simulador de InDesign, todavía no con un CS3 real. Si algo no sale bien, los textos del zip permiten rehacerlo sin teclear.</p></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/*__BUNDLE__*/
+(function () {
+  "use strict";
+  var SAMPLE_B64 = "__SAMPLE_B64__";
+  var $ = function (id) { return document.getElementById(id); };
+  var current = null;   // { zip: Uint8Array, filename: string }
+
+  function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(function () { t.hidden = true; }, 3500);
+  }
+  function setState(name) {
+    ["busy", "error", "result"].forEach(function (id) { $(id).hidden = id !== name; });
+  }
+  function bytesToB64(b64) {
+    var bin = atob(b64), out = new Uint8Array(bin.length), i;
+    for (i = 0; i < bin.length; i++) { out[i] = bin.charCodeAt(i); }
+    return out;
+  }
+
+  function showError(e) {
+    var code = e && e.code, title = "No se pudo convertir", text;
+    if (code === "indd") {
+      title = "Eso es un archivo .indd";
+      text = "InDesign guarda los .indd en un formato propio que ningún otro programa puede leer. Hay que exportarlo a IDML desde CS6 (paso 1): Archivo › Exportar… y, como tipo, InDesign Markup (IDML).";
+    } else if (code === "nozip" || code === "nodesignmap") {
+      title = "Este archivo no parece un IDML";
+      text = "Un IDML es el archivo que genera CS6 con Archivo › Exportar… › InDesign Markup (IDML). " + (e.message || "");
+    } else {
+      text = "No se ha podido leer el documento: " + ((e && e.message) || e) + ". Si el archivo es un IDML de CS6, prueba a exportarlo de nuevo.";
+    }
+    $("error-title").textContent = title;
+    $("error-text").textContent = text;
+    setState("error");
+  }
+
+  function renderResult(res, name, size) {
+    var s = res.summary, stats = $("r-stats"), warns = $("r-warns"), files = $("r-files");
+    $("r-file").textContent = name + " · " + Math.round(size / 1024) + " KB";
+    stats.textContent = "";
+    [["Páginas", s.pages], ["Objetos", s.items], ["Textos", s.stories], ["Imágenes", s.images], ["Fuentes", s.fonts]].forEach(function (p) {
+      var d = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
+      dt.textContent = p[0]; dd.textContent = p[1]; d.appendChild(dt); d.appendChild(dd); stats.appendChild(d);
+    });
+    warns.textContent = "";
+    s.warnings.forEach(function (w) { var li = document.createElement("li"); li.textContent = w; warns.appendChild(li); });
+    $("r-warn-box").hidden = s.warnings.length === 0;
+    $("r-clean").hidden = s.warnings.length !== 0;
+
+    // contenido del zip, agrupado por carpeta
+    var top = {}, order = [];
+    res.files.forEach(function (f) {
+      var rel = f.name.slice(res.folder.length + 1), i = rel.indexOf("/"), key = i < 0 ? rel : rel.slice(0, i + 1);
+      if (!top[key]) { top[key] = 0; order.push(key); }
+      top[key]++;
+    });
+    files.textContent = "";
+    order.forEach(function (k) {
+      var li = document.createElement("li"), b = document.createElement("b");
+      b.textContent = k; li.appendChild(b);
+      if (k.slice(-1) === "/") { li.appendChild(document.createTextNode(" · " + plural(top[k], "archivo", "archivos"))); }
+      files.appendChild(li);
+    });
+    var rep = res.files.filter(function (f) { return /informe\.html$/.test(f.name); })[0];
+    $("r-report").srcdoc = rep ? rep.data : "";
+    setState("result");
+  }
+
+  function convertBytes(bytes, name) {
+    setState("busy");
+    // deja pintar el aviso de "Convirtiendo…" antes de empezar el trabajo
+    setTimeout(function () {
+      try {
+        var res = IDML2CS3.convert(bytes, { name: name, inx: $("opt-inx").checked, rtf: true });
+        var zip = IDML2CS3.writeZip(res.files);
+        current = { zip: zip, filename: res.folder + ".zip" };
+        renderResult(res, name, bytes.length);
+        $("download").focus();
+      } catch (e) {
+        showError(e);
+      }
+    }, 40);
+  }
+
+  function onFile(file) {
+    if (!file) { return; }
+    var r = new FileReader();
+    r.onload = function () { convertBytes(new Uint8Array(r.result), file.name); };
+    r.onerror = function () { showError(new Error("no se pudo leer el archivo del disco")); };
+    r.readAsArrayBuffer(file);
+  }
+
+  // ---- descarga: dentro de Claude se usa la capacidad "downloads"; fuera, un enlace normal
+  function plainDownload(blob, filename) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename; a.style.display = "none";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  function download() {
+    if (!current) { return; }
+    var blob = new Blob([current.zip], { type: "application/zip" });
+    var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("downloads") : Promise.resolve(null);
+    use.then(function (dl) {
+      if (!dl) { plainDownload(blob, current.filename); return; }
+      return dl.save({ filename: current.filename, data: blob }).then(function () { toast("Guardado: " + current.filename); }, function (e) {
+        if (e && e.code === "declined") { return; }
+        if (e && (e.code === "unavailable" || e.code === "not_granted")) { plainDownload(blob, current.filename); return; }
+        toast("No se pudo guardar: " + ((e && e.message) || "error desconocido"));
+      });
+    }, function () { plainDownload(blob, current.filename); });
+  }
+
+  // ---- eventos
+  var drop = $("drop");
+  $("file").addEventListener("change", function (e) { onFile(e.target.files[0]); e.target.value = ""; });
+  ["dragenter", "dragover"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.dataset.over = "true"; }); });
+  ["dragleave", "drop"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.dataset.over = "false"; }); });
+  drop.addEventListener("drop", function (e) { onFile(e.dataTransfer && e.dataTransfer.files[0]); });
+  $("sample").addEventListener("click", function () { convertBytes(bytesToB64(SAMPLE_B64), "documento-de-ejemplo.idml"); });
+  $("download").addEventListener("click", download);
+  // un archivo soltado fuera de la zona no debe abrirse en el navegador
+  window.addEventListener("dragover", function (e) { e.preventDefault(); });
+  window.addEventListener("drop", function (e) { e.preventDefault(); });
+})();
+</script>
