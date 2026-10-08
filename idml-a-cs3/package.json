@@ -1,0 +1,12 @@
+{
+  "name": "idml-a-cs3",
+  "version": "1.0.0",
+  "private": true,
+  "description": "De InDesign CS6 (IDML) a InDesign CS3: reconstruye el documento con un script y exporta textos e informe.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "build": "node build.js"
+  },
+  "engines": { "node": ">=18" }
+}
