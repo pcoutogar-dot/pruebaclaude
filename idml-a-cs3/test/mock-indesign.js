@@ -128,6 +128,7 @@ function createMock(opts) {
     const defaultChar = (ch) => ({ ch, ps: doc.__store.paragraphStyles[1], cs: doc.__store.characterStyles[0], p: {} });
     const mkRange = (a, b) => {
       const fn = (k, v) => {
+        if ((k === 'appliedParagraphStyle' || k === 'appliedCharacterStyle') && reject.has(k)) fail(k);
         if (k === 'appliedParagraphStyle') { for (let i = a; i <= b; i++) chars[i].ps = v; return true; }
         if (k === 'appliedCharacterStyle') { for (let i = a; i <= b; i++) chars[i].cs = v; return true; }
         if (!TEXT_PROPS.includes(k) || reject.has(k)) fail(k);
@@ -136,7 +137,9 @@ function createMock(opts) {
         return true;
       };
       return new Proxy({}, {
-        get: (t, k) => (k === 'length' ? b - a + 1 : k === 'contents' ? chars.slice(a, b + 1).map((c) => c.ch).join('') : undefined),
+        get: (t, k) => (k === 'length' ? b - a + 1 : k === 'contents' ? chars.slice(a, b + 1).map((c) => c.ch).join('')
+          : k === 'applyParagraphStyle' ? (st) => { for (let i = a; i <= b; i++) chars[i].ps = st; }
+          : k === 'applyCharacterStyle' ? (st) => { for (let i = a; i <= b; i++) chars[i].cs = st; } : undefined),
         set: (t, k, v) => fn(k, v),
       });
     };
@@ -179,7 +182,7 @@ function createMock(opts) {
     });
     api.facade = new Proxy({}, {
       get: (t, k) => (k === 'contents' ? api.text : k === 'characters' ? api.characters : k === 'insertionPoints' ? api.insertionPoints : k === 'length' ? chars.length : undefined),
-      set: (t, k, v) => { if (k !== 'contents') fail(String(k)); api.setText(String(v)); return true; },
+      set: (t, k, v) => { if (k !== 'contents' || opts.rejectStoryContents) fail(String(k)); api.setText(String(v)); return true; },
     });
     api.tables = [];
     api.addTable = (idx, init, d) => {
@@ -255,11 +258,13 @@ function createMock(opts) {
       __set(k, v) { if (k === 'facingPages') { st.facing = v; resizeMasters(); return true; } return false; },
       facingPages: getter(() => st.facing),
     });
+    const gridPrefs = obj('GridPreferences', ['baselineStart', 'baselineDivision']);
     const marginPrefs = () => obj('MarginPreferences', ['top', 'bottom', 'left', 'right', 'columnCount', 'columnGutter'], { top: 36, bottom: 36, left: 36, right: 36, columnCount: 1, columnGutter: 12 });
     st.margin = marginPrefs();
 
     function pageItemsApi(owner, page) {
       const make = (kind) => (init) => {
+        if (opts.noShorthandAdd && init !== undefined) throw new Error('argumentos no válidos');
         const it = makeItem(kind, page, init, owner);
         owner.items.push(it);
         return it;
@@ -433,6 +438,7 @@ function createMock(opts) {
       viewPreferences: view,
       documentPreferences: dp,
       marginPreferences: st.margin,
+      gridPreferences: gridPrefs,
       colors: coll(st.colors, { add: (init) => { if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
       tints: coll(st.tints, {
         add: (a, b) => {
@@ -586,6 +592,7 @@ function snapshotRaw(doc) {
     },
     layers: st.layers.map((l) => ({ name: l.name, visible: l.visible, locked: l.locked })),
     section: { start: doc.sections.item(0).pageNumberStart, cont: doc.sections.item(0).continueNumbering },
+    grid: { start: doc.gridPreferences.baselineStart, division: doc.gridPreferences.baselineDivision },
     colors: st.colors.map((c) => ({ name: c.name, model: enumOf(c.model), space: enumOf(c.space), v: c.colorValue })),
     tints: st.tints.map((t) => ({ name: t.name, base: t.baseColor.name, v: t.tintValue })),
     gradients: st.gradients.map((g) => ({ name: g.name, stops: Array.from({ length: g.gradientStops.length }, (_, i) => [g.gradientStops.item(i).stopColor && g.gradientStops.item(i).stopColor.name, g.gradientStops.item(i).location]) })),

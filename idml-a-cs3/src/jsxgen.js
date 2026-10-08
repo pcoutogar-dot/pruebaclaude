@@ -58,7 +58,7 @@ function buildData(model) {
     doc: {
       w: first ? first.w : model.doc.width, h: first ? first.h : model.doc.height,
       facing: model.doc.facing, binding: model.doc.binding, startPage: model.doc.startPage,
-      bleed: model.doc.bleed, slug: model.doc.slug, margins: model.doc.margins, units: model.doc.units,
+      bleed: model.doc.bleed, slug: model.doc.slug, margins: model.doc.margins, units: model.doc.units, grid: model.doc.grid,
     },
     layers: model.layers.map((l) => ({ id: l.id, n: l.name, vis: l.visible, lock: l.locked, print: l.printable })),
     colors: model.colors.map((c) => ({ n: c.name, m: c.model, s: c.space, v: c.value })),

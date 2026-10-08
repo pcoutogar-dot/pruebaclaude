@@ -280,3 +280,14 @@ test('estilos de objeto: se heredan y se pisan con los valores propios', () => {
   assert.equal(o.props.strokeWeight, 6);                        // propio gana
   assert.deepEqual(o.props.strokeColor, ['sw', 'Black']);       // de Base
 });
+
+test('rejilla de líneas base, texto borrado con control de cambios y texto sobre trazado', () => {
+  assert.deepEqual(model.doc.grid, { start: 36, division: 12.5, threshold: 75 });
+  const st = story('u1f3', psr('Cuerpo', csr(content('Visible ') + '<Change Self="c1" ChangeType="DeletedText">' + content('borrado') + '</Change>' + '<Change Self="c2" ChangeType="InsertedText">' + content('añadido') + '</Change>')));
+  const m = load(buildIdmlWith((p) => {
+    p['Stories/Story_u1f3.xml'] = st;
+    p['Spreads/Spread_ud8.xml'] = p['Spreads/Spread_ud8.xml'].replace('</Spread>', '<TextFrame Self="tp1" ParentStory="u2a1"><TextPath Self="tpp"/></TextFrame></Spread>');
+  }));
+  assert.equal(m.stories.get('u1f3').text, 'Visible añadido');
+  assert.match(m.warnings.map((w) => w.text).join('\n'), /texto sobre un trazado/);
+});

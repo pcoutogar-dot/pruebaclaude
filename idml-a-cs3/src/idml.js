@@ -314,6 +314,10 @@ function readPreferences(pkg, model, ctx) {
         doc.slug = { top: P.num(a.SlugTopOffset) || 0, bottom: P.num(a.SlugBottomOffset) || 0, inside: P.num(a.SlugInsideOrLeftOffset) || 0, outside: P.num(a.SlugRightOrOutsideOffset) || 0 };
         if (P.num(a.StartPageNumber)) doc.startPage = P.num(a.StartPageNumber);
         doc.intent = a.Intent;
+      } else if (el.name === 'GridPreference') {
+        if (P.num(a.BaselineDivision) !== undefined) {
+          doc.grid = { start: P.num(a.BaselineStart) || 0, division: P.num(a.BaselineDivision), threshold: P.num(a.BaselineViewThreshold) };
+        }
       } else if (el.name === 'MarginPreference') {
         doc.margins = marginsOf(el, doc.margins);
       } else if (el.name === 'ViewPreference') {
@@ -637,6 +641,7 @@ function parseText(container, ctx) {
       case 'TextVariableInstance': text += el.attrs.ResultText || ''; ctx.count('textVars'); return undefined;
       default:
         if (SKIP.has(el.name)) return undefined;
+        if (el.name === 'Change' && /^Deleted/.test(el.attrs.ChangeType || '')) return undefined;      // texto borrado con control de cambios
         if (ANCHORED.has(el.name)) { ctx.count('anchored'); return undefined; }
         for (const k of X.kidsEl(el)) inline(k);
         return undefined;
@@ -801,6 +806,7 @@ function finish(pkg, model, counters, ctx) {
   f.textVariables = has(/<TextVariableInstance /);
   f.conditions = has(/<Condition /);
   f.articles = has(/<Article /);
+  f.textOnPath = has(/<TextPath /);
   f.nestedStyles = has(/<NestedStyle |<NestedGrepStyle |<GrepStyle |<NestedLineStyle /);
 
   const page = model.pages;
@@ -835,6 +841,7 @@ function finish(pkg, model, counters, ctx) {
   if (f.hyperlinks) ctx.warn('El documento tiene hipervínculos: no se recrean.');
   if (f.conditions) ctx.warn('El documento usa texto condicional (CS4): se muestra todo el texto.');
   if (f.articles) ctx.warn('El documento tiene artículos (CS6): se ignoran.');
+  if (f.textOnPath) ctx.warn('Hay texto sobre un trazado: no se recrea (el texto está en los archivos de textos).');
   if (f.nestedStyles) ctx.warn('Hay estilos anidados o estilos GREP: no se recrean (el texto y su formato directo sí).');
   const guides = model.spreads.reduce((n, s) => n + s.guides, 0) + model.masters.reduce((n, s) => n + s.guides, 0);
   if (guides) ctx.info('Hay ' + guides + ' guías: no se recrean.');

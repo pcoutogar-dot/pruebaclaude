@@ -73,6 +73,16 @@ const { buildIdml } = require('./fixture');
     await page.waitForSelector('#result:not([hidden])');
     assert.match(await page.textContent('#r-file'), /documento-de-ejemplo\.idml/);
 
+    // 5b) soltar el archivo en cualquier parte de la página (arrastrar y soltar real)
+    await page.evaluate(() => { document.getElementById('result').hidden = true; });
+    const dt = await page.evaluateHandle((b64) => {
+      const bin = atob(b64); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      const d = new DataTransfer(); d.items.add(new File([u8], 'arrastrado.idml')); return d;
+    }, Buffer.from(buildIdml()).toString('base64'));
+    await page.dispatchEvent('h1', 'drop', { dataTransfer: dt });
+    await page.waitForSelector('#result:not([hidden])');
+    assert.match(await page.textContent('#r-file'), /arrastrado\.idml/);
+
     // 6) sin INX
     await page.uncheck('#opt-inx');
     await page.setInputFiles('#file', idml);

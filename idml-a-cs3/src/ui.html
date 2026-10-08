@@ -315,13 +315,16 @@ ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; 
   // ---- eventos
   var drop = $("drop");
   $("file").addEventListener("change", function (e) { onFile(e.target.files[0]); e.target.value = ""; });
-  ["dragenter", "dragover"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.dataset.over = "true"; }); });
-  ["dragleave", "drop"].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.dataset.over = "false"; }); });
-  drop.addEventListener("drop", function (e) { onFile(e.dataTransfer && e.dataTransfer.files[0]); });
+  // se puede soltar el archivo en cualquier parte de la página
+  window.addEventListener("dragenter", function (e) { e.preventDefault(); drop.dataset.over = "true"; });
+  window.addEventListener("dragover", function (e) { e.preventDefault(); drop.dataset.over = "true"; });
+  window.addEventListener("dragleave", function (e) { if (!e.relatedTarget) { drop.dataset.over = "false"; } });
+  window.addEventListener("drop", function (e) {
+    e.preventDefault(); drop.dataset.over = "false";
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) { onFile(f); }
+  });
   $("sample").addEventListener("click", function () { convertBytes(bytesToB64(SAMPLE_B64), "documento-de-ejemplo.idml"); });
   $("download").addEventListener("click", download);
-  // un archivo soltado fuera de la zona no debe abrirse en el navegador
-  window.addEventListener("dragover", function (e) { e.preventDefault(); });
-  window.addEventListener("drop", function (e) { e.preventDefault(); });
 })();
 </script>

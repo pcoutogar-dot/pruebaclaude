@@ -111,6 +111,7 @@ function buildParts(opts) {
   files['Resources/Preferences.xml'] = part('Preferences',
     '<DocumentPreference PageHeight="792" PageWidth="612" PagesPerDocument="3" FacingPages="true" DocumentBleedTopOffset="8.5" DocumentBleedBottomOffset="8.5" DocumentBleedInsideOrLeftOffset="8.5" DocumentBleedOutsideOrRightOffset="8.5" DocumentBleedUniformSize="true" DocumentSlugUniformSize="false" SlugTopOffset="0" SlugBottomOffset="28.35" SlugInsideOrLeftOffset="0" SlugRightOrOutsideOffset="0" PreserveLayoutWhenShuffling="true" AllowPageShuffle="true" OverprintBlack="true" PageBinding="LeftToRight" ColumnDirection="Horizontal" Intent="PrintIntent" StartPageNumber="1"/>\n' +
     '<MarginPreference ColumnCount="1" ColumnGutter="12" Top="36" Bottom="36" Left="36" Right="36" ColumnDirection="Horizontal" ColumnsPositions="0 540"/>\n' +
+    '<GridPreference BaselineStart="36" BaselineDivision="12.5" BaselineViewThreshold="75" BaselineGridRelativeOption="TopOfPageOfBaselineGridRelativeOption" DocumentGridStart="0" DocumentGridDivision="72"/>\n' +
     '<ViewPreference HorizontalMeasurementUnits="Millimeters" VerticalMeasurementUnits="Millimeters" RulerOrigin="SpreadOrigin" ShowRulers="true"/>\n' +
     '<TextDefault AppliedLanguage="Language/$ID/Spanish%3a Castilian" PointSize="12" FontStyle="Regular" FillColor="Color/Black"><Properties><AppliedFont type="string">Minion Pro</AppliedFont><Leading type="enumeration">Auto</Leading></Properties></TextDefault>');
 

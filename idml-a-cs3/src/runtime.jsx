@@ -19,7 +19,8 @@ var INSTALLED = null;
 var G_ = null;
 try { G_ = $.global; } catch (e0) { G_ = this; }
 
-function log(m) { LOG.push(m); }
+var SEEN = {};
+function log(m) { if (!SEEN.hasOwnProperty(m)) { SEEN[m] = true; LOG.push(m); } }
 function failProp(what, key) { var k = what + "." + key; PROPFAIL[k] = (PROPFAIL[k] || 0) + 1; }
 function inArray(a, v) { var i; for (i = 0; i < a.length; i++) { if (a[i] === v) { return true; } } return false; }
 function keysOf(o) { var r = [], k; for (k in o) { if (o.hasOwnProperty(k)) { r.push(k); } } return r; }
@@ -203,6 +204,10 @@ function setupDocument() {
     dp.slugTopOffset = d.slug.top; dp.slugBottomOffset = d.slug.bottom;
     dp.slugInsideOrLeftOffset = d.slug.inside; dp.slugRightOrOutsideOffset = d.slug.outside;
   } catch (e7) { }
+  if (d.grid) {
+    try { DOC.gridPreferences.baselineStart = d.grid.start; DOC.gridPreferences.baselineDivision = d.grid.division; }
+    catch (e7b) { log("No se pudo fijar la cuadrícula de líneas base."); }
+  }
   mp = DOC.marginPreferences;
   try { mp.top = d.margins.top; mp.bottom = d.margins.bottom; mp.left = d.margins.left; mp.right = d.margins.right; mp.columnCount = d.margins.columns; mp.columnGutter = d.margins.gutter; } catch (e8) { }
 }
@@ -359,12 +364,15 @@ function askImagesFolder() {
   }
   for (i = 0; i < DATA.spreads.length; i++) { scan(DATA.spreads[i].items); }
   if (missing === 0) { return; }
+  var level = null;
+  try { level = app.scriptPreferences.userInteractionLevel; app.scriptPreferences.userInteractionLevel = en("UserInteractionLevels", "InteractWithAll"); } catch (e0) { }
   try {
     if (confirm("No se encuentran " + missing + " de " + needed + " imágenes enlazadas.\n\nAhora puedes elegir la carpeta donde están: la carpeta descomprimida si has metido ahí las imágenes (y la carpeta imagenes_incrustadas), o la carpeta Links del documento original.\n\nSi pulsas No, se crearán los marcos vacíos.")) {
       x = Folder.selectDialog("Elige la carpeta con las imágenes");
       if (x) { indexFolder(x, 0); }
     }
   } catch (e) { }
+  try { if (level !== null) { app.scriptPreferences.userInteractionLevel = level; } } catch (e1) { }
 }
 
 function placeImage(o, it) {
@@ -376,11 +384,23 @@ function placeImage(o, it) {
     res = o.place(f);
     gr = (res && res.length) ? res[0] : o.graphics.item(0);
     if (img.b) { gr.geometricBounds = img.b; }
-    else { try { o.fit(en("FitOptions", "FillProportionally")); } catch (e2) { } }
+    else {
+      try { o.fit(en("FitOptions", "FillProportionally")); }
+      catch (e2) { try { o.fit(en("FitOptions", "Proportionally")); } catch (e2b) { } }
+    }
     STAT.images++;
   } catch (e) {
     MISSING_IMAGES.push((img.name || img.saved) + " (error al colocarla)");
   }
+}
+
+// add({geometricBounds}) es la forma habitual; si CS3 no la acepta, se crea y luego se coloca
+function addItem(coll, b) {
+  var o;
+  try { return coll.add({ geometricBounds: b }); } catch (e) { }
+  o = coll.add();
+  o.geometricBounds = b;
+  return o;
 }
 
 function createItem(it, page, isMaster) {
@@ -392,11 +412,11 @@ function createItem(it, page, isMaster) {
     return o;
   }
   try {
-    if (kind === "text") { o = page.textFrames.add({ geometricBounds: g.b }); }
-    else if (kind === "rect") { o = page.rectangles.add({ geometricBounds: g.b }); }
-    else if (kind === "oval") { o = page.ovals.add({ geometricBounds: g.b }); }
-    else if (kind === "poly") { o = page.polygons.add({ geometricBounds: g.b }); }
-    else if (kind === "line") { o = page.graphicLines.add({ geometricBounds: g.b }); }
+    if (kind === "text") { o = addItem(page.textFrames, g.b); }
+    else if (kind === "rect") { o = addItem(page.rectangles, g.b); }
+    else if (kind === "oval") { o = addItem(page.ovals, g.b); }
+    else if (kind === "poly") { o = addItem(page.polygons, g.b); }
+    else if (kind === "line") { o = addItem(page.graphicLines, g.b); }
   } catch (e1) { failProp("objeto", "crear " + kind); return null; }
   if (!o) { return null; }
   STAT.items++;
@@ -484,10 +504,13 @@ var SPECIAL = { 7: "IndentHereTab", 8: "RightIndentTab", 23: "PreviousPageNumber
 
 function hasMarkers(t) { return /[\u0007\u0008\u0017\u0018\u0019]/.test(t); }
 
-function setText(container, text, isCell) {
+function setText(container, text, frame) {
   var i, last = 0, ch, v;
-  if (!hasMarkers(text)) { container.contents = text; return; }
-  container.contents = "";
+  if (!hasMarkers(text)) {
+    try { container.contents = text; } catch (e) { if (frame) { frame.contents = text; } else { throw e; } }
+    return;
+  }
+  try { container.contents = ""; } catch (e0) { if (frame) { frame.contents = ""; } else { throw e0; } }
   for (i = 0; i < text.length; i++) {
     ch = text.charCodeAt(i);
     if (SPECIAL[ch]) {
@@ -508,6 +531,9 @@ function rangeOf(container, s, e) {
   return container.characters.itemByRange(s, e - 1);
 }
 
+function applyPStyle(rng, st) { try { rng.appliedParagraphStyle = st; } catch (e) { rng.applyParagraphStyle(st, false); } }
+function applyCStyle(rng, st) { try { rng.appliedCharacterStyle = st; } catch (e) { rng.applyCharacterStyle(st, false); } }
+
 function applyRanges(container, pr, cr) {
   var i, r, rng, st;
   for (i = 0; i < pr.length; i++) {
@@ -516,7 +542,7 @@ function applyRanges(container, pr, cr) {
       rng = rangeOf(container, r[0], r[1]);
       if (!rng) { continue; }
       st = PS[r[2]];
-      if (st) { rng.appliedParagraphStyle = st; }
+      if (st) { applyPStyle(rng, st); }
       if (r[3]) { applyProps(rng, r[3], "párrafo"); }
     } catch (e) { failProp("párrafo", "estilo"); }
   }
@@ -526,7 +552,7 @@ function applyRanges(container, pr, cr) {
       rng = rangeOf(container, r[0], r[1]);
       if (!rng) { continue; }
       st = r[2] ? CS[r[2]] : null;
-      if (st) { rng.appliedCharacterStyle = st; }
+      if (st) { applyCStyle(rng, st); }
       if (r[3]) { applyProps(rng, r[3], "carácter"); }
     } catch (e1) { failProp("carácter", "estilo"); }
   }
@@ -576,7 +602,7 @@ function buildStories() {
     }
     try {
       story = frames[0].parentStory;
-      if (s.t) { setText(story, s.t); }
+      if (s.t) { setText(story, s.t, frames[0]); }
       if (story.characters.length !== s.t.length) { log("Un texto tiene " + story.characters.length + " caracteres en vez de " + s.t.length + "; el formato puede desplazarse."); }
       applyRanges(story, s.pr, s.cr);
       for (k = s.tb.length - 1; k >= 0; k--) { buildTable(story, s.tb[k]); }
@@ -625,7 +651,7 @@ function writeLog(lines) {
     f = new File(base.fsName + "/resultado_reconstruccion.txt");
     f.encoding = "UTF-8";
     f.open("w");
-    f.write(lines.join("\r\n"));
+    f.write("\uFEFF" + lines.join("\r\n"));
     f.close();
     return f;
   } catch (e) { return null; }

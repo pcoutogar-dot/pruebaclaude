@@ -42,6 +42,7 @@ test('CS3 (constantes en camelCase): crea el documento completo', () => {
 
   assert.deepEqual(s.prefs, { w: 612, h: 792, facing: true, units: 'MeasurementUnits.Millimeters', origin: 'RulerOrigin.SpreadOrigin' });
   assert.deepEqual(s.layers, [{ name: 'Capa 1', visible: true, locked: false }, { name: 'Fondo', visible: true, locked: true }]);
+  assert.deepEqual(s.grid, { start: 36, division: 12.5 });
   assert.deepEqual(s.colors.map((c) => c.name), ['Rojo', 'AzulRGB', 'PANTONE 185 C', 'C=15 M=100 Y=100 K=0']);
   assert.equal(s.colors[1].space, 'ColorSpace.RGB');
   assert.equal(s.colors[2].model, 'ColorModel.Spot');
@@ -197,7 +198,7 @@ test('trazados: si CS3 no deja fijar entirePath se anota y se sigue', () => {
 
 test('se registra el resultado en un archivo junto al script', () => {
   const r = run({ enumStyle: 'camel' });
-  assert.match(r.state.logFile, /^Documento reconstruido/);
+  assert.match(r.state.logFile, /^\ufeffDocumento reconstruido/);
 });
 
 test('CS3 estricto: esquinas, ajuste de texto, tonos y numeración con las diferencias propias de CS3', () => {
@@ -250,4 +251,16 @@ test('numeración automática: se avisa de que no se recrea', () => {
     p['Resources/Styles.xml'] = p['Resources/Styles.xml'].replace('KeepWithNext="1" Hyphenation="true">', 'KeepWithNext="1" Hyphenation="true" BulletsAndNumberingListType="NumberedList">');
   }));
   assert.match(m.warnings.map((w) => w.text).join('\n'), /numeración automática/);
+});
+
+test('alternativas si CS3 no acepta la forma habitual: add() sin argumentos, contents del marco y métodos de estilo', () => {
+  const normal = M.snapshot(run({ enumStyle: 'camel' }).doc);
+  const r = run({ enumStyle: 'camel', noShorthandAdd: true, rejectStoryContents: true, rejectProps: ['appliedParagraphStyle', 'appliedCharacterStyle'] });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó|No se pudo rellenar/);
+  assert.deepEqual(M.snapshot(r.doc), normal);
+  const main = textFrames(r).find((f) => f.__store.story.text.startsWith('Título'));
+  const st = M.storyOf(main);
+  assert.equal(st.paras[0], 'Titulo');
+  assert.equal(st.cstyles[42], 'Negrita');
 });
