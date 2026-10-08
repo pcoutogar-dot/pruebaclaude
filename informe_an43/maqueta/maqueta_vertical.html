@@ -1,0 +1,154 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Maqueta informe 43</title><style>
+:root{--blue:#0B3694;--yel:#F5D35E;--tint:#A9B9E0;--ink:#111;--mute:#6b7280;--rule:#d9dde6;
+ --display:'Inter Display','Inter',sans-serif; --body:'Liberation Sans',Arial,sans-serif;}
+@page{size:210mm 297mm;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);color:var(--ink);background:#fff;font-size:9pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{position:relative;width:210mm;height:297mm;padding:14mm 16mm 16mm;overflow:hidden;page-break-after:always}
+b{font-weight:700}
+/* cabecera / pie */
+.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:3.5mm;border-bottom:.25mm solid var(--rule)}
+.brand{display:flex;align-items:center;gap:2.5mm}
+.logo{width:8mm;height:8mm;border-radius:50%;background:var(--blue);color:#fff;font:italic 700 9pt/8mm Georgia,serif;text-align:center}
+.wm{font-family:var(--display);font-weight:800;font-size:6.2pt;line-height:1.05;letter-spacing:.04em;color:var(--blue)}
+.hd-r{font-size:7pt;color:var(--mute);letter-spacing:.02em}
+.ft{position:absolute;left:16mm;right:16mm;bottom:9mm;display:flex;justify-content:space-between;font-size:7pt;color:var(--mute);border-top:.25mm solid var(--rule);padding-top:2.5mm}
+.pn{font-family:var(--display);font-weight:800;color:var(--blue)}
+/* títulos */
+.sec{display:flex;align-items:center;gap:4mm;margin:9mm 0 5mm}
+.sec.s2{margin-top:8mm}
+.tag{font-family:var(--display);font-weight:800;font-size:8pt;color:var(--blue);border:.4mm solid var(--blue);border-radius:2mm;padding:.6mm 2.2mm}
+h2{font-family:var(--display);font-weight:900;font-size:17pt;line-height:1.05;color:var(--blue);text-transform:uppercase;letter-spacing:.01em}
+.body{font-size:9pt;line-height:1.55;color:#222}
+.body.w{max-width:150mm;margin-top:4mm}
+/* p1 */
+.ring-deco{position:absolute;right:-30mm;top:27mm;width:84mm}
+.kicker{margin-top:22mm;font-size:7.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)}
+h1{font-family:var(--display);font-weight:900;font-size:40pt;line-height:.98;color:var(--blue);text-transform:uppercase;margin-top:3mm;letter-spacing:.005em}
+.lead{max-width:104mm;margin-top:7mm;font-size:12pt;line-height:1.4;color:#222}
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:13mm;border-top:.5mm solid var(--blue)}
+.fig{padding:5mm 6mm 6mm 0;border-bottom:.25mm solid var(--rule)}
+.fig:nth-child(even){padding-left:6mm;border-left:.25mm solid var(--rule)}
+.num{font-family:var(--display);font-weight:900;font-size:36pt;line-height:1;color:var(--blue);letter-spacing:-.01em}
+.num small{font-size:16pt;font-weight:800;letter-spacing:0}
+.cap{font-size:8.5pt;line-height:1.4;color:#333;margin-top:2mm;max-width:62mm}
+.quote{margin-top:9mm;padding-left:5mm;border-left:1.2mm solid var(--yel);font-family:var(--display);font-weight:700;font-size:12.5pt;line-height:1.3;color:var(--blue);max-width:150mm;position:relative}
+.qm{display:none}
+.strip-t{display:flex;justify-content:space-between;margin-top:11mm;font-size:7.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.prov{color:var(--blue)}
+.strip{display:flex;height:9mm;margin-top:2mm;border-radius:1.2mm;overflow:hidden;font-size:7.5pt;line-height:9mm}
+.strip span{padding-left:2.5mm;white-space:nowrap}
+/* p2 */
+.two{display:grid;grid-template-columns:62mm 1fr;gap:10mm;align-items:start}
+.col-t p{font-size:9pt;line-height:1.55;color:#222}
+.mini-t{font-size:7pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:2mm}
+.brow{display:grid;grid-template-columns:50mm 1fr 11mm;gap:3mm;align-items:center;padding:2.6mm 0;border-bottom:.25mm solid var(--rule)}
+.bl b{display:block;font-size:8.5pt} .bl span{font-size:7.2pt;color:var(--mute)}
+.bb{height:3.2mm;background:#eef1f7;border-radius:1.6mm;overflow:hidden} .bb i{display:block;height:100%;background:var(--blue);border-radius:1.6mm}
+.bv{font-family:var(--display);font-weight:900;font-size:11pt;color:var(--blue);text-align:right}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+.k{border-top:.5mm solid var(--blue);padding-top:3mm}
+.k .num{font-size:34pt}
+.k .cap{max-width:none;font-size:8.3pt}
+.ids{margin-top:2.5mm;font-size:7.2pt;letter-spacing:.04em;color:var(--blue);font-weight:700}
+.trow{display:grid;grid-template-columns:16mm 62mm 1fr 8mm;gap:3mm;align-items:center;padding:1.7mm 0;border-bottom:.25mm solid var(--rule);font-size:8.5pt}
+.tn{font-weight:700;color:var(--blue)} .tl{color:#222}
+/* p3 */
+.legend{display:flex;gap:6mm;margin:6mm 0 2mm;font-size:7.5pt;font-weight:700}
+.legend i,.dt li i{display:inline-block;width:3mm;height:3mm;border-radius:50%;margin-right:1.6mm;vertical-align:-.5mm}
+.pairs{border-top:.25mm solid var(--rule)}
+.prow{display:grid;grid-template-columns:52mm 1fr 14mm;gap:4mm;align-items:center;padding:2.4mm 0;border-bottom:.25mm solid var(--rule)}
+.pl{font-size:8pt;line-height:1.25}
+.pb .l{position:relative;height:3.6mm;margin:.5mm 0}
+.pb .l i{display:block;height:100%;border-radius:0 1.8mm 1.8mm 0;min-width:1mm}
+.pb .l em{position:absolute;left:1.5mm;top:0;font-style:normal;font-size:6.8pt;line-height:3.6mm;font-weight:700;color:#111}
+.pb .l:nth-child(2) em{color:#fff}
+.delta{font-family:var(--display);font-weight:900;font-size:10pt;color:var(--blue);text-align:right}
+.donuts{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-top:2mm}
+.dn{display:flex;gap:5mm;align-items:center}
+.donut{position:relative;flex:none} .donut svg{display:block;width:100%}
+.dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dc .big{font-family:var(--display);font-weight:900;font-size:17pt;color:var(--blue);line-height:1} .dc .sm{font-size:7pt;color:var(--mute)}
+.dt b{display:block;font-size:8.5pt} .dt span{font-size:7.2pt;color:var(--mute)}
+.dt ul{list-style:none;margin-top:2mm;font-size:8pt;line-height:1.55}
+.prov2{margin-top:2.5mm;font-size:6.8pt;line-height:1.3;font-weight:700;color:var(--blue);max-width:42mm;border-left:.8mm solid var(--yel);padding-left:2mm}
+/* p4 */
+.card{display:grid;grid-template-columns:24mm 1fr;gap:6mm;padding:5.5mm 0;border-top:.25mm solid var(--rule)}
+.card:first-of-type{border-top:.5mm solid var(--blue)}
+.qn{font-family:var(--display);font-weight:900;font-size:26pt;line-height:1;color:var(--blue)}
+.tm{margin-top:1.5mm;font-size:7.5pt;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.df{margin-top:3mm;font-size:7.5pt;display:flex;align-items:center;gap:1.8mm}
+.dots i{display:inline-block;width:2.6mm;height:2.6mm;border-radius:50%;border:.35mm solid var(--blue);margin-right:.8mm} .dots i.on{background:var(--blue)}
+h3{font-size:9pt;line-height:1.4;font-weight:700}
+.opts{list-style:none;margin-top:2.5mm}
+.opts li{display:flex;gap:2.5mm;font-size:8.3pt;line-height:1.35;padding:.9mm 0;color:#444}
+.opts .lt{flex:none;width:4.4mm;height:4.4mm;border-radius:50%;border:.3mm solid #aab;text-align:center;font-size:6.8pt;line-height:4mm;font-weight:700}
+.opts li.ok{color:#000;font-weight:700} .opts li.ok .lt{background:var(--blue);border-color:var(--blue);color:#fff}
+.fb{margin-top:3mm;padding-left:3.5mm;border-left:.8mm solid var(--yel)}
+.fbl{font-size:6.8pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:1mm}
+.fb p{font-size:7.8pt;line-height:1.45;color:#333;margin-top:1.2mm}
+</style><body><section class="page p1"><div class="hd"><div class="brand"><span class="logo">an</span><span class="wm">ACADEMIA<br>NACIONAL</span></div>
+      <div class="hd-r">Informe · 43.ª promoción · Escala Básica</div></div>
+  <svg class="ring-deco" viewBox="0 0 200 200"><circle cx="100" cy="100" r="68" fill="none" stroke="#F5D35E" stroke-width="64"/></svg>
+  <div class="kicker">Policía Nacional · 43.ª promoción</div>
+  <h1>Resumen<br>ejecutivo</h1>
+  <p class="lead">Mismas 100 preguntas y mismos 50 minutos que en 2025, pero con <b>más texto que leer</b> y una fórmula de respuesta que casi no existía.</p>
+  <div class="figs">
+    <div class="fig"><div class="num">74<small>%</small></div><div class="cap"><b>Ciencias Jurídicas.</b> 74 de las 100 preguntas.</div></div>
+    <div class="fig"><div class="num">+27,6<small>%</small></div><div class="cap"><b>Palabras en los enunciados</b> respecto a 2025: de 2642 a 3370.</div></div>
+    <div class="fig"><div class="num">9<small> vs 1</small></div><div class="cap"><b>«Ambas son correctas».</b> Preguntas con esa fórmula en 2026 frente a 2025.</div></div>
+    <div class="fig"><div class="num">30<small> s</small></div><div class="cap"><b>Media teórica por pregunta:</b> 100 preguntas en 50 minutos.</div></div>
+  </div>
+  <div class="quote"><span class="qm">“</span>Hay más texto que procesar y reaparece con mucha más frecuencia una alternativa que obliga a validar dos afirmaciones antes de contestar.</div>
+  <div class="strip-t"><span>Dificultad de las preguntas · 43.ª</span><span class="prov">Resultados provisionales</span></div>
+  <div class="strip"><span style="flex:72;background:#A9B9E0"><b>72</b> bajo</span><span style="flex:22;background:#F5D35E"><b>22</b> medio</span><span style="flex:6;background:#0B3694;color:#fff"><b>6</b></span></div>
+  <div class="ft"><span>Modelo B · 26 de septiembre de 2026</span><span class="pn">01</span></div></section><section class="page p2"><div class="hd"><div class="brand"><span class="logo">an</span><span class="wm">ACADEMIA<br>NACIONAL</span></div>
+      <div class="hd-r">Informe · 43.ª promoción · Escala Básica</div></div>
+  <div class="sec"><span class="tag">02</span><h2>Radiografía de la 43.ª promoción</h2></div>
+  <div class="two">
+    <div class="col-t"><p>El examen mantiene la estructura oficial de 100 preguntas, tres alternativas y 50 minutos. Eso deja una media teórica de 30 segundos por pregunta. En el cuestionario analizado, los enunciados suman 3370 palabras y tienen una longitud media de 33.7 palabras. Si se cuentan también las tres alternativas, el volumen asciende a 6327 palabras: 63.3 por pregunta de media.</p></div>
+    <div class="col-d"><div class="mini-t">Preguntas por bloque oficial</div><div class="brow"><div class="bl"><b>Ciencias Jurídicas</b><span>Peso claramente dominante</span></div><div class="bb"><i style="width:74%"></i></div><div class="bv">74%</div></div><div class="brow"><div class="bl"><b>Ciencias Sociales</b><span>Peso secundario</span></div><div class="bb"><i style="width:15%"></i></div><div class="bv">15%</div></div><div class="brow"><div class="bl"><b>Materias Técnico-Científicas</b><span>Peso más reducido</span></div><div class="bb"><i style="width:11%"></i></div><div class="bv">11%</div></div></div>
+  </div>
+  <p class="body w">El dato más claro es el peso de Ciencias Jurídicas: 74 de las 100 preguntas. No significa que el resto del programa pueda descuidarse; significa que, en esta convocatoria concreta (una vez más), el examen se apoyó de forma muy intensa en normativa, organización policial y Derecho Penal/Procesal.</p>
+  <div class="sec s2"><span class="tag">03</span><h2>Cómo preguntó el tribunal</h2></div>
+  <div class="three">
+    <div class="k"><div class="num">9</div><div class="cap">preguntas con «ambas respuestas son correctas» como tercera alternativa</div><div class="ids">2 · 13 · 28 · 35 · 36 · 70 · 75 · 79 · 98</div></div>
+    <div class="k"><div class="num">2</div><div class="cap">con una fórmula equivalente a «ninguna es correcta»</div><div class="ids">69 · 83</div></div>
+    <div class="k"><div class="num">6</div><div class="cap">que exigen buscar expresamente la opción negativa o incorrecta</div><div class="ids">20 · 21 · 59 · 76 · 81 · 90</div></div>
+  </div>
+  <p class="body w">Estas fórmulas obligan a cambiar el modo de lectura. En una pregunta de «ambas», no basta con reconocer una afirmación verdadera: hay que validar también la segunda. En una pregunta negativa ocurre lo contrario: conocer la regla no garantiza el acierto si se pierde de vista un «NO» o un «incorrecta». Es un tipo de dificultad que no depende de saber más temario, sino de leer con precisión bajo presión de tiempo.</p>
+  <div class="sec s2"><span class="tag">06</span><h2>Los temas con más peso</h2></div>
+  <div class="mini-t">Preguntas por tema · los 6 mayores de 45</div><div class="trow"><span class="tn">Tema 8</span><span class="tl">Dirección General de la Policía</span><div class="bb"><i style="width:100%"></i></div><span class="bv">13</span></div><div class="trow"><span class="tn">Tema 3</span><span class="tl">Constitución Española (II)</span><div class="bb"><i style="width:62%"></i></div><span class="bv">8</span></div><div class="trow"><span class="tn">Tema 16</span><span class="tl">Derecho Penal. Parte General</span><div class="bb"><i style="width:54%"></i></div><span class="bv">7</span></div><div class="trow"><span class="tn">Tema 9</span><span class="tl">LO 2/1986. Fuerzas y Cuerpos de Seguridad</span><div class="bb"><i style="width:38%"></i></div><span class="bv">5</span></div><div class="trow"><span class="tn">Tema 14</span><span class="tl">Protección de la seguridad ciudadana</span><div class="bb"><i style="width:31%"></i></div><span class="bv">4</span></div><div class="trow"><span class="tn">Tema 21</span><span class="tl">Derecho Procesal Penal</span><div class="bb"><i style="width:31%"></i></div><span class="bv">4</span></div>
+  <div class="ft"><span>Modelo B · 26 de septiembre de 2026</span><span class="pn">02</span></div></section><section class="page p3"><div class="hd"><div class="brand"><span class="logo">an</span><span class="wm">ACADEMIA<br>NACIONAL</span></div>
+      <div class="hd-r">Informe · 43.ª promoción · Escala Básica</div></div>
+  <div class="sec"><span class="tag">04</span><h2>Comparación con la 42.ª promoción</h2></div>
+  <p class="body w">La comparación se realiza ahora sobre el examen de la 42.ª promoción (Modelo A, 25 de octubre de 2025).</p>
+  <div class="legend"><span><i style="background:#A9B9E0"></i>42.ª · 2025</span><span><i style="background:#0B3694"></i>43.ª · 2026</span></div>
+  <div class="pairs"><div class="prow"><div class="pl">Palabras en los enunciados</div><div class="pb">
+      <div class="l"><i style="width:78%;background:#A9B9E0"></i><em>2642</em></div>
+      <div class="l"><i style="width:100%;background:#0B3694"></i><em>3370</em></div></div><span class="delta">+728</span></div><div class="prow"><div class="pl">Media de palabras por pregunta completa</div><div class="pb">
+      <div class="l"><i style="width:77%;background:#A9B9E0"></i><em>48,7</em></div>
+      <div class="l"><i style="width:100%;background:#0B3694"></i><em>63,3</em></div></div><span class="delta">+14,6</span></div><div class="prow"><div class="pl">«Ambas son correctas» (literal)</div><div class="pb">
+      <div class="l"><i style="width:11%;background:#A9B9E0"></i><em>1</em></div>
+      <div class="l"><i style="width:100%;background:#0B3694"></i><em>9</em></div></div><span class="delta">+8</span></div><div class="prow"><div class="pl">«Ninguna / las dos anteriores son falsas o incorrectas»</div><div class="pb">
+      <div class="l"><i style="width:100%;background:#A9B9E0"></i><em>2</em></div>
+      <div class="l"><i style="width:100%;background:#0B3694"></i><em>2</em></div></div></div><div class="prow"><div class="pl">Enunciados expresamente negativos (NO / incorrecta)</div><div class="pb">
+      <div class="l"><i style="width:100%;background:#A9B9E0"></i><em>9</em></div>
+      <div class="l"><i style="width:67%;background:#0B3694"></i><em>6</em></div></div><span class="delta">−3</span></div></div>
+  <p class="body w">La diferencia de longitud de los enunciados es objetiva. En 2025 suman 2642 palabras y en 2026, 3370: un incremento del 27,6 %. Además, la media de palabras por pregunta completa —incluidas las alternativas— pasa de 48,7 en 2025 a 63,3 en 2026. La diferencia, por tanto, no se limita a una impresión de lectura: <b>el opositor tuvo que procesar preguntas sensiblemente más extensas en la 43.ª promoción.</b></p>
+  <div class="sec s2"><span class="tag">05</span><h2>Resumen visual de dificultad</h2></div>
+  <div class="donuts">
+    <div class="dn"><div class="donut" style="width:150px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="#A9B9E0" stroke-width="16" stroke-dasharray="147.23 91.53" stroke-dashoffset="0.00" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#F5D35E" stroke-width="16" stroke-dasharray="63.67 175.10" stroke-dashoffset="-148.03" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#0B3694" stroke-width="16" stroke-dasharray="23.08 215.68" stroke-dashoffset="-212.50" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#C9CED8" stroke-width="16" stroke-dasharray="1.59 237.17" stroke-dashoffset="-236.37" transform="rotate(-90 50 50)"/></svg><div class="dc"><span class="big">62%</span><span class="sm">bajo</span></div></div><div class="dt"><b>42.ª promoción · 2025</b><span>Modelo A</span><ul><li><i style="background:#A9B9E0"></i>62 bajo</li><li><i style="background:#F5D35E"></i>27 medio</li><li><i style="background:#0B3694"></i>10 alto</li><li><i style="background:#C9CED8"></i>1 anulada</li></ul></div></div>
+    <div class="dn"><div class="donut" style="width:150px"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="#A9B9E0" stroke-width="16" stroke-dasharray="171.11 67.65" stroke-dashoffset="0.00" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#F5D35E" stroke-width="16" stroke-dasharray="51.73 187.03" stroke-dashoffset="-171.91" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="38" fill="none" stroke="#0B3694" stroke-width="16" stroke-dasharray="13.53 225.24" stroke-dashoffset="-224.44" transform="rotate(-90 50 50)"/></svg><div class="dc"><span class="big">72%</span><span class="sm">bajo</span></div></div><div class="dt"><b>43.ª promoción · 2026</b><span>Modelo B</span><ul><li><i style="background:#A9B9E0"></i>72 bajo</li><li><i style="background:#F5D35E"></i>22 medio</li><li><i style="background:#0B3694"></i>6 alto</li></ul><div class="prov2">Resultados provisionales, a expensas de la decisión del tribunal</div></div></div>
+  </div>
+  <div class="ft"><span>Modelo B · 26 de septiembre de 2026</span><span class="pn">03</span></div></section><section class="page p4"><div class="hd"><div class="brand"><span class="logo">an</span><span class="wm">ACADEMIA<br>NACIONAL</span></div>
+      <div class="hd-r">Informe · 43.ª promoción · Escala Básica</div></div>
+  <div class="sec"><span class="tag">A</span><h2>Anexo · Preguntas y retroalimentaciones</h2></div>
+  <article class="card"><div class="meta"><div class="qn">01</div><div class="tm">Tema 11</div>
+      <div class="df"><span class="dots"><i class="on"></i><i class=""></i><i class=""></i></span><span>Bajo</span></div></div>
+      <div class="main"><h3>En relación con las infracciones en materia de extranjería y su régimen sancionador, de la Ley Orgánica 4/2000, de 11 de enero, sobre derechos y libertades de los extranjeros en España y su integración social, las sanciones impuestas por infracciones muy graves prescribirán:</h3><ul class="opts"><li class="ok"><span class="lt">a</span><span>A los cinco años.</span></li><li class=""><span class="lt">b</span><span>A los cuatro años.</span></li><li class=""><span class="lt">c</span><span>A los tres años.</span></li></ul><div class="fb"><div class="fbl">Retroalimentación</div><p>La Ley Orgánica 4/2000, 11 de enero, sobre derechos y libertades de extranjeros en España, art. 56 Prescripción de las infracciones y de las sanciones. Las sanciones impuestas por infracciones muy graves prescribirán a los cinco años, las graves a los dos años y las impuestas por infracciones leves al año. La prescripción de los hechos y de las sanciones se señala siempre como muy importante en clase.</p></div></div></article><article class="card"><div class="meta"><div class="qn">03</div><div class="tm">Tema 26</div>
+      <div class="df"><span class="dots"><i class="on"></i><i class=""></i><i class=""></i></span><span>Bajo</span></div></div>
+      <div class="main"><h3>En virtud de lo dispuesto en la Ley Orgánica 7/2021 de 26 de mayo, de protección de datos personales tratados para fines de prevención, detección, investigación y enjuiciamiento de infracciones penales y de ejecución de sanciones penales, y en concreto en su artículo 8.3, con carácter general, el plazo máximo para la supresión de los datos será de:</h3><ul class="opts"><li class=""><span class="lt">a</span><span>Quince años.</span></li><li class="ok"><span class="lt">b</span><span>Veinte años.</span></li><li class=""><span class="lt">c</span><span>Treinta años.</span></li></ul><div class="fb"><div class="fbl">Retroalimentación</div><p>El artículo 8.3 de la Ley Orgánica 7/2021, de 26 de mayo, establece que, con carácter general, el plazo máximo para la supresión de los datos será de veinte años. No obstante, este plazo puede superarse cuando concurran circunstancias que hagan necesario mantener el tratamiento de los datos para el cumplimiento de los fines de la Ley, como la existencia de investigaciones abiertas, delitos que no hayan prescrito, la no conclusión de la ejecución de la pena, la reincidencia o la necesidad de protección de las víctimas.</p><p>Es una pregunta de conocimiento literal de la norma: el propio artículo 8.3 recoge expresamente el plazo de veinte años, sin que sea necesario realizar ninguna interpretación jurídica para determinar la respuesta correcta.</p></div></div></article><article class="card"><div class="meta"><div class="qn">04</div><div class="tm">Tema 34</div>
+      <div class="df"><span class="dots"><i class="on"></i><i class=""></i><i class=""></i></span><span>Bajo</span></div></div>
+      <div class="main"><h3>Los principales efectos producidos por el consumo de benzodiazepinas son:</h3><ul class="opts"><li class=""><span class="lt">a</span><span>La estimulación psicomotora y el incremento de la alerta.</span></li><li class=""><span class="lt">b</span><span>La estimulación y potenciación de la percepción espaciotemporal.</span></li><li class="ok"><span class="lt">c</span><span>La sedación, alivio del dolor muscular y reducción de la ansiedad.</span></li></ul><div class="fb"><div class="fbl">Retroalimentación</div><p>Esta pregunta del tema de drogodependencias está en nuestro temario y además está dada en clase en repetidas ocasiones. Es una pregunta muy fácil para cualquier opositor que haya estudiado un poco. Hace referencia a las benzodiacepinas, sustancias depresoras, que son fármacos recetados con habitualidad para la ansiedad o el insomnio entre otros.</p></div></div></article>
+  <div class="ft"><span>Modelo B · 26 de septiembre de 2026</span><span class="pn">04</span></div></section></body></html>

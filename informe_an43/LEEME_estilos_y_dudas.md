@@ -34,3 +34,9 @@ Comprobado y correcto: 100 preguntas, 3 alternativas cada una, una correcta por 
 ## Pendiente
 - Gráficos de dificultad: los del original son imágenes de matplotlib fuera de marca; hay que rehacerlos con la paleta corporativa.
 - Formato (apaisado o vertical) y diseño de página.
+
+## Maqueta visual (A4 vertical)
+`maqueta/maqueta_vertical.pdf` (y su `.html`): 4 páginas de prueba: resumen ejecutivo, radiografía y tribunal, comparativa con gráficos de dificultad y 3 fichas del anexo.
+- **Tipografías de sustitución:** Inter Display Black en lugar de Lovelo y Liberation Sans en lugar de Helvetica, porque ni Lovelo ni Helvetica están instaladas en el entorno. Hay que aplicar las originales en InDesign.
+- **Logotipo:** es un marcador de texto («an» + ACADEMIA NACIONAL). Hay que sustituirlo por el logotipo real.
+- **Dificultad:** se muestra con tonos de azul y amarillo corporativos, sin semáforo verde/rojo.
