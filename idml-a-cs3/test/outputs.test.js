@@ -179,3 +179,12 @@ test('CLI: crea el zip y resume; un .indd da un mensaje claro y código de salid
   assert.notEqual(bad.status, 0);
   assert.match(bad.stderr, /exportarlo a IDML/);
 });
+
+test('un nombre de archivo con saltos de línea no puede colarse como código en el script', () => {
+  const r = convert(bytes, { name: 'a\nvar malo = 1;\u2028alert(2).idml', date: DATE });
+  const jsx = text(r.files.find((f) => f.name.endsWith('.jsx')));
+  const line = jsx.split('\n').find((l) => l.includes('Documento original'));
+  assert.match(line, /^\/\/  Documento original: a var malo = 1; alert\(2\)/);
+  assert.ok(!/^var malo/m.test(jsx));
+  new Function(jsx.replace(/^#.*$/gm, '//'));
+});

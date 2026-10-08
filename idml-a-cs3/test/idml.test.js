@@ -215,6 +215,9 @@ test('texto con envoltorios (XML, hipervínculos), notas al pie, variables y obj
   assert.deepEqual(s.notes, [{ n: 1, text: 'Texto de la nota' }]);
   const sup = s.cr.find((r) => r.props.position);
   assert.equal(s.text.slice(sup.s, sup.e), '1');
+  // los rangos de carácter quedan ordenados y sin solaparse (la nota se separa del rango que la contiene)
+  for (let i = 1; i < s.cr.length; i++) assert.ok(s.cr[i].s >= s.cr[i - 1].e, 'rangos solapados: ' + JSON.stringify(s.cr));
+  assert.equal(s.cr.reduce((n, r) => n + (r.e - r.s), 0), s.text.length);
   const w = m.warnings.map((x) => x.text).join('\n');
   assert.match(w, /1 nota al pie/);
   assert.match(w, /1 objeto anclado/);
@@ -298,4 +301,12 @@ test('un IDML sin páginas da un error claro; una imagen sin GraphicBounds avisa
   assert.match(m.warnings.map((w) => w.text).join('\n'), /1 imagen no trae su tamaño/);
   const it = allItems(m.spreads[0].items).find((i) => i.id === 'ur1');
   assert.equal(it.img.b, undefined);
+});
+
+test('en el documento de ejemplo los rangos de párrafo y de carácter cubren el texto sin solaparse', () => {
+  for (const s of model.stories.values()) {
+    for (const list of [s.pr, s.cr]) {
+      for (let i = 1; i < list.length; i++) assert.ok(list[i].s >= list[i - 1].e);
+    }
+  }
 });

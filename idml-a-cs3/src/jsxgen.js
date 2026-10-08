@@ -103,6 +103,9 @@ function asciiOnly(s) {
   return s.replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
 }
 
+// un nombre de archivo nunca debe poder salirse de la línea de comentario
+const oneLine = (v) => String(v).replace(/[\r\n\u2028\u2029]+/g, ' ');
+
 function buildScript(model, opts) {
   opts = opts || {};
   if (!runtimeSource) throw new Error('Falta el texto del script de reconstrucción (runtime.jsx).');
@@ -112,14 +115,16 @@ function buildScript(model, opts) {
     '#target indesign',
     '// ============================================================================',
     '//  RECONSTRUIR EN INDESIGN CS3',
-    '//  Documento original: ' + model.name + '   (IDML DOMVersion ' + (model.domVersion || '?') + ')',
+    '//  Documento original: ' + oneLine(model.name) + '   (IDML DOMVersion ' + oneLine(model.domVersion || '?') + ')',
     '//  Generado el ' + stamp + ' por "IDML a CS3".',
     '//',
     '//  COMO USARLO (en el ordenador con InDesign CS3):',
-    '//   1. Copia este archivo .jsx a una carpeta junto con las imagenes (o su carpeta Links).',
+    '//   1. Instala las fuentes del documento y deja las imagenes enlazadas en una carpeta',
+    '//      (junto con la carpeta imagenes_incrustadas, si la hay).',
     '//   2. En InDesign CS3: Ventana > Automatizacion > Scripts.',
-    '//   3. En el panel, haz clic derecho sobre "Usuario" > "Mostrar en el Explorador/Finder",',
-    '//      pega ahi este archivo y haz doble clic sobre su nombre en el panel.',
+    '//   3. Clic derecho sobre "Usuario" > "Mostrar en el Explorador/Finder", pega ahi este',
+    '//      archivo y haz doble clic sobre su nombre en el panel.',
+    '//   4. Si no encuentra las imagenes, te pedira la carpeta donde estan.',
     '//   Se creara un DOCUMENTO NUEVO; no toca ningun otro documento.',
     '// ============================================================================',
     '',

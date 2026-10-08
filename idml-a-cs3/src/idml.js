@@ -130,7 +130,9 @@ function buildModel(pkg, opts) {
   };
   for (const w of pkg.warnings) ctx.warn(w);
 
-  const swatchById = new Map();
+  // las muestras de fábrica existen siempre, aunque el IDML no las enumere
+  const swatchById = new Map([['Swatch/None', { name: 'None', builtin: true }], ['Color/Black', { name: 'Black', builtin: true }],
+    ['Color/Paper', { name: 'Paper', builtin: true }], ['Color/Registration', { name: 'Registration', builtin: true }]]);
   const styleById = new Map();
   ctx.color = (ref) => {
     if (!ref || ref === 'n') return null;
@@ -656,11 +658,23 @@ function parseText(container, ctx) {
     for (const k of X.kidsEl(el)) inline(k);
     if (text.length > start) pr.push({ s: start, e: text.length, style: el.attrs.AppliedParagraphStyle, props });
   }
+  let supers = null;               // marcas de nota al pie dentro del rango de carácter actual
   function chars(el) {
     const start = text.length;
     const { props } = P.textProps(el, ctx);
+    const saved = supers; supers = [];
     for (const k of X.kidsEl(el)) inline(k);
-    if (text.length > start) cr.push({ s: start, e: text.length, style: el.attrs.AppliedCharacterStyle, props });
+    const mine = supers; supers = saved;
+    const style = el.attrs.AppliedCharacterStyle;
+    if (text.length <= start) return;
+    // los rangos no se solapan: el número de la nota al pie se separa del rango que lo contiene
+    let pos = start;
+    for (const m of mine) {
+      if (m.s > pos) cr.push({ s: pos, e: m.s, style, props });
+      cr.push({ s: m.s, e: m.e, style, props: Object.assign({}, props, { position: ['e', 'Position', 'Superscript'] }) });
+      pos = m.e;
+    }
+    if (pos < text.length) cr.push({ s: pos, e: text.length, style, props });
   }
   function table(el) {
     const rows = X.kidsEl(el, 'Row'); const cols = X.kidsEl(el, 'Column');
@@ -688,7 +702,8 @@ function parseText(container, ctx) {
     notes.push({ n, text: inner.text.replace(/\r$/, '') });
     const start = text.length;
     text += String(n);
-    cr.push({ s: start, e: text.length, style: null, props: { position: ['e', 'Position', 'Superscript'] } });
+    if (supers) supers.push({ s: start, e: text.length });
+    else cr.push({ s: start, e: text.length, style: null, props: { position: ['e', 'Position', 'Superscript'] } });
     ctx.count('footnotes');
   }
   for (const k of X.kidsEl(container)) inline(k);
