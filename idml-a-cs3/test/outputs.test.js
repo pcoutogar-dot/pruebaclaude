@@ -145,6 +145,10 @@ test('informe HTML: avisos, fuentes, imágenes, colores y un mapa por pliego y m
 
 test('LEEME: nombres de archivo y pasos', () => {
   const l = text(file('LEEME.txt'));
+  assert.match(l, /0_comprobar_CS3\.jsx {3}Prueba de unos segundos/);
+  assert.match(l, /SI NO FUNCIONA\r\n {2}1\. Ejecuta primero 0_comprobar_CS3\.jsx/);
+  assert.match(l, /diagnostico_CS3\.txt/);
+  assert.match(l, /resultado_reconstruccion\.txt/);
   assert.match(l, /1_reconstruir_en_CS3\.jsx/);
   assert.match(l, /2_EXPERIMENTAL_documento\.inx/);
   assert.match(l, /Ventana > Automatizacion > Scripts/);

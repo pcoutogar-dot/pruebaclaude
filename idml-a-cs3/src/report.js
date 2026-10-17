@@ -341,6 +341,7 @@ function leeme(model, names, ctx) {
   L.push('Documento: ' + model.name + (ctx.date ? '   (convertido el ' + ctx.date + ')' : ''));
   L.push('');
   L.push('QUE HAY EN ESTA CARPETA');
+  if (names.probe) L.push('  ' + names.probe + '   Prueba de unos segundos: comprueba que tu CS3 acepta lo que usa el script.');
   L.push('  ' + names.jsx + '   Script que RECONSTRUYE el documento en CS3 (el metodo recomendado).');
   if (names.inx) L.push('  ' + names.inx + '   Intento EXPERIMENTAL de convertir a INX. Puede que CS3 no lo abra.');
   L.push('  informe.html   Fuentes, colores, imagenes y un mapa de cada pagina.');
@@ -356,12 +357,25 @@ function leeme(model, names, ctx) {
   L.push('     Si falta alguna, el script usa otra y te lo avisa al terminar.');
   L.push('  3. Abre InDesign CS3 y ve a  Ventana > Automatizacion > Scripts.');
   L.push('  4. En el panel Scripts, clic derecho sobre "Usuario" > "Mostrar en el Explorador"');
-  L.push('     (Mac: "Mostrar en el Finder"). Copia ahi SOLO el archivo ' + names.jsx + '.');
+  L.push('     (Mac: "Mostrar en el Finder"). Copia ahi el archivo ' + names.jsx + (names.probe ? ' (y ' + names.probe + ').' : '.'));
   L.push('  5. Vuelve a InDesign: el script aparece dentro de "Usuario". Haz doble clic.');
   L.push('     Si no encuentra las imagenes, te pide la carpeta: elige esta carpeta');
   L.push('     (o la carpeta Links). Se crea un DOCUMENTO NUEVO.');
   L.push('  6. Revisa el resultado con el informe al lado y guarda como .indd.');
   L.push('     Si hay avisos, el detalle esta en resultado_reconstruccion.txt (en el escritorio).');
+  L.push('');
+  L.push('SI NO FUNCIONA');
+  if (names.probe) {
+    L.push('  1. Ejecuta primero ' + names.probe + ' (igual que el otro: doble clic en el panel Scripts).');
+    L.push('     Tarda unos segundos, crea un documento de prueba, lo cierra sin guardar y deja en el');
+    L.push('     escritorio el archivo diagnostico_CS3.txt. Dice que acepta y que no tu version de CS3.');
+    L.push('  2. Ejecuta ' + names.jsx + ' y mira resultado_reconstruccion.txt (tambien en el escritorio):');
+    L.push('     anota cada paso con el mensaje de error de InDesign y donde se detuvo, si se detuvo.');
+    L.push('  3. Si te sale una ventana de error de InDesign, copia su texto tal cual (o hazle una foto).');
+    L.push('  4. Con diagnostico_CS3.txt, resultado_reconstruccion.txt y ese texto se puede corregir la herramienta.');
+  } else {
+    L.push('  Mira resultado_reconstruccion.txt en el escritorio: anota cada paso y el mensaje de error de InDesign.');
+  }
   L.push('');
   L.push('IMPORTANTE');
   L.push('  - El script no modifica ningun documento existente: siempre crea uno nuevo.');

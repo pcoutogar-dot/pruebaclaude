@@ -80,6 +80,12 @@ button { font: inherit; cursor: pointer; }
 .btn { display: inline-flex; gap: 10px; align-items: center; background: var(--magenta); color: var(--on-magenta); border: 0; padding: 12px 20px; font-weight: 700; border-radius: 4px; }
 .btn:hover { filter: brightness(1.08); }
 .btn:disabled { opacity: 0.6; cursor: default; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.btn.ghost:hover { background: var(--tint); filter: none; }
+.help { border: 1px solid var(--line); border-left: 4px solid var(--cyan); background: var(--panel); padding: 18px 20px; }
+.help h2 { font-size: 18px; margin-bottom: 6px; }
+.help ol { margin: 8px 0 16px; padding-left: 20px; max-width: 66ch; }
+.help li { margin-bottom: 4px; }
 
 /* estados */
 .busy { display: flex; gap: 14px; align-items: center; padding: 18px 0; color: var(--muted); }
@@ -123,6 +129,7 @@ ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; 
     <p class="kicker">InDesign CS6 → CS3</p>
     <h1>Lleva un documento de CS6 a CS3</h1>
     <p class="lede">CS3 no abre archivos de CS6. Esta herramienta lee el documento exportado como IDML y prepara un script que lo reconstruye dentro de CS3: páginas, maestras, textos con su formato, estilos, colores, imágenes y formas. Todo ocurre en este navegador; el archivo no se envía a ningún sitio.</p>
+    <p class="muted" style="margin-top:12px;font-size:15px">¿Ya lo probaste en CS3 y no funcionó? <button type="button" class="link" id="goto-help">Ve a «Si algo falla en CS3»</button>.</p>
   </header>
 
   <section aria-labelledby="h-1">
@@ -182,8 +189,23 @@ ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; 
         <li>En InDesign CS3 abre <kbd>Ventana › Automatización › Scripts</kbd>. Clic derecho sobre «Usuario» › «Mostrar en el Explorador» (Mac: «Finder») y copia ahí solo <code>1_reconstruir_en_CS3.jsx</code>.</li>
         <li>Haz doble clic sobre el script en el panel. Se crea un <b>documento nuevo</b>. Si no encuentra las imágenes, pide la carpeta: elige la carpeta descomprimida.</li>
         <li>Compara con el informe y guarda como .indd.</li>
+        <li>Si algo no sale bien, el script deja en el Escritorio el archivo <code>resultado_reconstruccion.txt</code> con lo que ha pasado paso a paso (mira más abajo «Si algo falla en CS3»).</li>
       </ol>
     </section>
+  </section>
+
+  <section aria-labelledby="h-help">
+    <div class="help" id="help">
+      <h2 id="h-help">Si algo falla en CS3</h2>
+      <p>Esta herramienta todavía no se ha podido probar en un CS3 de verdad, así que es normal que alguna parte falle. Para corregirla hace falta saber <b>qué</b> falla, y CS3 lo cuenta con mucho detalle si se le pregunta:</p>
+      <ol>
+        <li>Descarga la comprobación y cópiala, igual que el otro script, a la carpeta «Usuario» del panel Scripts de CS3 (<kbd>Ventana › Automatización › Scripts</kbd>).</li>
+        <li>Haz doble clic sobre ella. Tarda unos segundos: crea un documento de prueba, intenta lo mismo que hará el script de reconstrucción, lo cierra sin guardar y te enseña un resumen.</li>
+        <li>En el Escritorio queda <code>diagnostico_CS3.txt</code>: contiene lo que acepta y lo que no tu versión de CS3. Mándalo tal cual (con <code>resultado_reconstruccion.txt</code>, si ya ejecutaste el otro script) y se corrige la herramienta.</li>
+      </ol>
+      <button type="button" class="btn ghost" id="probe">Descargar la comprobación (0_comprobar_CS3.jsx)</button>
+      <p class="muted" style="margin:10px 0 0;font-size:14px">También va dentro del zip de cada conversión. No usa ningún documento tuyo ni modifica los que tengas abiertos.</p>
+    </div>
   </section>
 
   <section aria-labelledby="h-exp">
@@ -298,18 +320,23 @@ ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; 
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   }
-  function download() {
-    if (!current) { return; }
-    var blob = new Blob([current.zip], { type: "application/zip" });
+  function saveFile(blob, filename) {
     var use = window.claude && typeof window.claude.use === "function" ? window.claude.use("downloads") : Promise.resolve(null);
     use.then(function (dl) {
-      if (!dl) { plainDownload(blob, current.filename); return; }
-      return dl.save({ filename: current.filename, data: blob }).then(function () { toast("Guardado: " + current.filename); }, function (e) {
+      if (!dl) { plainDownload(blob, filename); return; }
+      return dl.save({ filename: filename, data: blob }).then(function () { toast("Guardado: " + filename); }, function (e) {
         if (e && e.code === "declined") { return; }
-        if (e && (e.code === "unavailable" || e.code === "not_granted")) { plainDownload(blob, current.filename); return; }
+        if (e && (e.code === "unavailable" || e.code === "not_granted")) { plainDownload(blob, filename); return; }
         toast("No se pudo guardar: " + ((e && e.message) || "error desconocido"));
       });
-    }, function () { plainDownload(blob, current.filename); });
+    }, function () { plainDownload(blob, filename); });
+  }
+  function download() {
+    if (!current) { return; }
+    saveFile(new Blob([current.zip], { type: "application/zip" }), current.filename);
+  }
+  function downloadProbe() {
+    saveFile(new Blob([IDML2CS3.buildProbe()], { type: "text/plain" }), "0_comprobar_CS3.jsx");
   }
 
   // ---- eventos
@@ -326,5 +353,10 @@ ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; 
   });
   $("sample").addEventListener("click", function () { convertBytes(bytesToB64(SAMPLE_B64), "documento-de-ejemplo.idml"); });
   $("download").addEventListener("click", download);
+  $("probe").addEventListener("click", downloadProbe);
+  $("goto-help").addEventListener("click", function () {
+    var h = $("help"); h.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("probe").focus({ preventScroll: true });
+  });
 })();
 </script>

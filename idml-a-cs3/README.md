@@ -17,20 +17,44 @@ script que lo reconstruye dentro de CS3**, junto con un informe y todos los text
 4. En el ordenador con **CS3**:
    1. Copia el zip, descomprímelo y mete dentro las imágenes enlazadas (la carpeta `Links` del documento).
    2. Instala las fuentes que indica `informe.html`.
-   3. `Ventana › Automatización › Scripts` → clic derecho en «Usuario» → «Mostrar en el Explorador/Finder» → copia ahí `1_reconstruir_en_CS3.jsx`.
+   3. `Ventana › Automatización › Scripts` → clic derecho en «Usuario» → «Mostrar en el Explorador/Finder» → copia ahí `1_reconstruir_en_CS3.jsx` (y `0_comprobar_CS3.jsx`).
    4. Doble clic sobre el script en el panel. Se crea un **documento nuevo**. Si no encuentra las imágenes, pide la carpeta.
    5. Compara con el informe y guarda como `.indd`.
+   6. Si algo falla: [Si algo falla en CS3](#si-algo-falla-en-cs3).
 
 ### Qué contiene el zip
 
 | Archivo | Para qué sirve |
 |---|---|
+| `0_comprobar_CS3.jsx` | Prueba de unos segundos que **no usa tu documento**: comprueba qué acepta tu CS3 y escribe `diagnostico_CS3.txt` en el escritorio. |
 | `1_reconstruir_en_CS3.jsx` | El script que recrea el documento en CS3. **Es el método recomendado.** |
 | `2_EXPERIMENTAL_documento.inx` | Intento de conversión directa al formato de intercambio de CS3. Sin probar en CS3: puede no abrirse. |
 | `informe.html` | Fuentes que hay que instalar, imágenes enlazadas, colores, avisos y un mapa de cada página. |
 | `textos/` y `textos_con_formato/` | Todos los textos en `.txt` y en `.rtf` (con fuente, tamaño y color), por si hay que rehacer algo a mano. |
 | `imagenes_incrustadas/` | Imágenes que estaban incrustadas en el documento (IDML las lleva dentro). |
 | `LEEME.txt` | Estos pasos, en texto plano. |
+
+## Si algo falla en CS3
+
+La herramienta nunca se ha ejecutado en un CS3 real, así que está preparada para **contar qué pasa** en vez de fallar
+en silencio. Hay dos archivos que se escriben en el escritorio del ordenador con CS3:
+
+* **`diagnostico_CS3.txt`** (lo crea `0_comprobar_CS3.jsx`). Crea un documento de prueba, intenta una por una las
+  operaciones que usa el script de reconstrucción (colores, estilos, páginas, maestras, marcos, trazados, texto, tablas,
+  colocar una imagen…), lo cierra sin guardar y anota `[ok]`, `[FALLA]` con el mensaje de error de InDesign, o
+  `[distinto]` si es una diferencia ya prevista con CS6. Además usa la reflexión de ExtendScript para listar qué
+  propiedades **no existen** en ese InDesign (`[no hay]`), y vuelca el nombre exacto de las constantes cuando alguna falta.
+* **`resultado_reconstruccion.txt`** (lo crea `1_reconstruir_en_CS3.jsx`). Entorno (versión, idioma y sistema), cada
+  fase con su duración, **cada propiedad que CS3 rechazó con su mensaje de error**, y los avisos. Se guarda al empezar
+  cada fase: si InDesign se cuelga o se cierra, la última línea de `PASOS` dice dónde fue, y la siguiente ejecución se
+  pone sola en *modo paso a paso* (anota cada color, estilo, objeto y texto). También se activa cambiando
+  `var DIAG = false;` por `true` en la cabecera del script.
+
+Con esos dos archivos (y, si sale una ventana de error de InDesign, su texto tal cual) se puede corregir la herramienta
+sin ver la pantalla. Si no tienes acceso a ese ordenador, quien lo tenga puede ejecutar los dos scripts, abrir los
+archivos y copiar su contenido literalmente; si en vez de la ventana de InDesign prefiere ver los errores con número de
+línea, el *ExtendScript Toolkit* que acompaña a CS3 (doble clic en el `.jsx`, elegir «Adobe InDesign CS3» y pulsar ▶)
+los muestra en su consola.
 
 ## Línea de comandos
 
@@ -70,9 +94,10 @@ documento.idml ──► lector de IDML ──► modelo normalizado ──┬�
   y se pasan a las coordenadas «de pliego» con el origen arriba a la izquierda, que es lo que usa el scripting de
   InDesign con `RulerOrigin.SPREAD_ORIGIN`. Giros y reflejos se separan del tamaño; lo inclinado pasa a trazado libre.
 * **Script.** El script (`src/runtime.jsx`) está escrito en ES3 (lo que entiende InDesign), con todos los datos
-  incrustados y el texto en ASCII (`\uXXXX`) para evitar problemas de codificación. Cada paso va protegido: si CS3
-  rechaza una propiedad, el script la anota y sigue. Al terminar muestra un resumen y guarda
-  `resultado_reconstruccion.txt` en el escritorio.
+  incrustados (repartidos en líneas cortas, con los textos largos troceados) y el texto en ASCII (`\uXXXX`) para
+  evitar problemas de codificación. Cada paso va protegido: si CS3 rechaza una propiedad, el script la anota con el
+  mensaje de error y sigue; los bucles tienen tope y, pase lo que pase, se devuelve a InDesign su nivel de interacción.
+  Al terminar muestra un resumen y guarda `resultado_reconstruccion.txt` en el escritorio.
 * **Diferencias entre versiones.** El script resuelve las constantes de enumeración en mayúsculas (CS3) y en camelCase,
   y contempla lo que en CS3 es distinto: esquinas con una sola opción, `textWrapType`, tonos con el color como primer
   argumento, número de la primera página por sección, `pageBinding` de solo lectura…
@@ -91,6 +116,9 @@ npm run test:ui   # reconstruye dist/ y prueba la página en Chromium con Playwr
 * **InDesign simulado** (`test/mock-indesign.js`): ejecuta el script generado contra un modelo de objetos estricto
   (una propiedad inexistente lanza error, como en ExtendScript), en modo CS6 y en un modo CS3 con las diferencias que
   se han podido comprobar en la referencia del modelo de objetos de CS3.
+* **Sintaxis ES3 estricta**: el script de reconstrucción y la comprobación se analizan con el analizador de Node (acorn)
+  en modo ECMAScript 3 sin palabras reservadas como nombre: sin comas finales, `let`, flechas ni plantillas. Es lo
+  mismo que exige ExtendScript, mucho más estricto que ejecutarlo en un motor moderno.
 * **Robustez**: cientos de IDML estropeados al azar (atributos o elementos que faltan, partes truncadas) no deben
   provocar ninguna excepción ni dejar el script sin terminar.
 * **Navegador**: carga de un `.indd` (mensaje claro), conversión, descarga del zip y ausencia de desbordes en móvil y
@@ -103,9 +131,10 @@ objetos y las propiedades de estilo menos comunes; todas están protegidas para 
 ## Estructura
 
 ```
-src/idml.js       lector de IDML y modelo          src/jsxgen.js   genera el script (.jsx)
+src/idml.js       lector de IDML y modelo          src/jsxgen.js   genera los scripts (.jsx)
 src/runtime.jsx   script que corre dentro de CS3   src/inx.js      INX experimental
-src/props.js      atributos IDML → propiedades CS3 src/report.js   textos, RTF, informe HTML, LEEME
+src/probe.jsx     la comprobación 0_comprobar_CS3  src/report.js   textos, RTF, informe HTML, LEEME
+src/props.js      atributos IDML → propiedades CS3 src/enums.js    constantes que se piden a InDesign
 src/geometry.js   matrices                         src/convert.js  une todo; src/cli.js línea de comandos
 src/xml.js, zip.js  XML y ZIP sin dependencias     src/ui.html     interfaz; build.js la empaqueta en dist/
 test/             pruebas, documento de ejemplo e InDesign simulado

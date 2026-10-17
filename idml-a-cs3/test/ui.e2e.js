@@ -56,13 +56,30 @@ const { buildIdml } = require('./fixture');
     assert.equal(dl.suggestedFilename(), 'mi_documento_n_para_CS3.zip');
     execFileSync('unzip', ['-tq', zipPath]);
     const names = execFileSync('unzip', ['-Z1', zipPath]).toString().split('\n').filter(Boolean);
-    for (const must of ['1_reconstruir_en_CS3.jsx', '2_EXPERIMENTAL_documento.inx', 'LEEME.txt', 'informe.html', 'imagenes_incrustadas/embebida.png']) {
+    for (const must of ['0_comprobar_CS3.jsx', '1_reconstruir_en_CS3.jsx', '2_EXPERIMENTAL_documento.inx', 'LEEME.txt', 'informe.html', 'imagenes_incrustadas/embebida.png']) {
       assert.ok(names.some((n) => n.endsWith('/' + must)), 'falta ' + must + ' en ' + names.join(', '));
     }
     // el script del zip es idéntico al que genera la línea de comandos
     const jsx = execFileSync('unzip', ['-p', zipPath, 'mi_documento_n_para_CS3/1_reconstruir_en_CS3.jsx']).toString();
     assert.match(jsx, /^#target indesign/);
     assert.ok(!/[^\x00-\x7f]/.test(jsx));
+
+    // 3b) la comprobación se descarga sola, sin convertir nada
+    const [pdl] = await Promise.all([page.waitForEvent('download'), page.click('#probe')]);
+    assert.equal(pdl.suggestedFilename(), '0_comprobar_CS3.jsx');
+    const probePath = path.join(tmp, label + '-probe.jsx');
+    await pdl.saveAs(probePath);
+    const probeTxt = fs.readFileSync(probePath, 'utf8');
+    assert.match(probeTxt, /^#target indesign\n/);
+    assert.match(probeTxt, /COMPROBAR INDESIGN CS3/);
+    assert.ok(!/[^\x00-\x7f]/.test(probeTxt), 'solo ASCII');
+    assert.equal(probeTxt, execFileSync('unzip', ['-p', zipPath, 'mi_documento_n_para_CS3/0_comprobar_CS3.jsx']).toString(), 'igual que el del zip');
+    // el enlace de arriba lleva a la ayuda
+    await page.click('#goto-help');
+    await page.waitForTimeout(700);
+    const vis = await page.$eval('#help', (e) => { const r = e.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; });
+    assert.ok(vis, 'el bloque de ayuda queda a la vista');
+    await page.screenshot({ path: path.join(shots, label + '-4-ayuda.png') });
 
     // 4) sin desbordes horizontales
     const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -119,6 +136,12 @@ const { buildIdml } = require('./fixture');
       assert.equal(saved.filename, 'mi_documento_n_para_CS3.zip');
       assert.equal(saved.isBlob, true);
       assert.ok(saved.size > 10000, 'zip con contenido');
+      await page.click('#probe');
+      await page.waitForFunction(() => window.__saved.length === 2);
+      const savedProbe = await page.evaluate(() => window.__saved[1]);
+      assert.equal(savedProbe.filename, '0_comprobar_CS3.jsx');
+      assert.equal(savedProbe.isBlob, true);
+      assert.ok(savedProbe.size > 20000, 'la comprobación tiene contenido');
       const toastHidden = await page.$eval('#toast', (t) => t.hidden || !t.textContent.trim() || /Guardado/.test(t.textContent));
       assert.ok(toastHidden, 'si el usuario rechaza no debe salir ningún error');
     }
