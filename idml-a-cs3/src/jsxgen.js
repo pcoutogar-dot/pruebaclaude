@@ -121,6 +121,7 @@ function strLit(s) {
 }
 
 const isScalar = (v) => v === null || v === undefined || typeof v !== 'object';
+const isFlat = (v) => isScalar(v) || (Array.isArray(v) && v.every(isScalar));   // un valor o una lista de valores
 
 function toJs(v) {
   if (v === null || v === undefined) return 'null';
@@ -135,7 +136,7 @@ function toJs(v) {
   const keys = Object.keys(v).filter((k) => v[k] !== undefined && typeof v[k] !== 'function');
   if (!keys.length) return '{}';
   const pairs = keys.map((k) => JSON.stringify(k) + ':' + toJs(v[k]));
-  if (keys.every((k) => isScalar(v[k])) && pairs.every((x) => x.indexOf('\n') < 0)) return '{' + pairs.join(',') + '}';
+  if (keys.every((k) => isFlat(v[k])) && pairs.every((x) => x.indexOf('\n') < 0) && pairs.join(',').length <= 220) return '{' + pairs.join(',') + '}';
   return '{\n' + pairs.join(',\n') + '\n}';
 }
 

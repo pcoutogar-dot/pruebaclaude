@@ -22,6 +22,9 @@ script que lo reconstruye dentro de CS3**, junto con un informe y todos los text
    5. Compara con el informe y guarda como `.indd`.
    6. Si algo falla: [Si algo falla en CS3](#si-algo-falla-en-cs3).
 
+`dist/` también trae, ya hechos, **`0_comprobar_CS3.jsx`** (la comprobación suelta) y **`ejemplo_para_CS3.zip`** (el
+resultado de convertir el documento de ejemplo): sirven para probar una instalación de CS3 sin tener a mano un IDML.
+
 ### Qué contiene el zip
 
 | Archivo | Para qué sirve |

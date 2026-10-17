@@ -191,7 +191,7 @@ function createMock(opts) {
     const st = doc.__store;
     st.facing = true;
     const mkStyle = (name, kind) => {
-      const bulletChar = obj('BulletChar', ['bulletCharacterType', 'bulletCharacterValue']);
+      const bulletChar = obj('BulletChar', cs3 ? ['characterType', 'characterValue'] : ['bulletCharacterType', 'bulletCharacterValue']);
       const s = obj(kind, ['name', 'basedOn', 'nextStyle'].concat(TEXT_PROPS), { name }, { bulletChar, tabStops: null });
       s.__store.tabs = [];
       s.__store.bulletRef = bulletChar;
@@ -413,7 +413,7 @@ function createMock(opts) {
       documentPreferences: dp,
       marginPreferences: st.margin,
       gridPreferences: gridPrefs,
-      colors: coll(st.colors, { add: (init) => { init = init || { name: 'Color ' + (st.colors.length + 1) }; if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
+      colors: coll(st.colors, { add: (init) => { if (init && opts.colorsAddWithPropsThrows) throw new Error('Invalid value for property model'); init = init || { name: 'Color ' + (st.colors.length + 1) }; if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
       tints: coll(st.tints, {
         add: (a, b) => {
           const twoArgs = a && a.__type === 'Color';
@@ -477,7 +477,7 @@ function createMock(opts) {
     name: 'Adobe InDesign', version: '5.0', locale: 'es_ES',
     documents,
     fonts: coll(fonts, {}),
-    scriptPreferences: obj('ScriptPreferences', ['userInteractionLevel', 'enableRedraw', 'measurementUnit'], { userInteractionLevel: enumObjs.UserInteractionLevels[style === 'camel' ? 'interactWithAll' : 'INTERACT_WITH_ALL'], enableRedraw: true, measurementUnit: enumObjs.MeasurementUnits[style === 'camel' ? 'points' : 'POINTS'] }),
+    scriptPreferences: obj('ScriptPreferences', cs3 ? ['userInteractionLevel', 'enableRedraw'] : ['userInteractionLevel', 'enableRedraw', 'measurementUnit'], { userInteractionLevel: enumObjs.UserInteractionLevels[style === 'camel' ? 'interactWithAll' : 'INTERACT_WITH_ALL'], enableRedraw: true, measurementUnit: enumObjs.MeasurementUnits[style === 'camel' ? 'points' : 'POINTS'] }),
     pdfPlacePreferences: obj('PdfPlacePreferences', ['pageNumber']),
     activeWindow: obj('Window', ['activePage']),
     transformationMatrices: { add: (init) => init },
@@ -616,7 +616,12 @@ function plain(store) {
   const o = {};
   for (const k of Object.keys(store)) {
     if (k === 'name' || k === 'basedOn' || k === 'nextStyle' || k === 'tabs') continue;
-    if (k === 'bulletRef') { const b = store[k].__store; if (Object.keys(b).length) o.bulletChar = { type: b.bulletCharacterType && b.bulletCharacterType.__enum, value: b.bulletCharacterValue }; continue; }
+    if (k === 'bulletRef') {
+      const b = store[k].__store;
+      const ty = b.characterType || b.bulletCharacterType; const va = b.characterValue !== undefined ? b.characterValue : b.bulletCharacterValue;
+      if (Object.keys(b).length) o.bulletChar = { type: ty && ty.__enum, value: va };
+      continue;
+    }
     const v = store[k];
     o[k] = v && v.__enum ? v.__enum : v && v.__store && v.__store.fontFamily ? 'font:' + v.__store.name : v && v.name && typeof v === 'object' ? 'obj:' + v.name : v;
   }

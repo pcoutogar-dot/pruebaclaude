@@ -3,6 +3,8 @@
 // Empaqueta el conversor y la interfaz en UN SOLO archivo HTML que funciona sin internet:
 //   dist/idml-a-cs3.html        página completa (para guardar y abrir con doble clic)
 //   dist/idml-a-cs3.fragmento.html   solo el contenido (para publicarlo como artefacto)
+//   dist/0_comprobar_CS3.jsx         la comprobación suelta (para probar CS3 sin convertir nada)
+//   dist/ejemplo_para_CS3.zip        el resultado de convertir el documento de ejemplo, listo para probar en CS3
 const fs = require('fs');
 const path = require('path');
 
@@ -31,6 +33,18 @@ function sampleBase64() {
   return Buffer.from(buildIdml()).toString('base64');
 }
 
+// archivos sueltos para probar en un CS3 de verdad sin pasar por la página
+function extras(dist) {
+  const { convert, writeZip, buildProbe } = require('./src/convert');
+  const { buildIdml, tinyPng } = require('./test/fixture');
+  const date = new Date();
+  fs.writeFileSync(path.join(dist, '0_comprobar_CS3.jsx'), buildProbe({ date }));
+  const res = convert(buildIdml(), { name: 'ejemplo.idml', date });
+  // la imagen enlazada del ejemplo va dentro de la carpeta, para que el script la encuentre al elegirla
+  const files = res.files.concat([{ name: res.folder + '/foto uno.png', data: new Uint8Array(tinyPng()) }]);
+  fs.writeFileSync(path.join(dist, 'ejemplo_para_CS3.zip'), writeZip(files));
+}
+
 function main() {
   const tpl = fs.readFileSync(path.join(SRC, 'ui.html'), 'utf8');
   const code = bundle().replace(/<\/script/gi, '<\\/script');
@@ -40,6 +54,8 @@ function main() {
   fs.writeFileSync(path.join(__dirname, 'dist', 'idml-a-cs3.html'), full);
   fs.writeFileSync(path.join(__dirname, 'dist', 'idml-a-cs3.fragmento.html'), fragment);
   console.log('dist/idml-a-cs3.html  ' + Math.round(full.length / 1024) + ' KB');
+  extras(path.join(__dirname, 'dist'));
+  console.log('dist/0_comprobar_CS3.jsx, dist/ejemplo_para_CS3.zip');
 }
 
 main();

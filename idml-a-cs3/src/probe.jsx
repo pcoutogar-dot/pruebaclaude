@@ -199,12 +199,16 @@ function docChecks() {
   t("página 1 y su maestra", function () { return DOC.pages.length + " página(s); maestra aplicada: " + DOC.pages.item(0).appliedMaster.name; });
   t("pliego de una página (page.parent)", function () { return DOC.pages.item(0).parent.pages.length + " página(s) en el pliego"; });
   t("capa de fábrica", function () { return DOC.layers.length + " capa(s): " + DOC.layers.item(0).name; });
-  t("preferencias del script (interacción, unidades, redibujado)", function () {
-    var sp = app.scriptPreferences, a = sp.userInteractionLevel, b = sp.measurementUnit, c = sp.enableRedraw;
-    sp.measurementUnit = need("MeasurementUnits", "Points");
+  t("preferencias del script (interacción y redibujado)", function () {
+    var sp = app.scriptPreferences, a = sp.userInteractionLevel, c = sp.enableRedraw;
     sp.enableRedraw = false; sp.enableRedraw = c;
-    sp.measurementUnit = b; sp.userInteractionLevel = a;
+    sp.userInteractionLevel = a;
   });
+  t("preferencias del script: unidad de medida (measurementUnit)", function () {
+    var sp = app.scriptPreferences, b = sp.measurementUnit;
+    sp.measurementUnit = need("MeasurementUnits", "Points");
+    sp.measurementUnit = b;
+  }, "es de CS5.5 o posterior; en CS3 el script usa las unidades de las reglas del documento");
   t("diálogos del script (confirm, Folder.selectDialog)", function () { return typeof confirm + ", " + typeof Folder.selectDialog; });
 
   head("Capas");
@@ -266,7 +270,10 @@ function docChecks() {
     t("estilo de párrafo: guionado", function () { ps.hyphenation = true; ps.hyphenateWordsLongerThan = 6; });
     t("estilo de párrafo: filete inferior", function () { ps.ruleBelow = true; ps.ruleBelowLineWeight = 1; ps.ruleBelowColor = c1; ps.ruleBelowWidth = need("RuleWidth", "ColumnWidth"); });
     t("estilo de párrafo: viñetas", function () { ps.bulletsAndNumberingListType = need("ListType", "BulletList"); });
-    t("estilo de párrafo: carácter de la viñeta", function () { ps.bulletChar.bulletCharacterType = need("BulletCharacterType", "UnicodeOnly"); ps.bulletChar.bulletCharacterValue = 8226; });
+    alts("estilo de párrafo: carácter de la viñeta", [
+      ["bulletChar.characterType / characterValue", function () { ps.bulletChar.characterType = need("BulletCharacterType", "UnicodeOnly"); ps.bulletChar.characterValue = 8226; }],
+      ["bulletChar.bulletCharacterType / bulletCharacterValue", function () { ps.bulletChar.bulletCharacterType = need("BulletCharacterType", "UnicodeOnly"); ps.bulletChar.bulletCharacterValue = 8226; }]
+    ]);
     t("estilo de párrafo: basedOn y nextStyle", function () { var p2 = DOC.paragraphStyles.add({ name: "PruebaP2" }); p2.basedOn = ps; p2.nextStyle = ps; });
   }
   t("estilo de carácter: crear y dar propiedades", function () {

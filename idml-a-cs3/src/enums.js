@@ -1,6 +1,6 @@
 'use strict';
 // Constantes (enumeraciones) que el script de reconstrucción puede pedirle a InDesign, con el nombre que tienen en IDML.
-// CS3 las llama en camelCase (leftAlign) y versiones posteriores en MAYUSCULAS (LEFT_ALIGN); el script las busca de las dos formas.
+// CS3 las llama en MAYUSCULAS con guiones bajos (LEFT_ALIGN) y las versiones muy antiguas en camelCase (leftAlign); el script las busca de las dos formas.
 // Las usa la comprobación 0_comprobar_CS3.jsx y la simulación de las pruebas.
 const ENUMS = {
   MeasurementUnits: ['Points', 'Millimeters', 'Picas', 'Inches', 'Centimeters', 'Ciceros', 'Agates'],

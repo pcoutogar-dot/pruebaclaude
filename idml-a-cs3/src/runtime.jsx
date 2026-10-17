@@ -54,7 +54,8 @@ function trace(m) { TRACE.push(secs() + " s  " + m); }
 function step(m) { if (DIAG) { trace("   " + m); flushLog(); } }
 
 // ---------------------------------------------------------------- enumeraciones
-// CS3 llama a las constantes en camelCase (leftAlign); versiones posteriores en MAYUSCULAS (LEFT_ALIGN).
+// Según su referencia, CS3 llama a las constantes en MAYUSCULAS con guiones bajos (LEFT_ALIGN); las versiones muy
+// antiguas, en camelCase (leftAlign). Se prueban las dos formas, y como último recurso se comparan sin mayúsculas.
 function cls(name) {
   var c;
   try { c = G_[name]; if (c !== undefined) { return c; } } catch (e) { }
@@ -189,6 +190,13 @@ function setTabs(t, tabs) {
   }
 }
 
+// la referencia de CS3 llama a las propiedades del carácter de viñeta characterType / characterValue; IDML, bulletCharacterType / ...Value
+function setBullet(b, v) {
+  var type = en("BulletCharacterType", v.type);
+  try { b.characterType = type; b.characterValue = v.value; }
+  catch (e) { b.bulletCharacterType = type; b.bulletCharacterValue = v.value; }
+}
+
 function applyProps(t, p, what) {
   var k, val, hadFont = false;
   if (!p) { return; }
@@ -200,10 +208,7 @@ function applyProps(t, p, what) {
     if (k === "tabStops") { setTabs(t, p[k]); continue; }
     if (k === "locked") { LOCKED.push(t); continue; }
     if (k === "bulletChar") {
-      try {
-        t.bulletChar.bulletCharacterType = en("BulletCharacterType", p[k].type);
-        t.bulletChar.bulletCharacterValue = p[k].value;
-      } catch (eb) { failProp(what, "bulletChar", eb); }
+      try { setBullet(t.bulletChar, p[k]); } catch (eb) { failProp(what, "bulletChar", eb); }
       continue;
     }
     try {
@@ -305,12 +310,15 @@ function addColor(c) {
   if (sp !== undefined) { p.space = sp; }
   p.colorValue = c.v;
   try { return DOC.colors.add(p); } catch (e) {
+    try { col = DOC.colors.item(c.n); col.name; return col; } catch (e0) { }     // ya existe con ese nombre: no se crea otro
     // alternativa: crear el color vacío y darle los valores uno a uno
     col = DOC.colors.add();
-    col.name = c.n;
-    if (m !== undefined) { col.model = m; }
-    if (sp !== undefined) { col.space = sp; }
-    col.colorValue = c.v;
+    try {
+      col.name = c.n;
+      if (m !== undefined) { col.model = m; }
+      if (sp !== undefined) { col.space = sp; }
+      col.colorValue = c.v;
+    } catch (e1) { try { col.remove(); } catch (e2) { } throw e1; }      // sin dejar un color suelto a medias
     return col;
   }
 }
@@ -468,12 +476,12 @@ function askImagesFolder() {
 }
 
 function placeImage(o, it) {
-  var img = it.img, f = findImage(img), res, gr;
+  var img = it.img, f = findImage(img), res, gr, oldPage;
   if (!img.name && !img.saved) { return; }
   if (!f) { MISSING_IMAGES.push(img.name || img.saved); try { o.label = "FALTA: " + (img.name || img.saved); } catch (e0) { } return; }
   step("imagen " + (img.name || img.saved));
   try {
-    if (img.page) { try { app.pdfPlacePreferences.pageNumber = img.page; } catch (e1) { } }
+    if (img.page) { try { oldPage = app.pdfPlacePreferences.pageNumber; app.pdfPlacePreferences.pageNumber = img.page; } catch (e1) { } }
     res = o.place(f);
     gr = (res && res.length) ? res[0] : o.graphics.item(0);
     if (img.b) { gr.geometricBounds = img.b; }
@@ -486,6 +494,8 @@ function placeImage(o, it) {
     MISSING_IMAGES.push((img.name || img.saved) + " (error al colocarla)");
     log("No se pudo colocar la imagen \"" + (img.name || img.saved) + "\": " + errText(e));
   }
+  // es una preferencia de la aplicación: se deja como estaba para no alterar los PDF que se coloquen después
+  if (oldPage !== undefined && oldPage !== null) { try { app.pdfPlacePreferences.pageNumber = oldPage; } catch (e3) { } }
 }
 
 // add({geometricBounds}) es la forma habitual; si CS3 no la acepta, se crea y luego se coloca

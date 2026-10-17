@@ -56,6 +56,8 @@ test('con las diferencias de CS3: las que el script ya sortea salen como "distin
   assert.match(rep, /\[distinto\] encuadernación \(pageBinding\)/);
   assert.match(rep, /\[distinto\] número de la primera página \(startPageNumber\)/);
   assert.match(rep, /\[distinto\] capa: imprimible \(printable\)/);
+  assert.match(rep, /\[distinto\] preferencias del script: unidad de medida \(measurementUnit\) {3}-> .*\(es de CS5\.5 o posterior; en CS3 el script usa las unidades de las reglas del documento\)/);
+  assert.match(rep, /carácter de la viñeta {3}-> {3}funciona: bulletChar\.characterType \/ characterValue {6}NO funciona: bulletChar\.bulletCharacterType/);
   assert.doesNotMatch(rep, /\[FALLA\]/, 'nada de lo demás falla en el CS3 simulado');
   assert.match(rep, /crear un tono {3}-> {3}funciona: tints\.add\(color, \{name, tintValue\}\) {6}NO funciona: tints\.add\(\{name, baseColor, tintValue\}\)/);
   assert.match(rep, /esquinas redondeadas {3}-> {3}funciona: cornerOption \+ cornerRadius/);
@@ -63,7 +65,7 @@ test('con las diferencias de CS3: las que el script ya sortea salen como "distin
   assert.match(rep, /\[no hay\] DocumentPreference: pageBinding, startPageNumber/);
   assert.match(rep, /\[no hay\] Layer: printable/);
   assert.match(rep, /\[no hay\] TextWrapPreference: textWrapMode/);
-  assert.match(r.state.alerts[0], /3 diferencias que el script ya sabe sortear/);
+  assert.match(r.state.alerts[0], /4 diferencias que el script ya sabe sortear/);
   assert.match(r.state.alerts[0], /Propiedades que este InDesign no tiene:/);
 });
 

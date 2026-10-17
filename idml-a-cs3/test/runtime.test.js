@@ -346,6 +346,20 @@ test('filetes y viñetas de los estilos de párrafo llegan a CS3', () => {
   assert.doesNotMatch(r.state.alerts[0], /no aceptó/);
 });
 
+test('CS3 estricto: el carácter de las viñetas usa characterType / characterValue (los nombres de CS3)', () => {
+  const m = build(buildIdmlWith((p) => {
+    p['Resources/Styles.xml'] = p['Resources/Styles.xml'].replace('KeepWithNext="1" Hyphenation="true">', 'KeepWithNext="1" Hyphenation="true" BulletsAndNumberingListType="BulletList">')
+      .replace('<Leading type="unit">12.5</Leading>', '<Leading type="unit">12.5</Leading><BulletChar BulletCharacterType="UnicodeOnly" BulletCharacterValue="8226"/>');
+  }));
+  const r = M.runJsx(J.buildScript(m, { date: new Date('2026-10-08T00:00:00Z') }), { enumStyle: 'upper', cs3: true, vfs: VFS });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó|bulletChar/);
+  assert.deepEqual(M.snapshot(r.doc).pstyles.find((x) => x.name === 'Cuerpo').props.bulletChar, { type: 'BulletCharacterType.UnicodeOnly', value: 8226 });
+  // y si una versión usa los nombres de IDML, también llega
+  const r2 = run({ enumStyle: 'camel' }, J.buildScript(m, { date: new Date('2026-10-08T00:00:00Z') }));
+  assert.deepEqual(M.snapshot(r2.doc).pstyles.find((x) => x.name === 'Cuerpo').props.bulletChar, { type: 'BulletCharacterType.UnicodeOnly', value: 8226 });
+});
+
 test('numeración automática: se avisa de que no se recrea', () => {
   const m = build(buildIdmlWith((p) => {
     p['Resources/Styles.xml'] = p['Resources/Styles.xml'].replace('KeepWithNext="1" Hyphenation="true">', 'KeepWithNext="1" Hyphenation="true" BulletsAndNumberingListType="NumberedList">');
@@ -378,4 +392,29 @@ test('las muestras de fábrica se reconocen aunque InDesign esté en otro idioma
   assert.equal(s.colors.length, 4, 'las de fábrica no se duplican');
   // y el estilo básico usa el negro de fábrica
   assert.equal(s.pstyles.find((x) => x.name === '[Basic Paragraph]').props.fillColor, 'obj:Negro');
+});
+
+test('la página de PDF que se pide al colocar una imagen no queda cambiada en las preferencias de InDesign', () => {
+  const pdf = script.replace('"img":{', '"img":{"page":3,');
+  assert.notEqual(pdf, script);
+  const m = M.createMock({ enumStyle: 'camel', vfs: VFS });
+  m.app.pdfPlacePreferences.pageNumber = 7;
+  vm.runInContext(pdf.replace(/^#.*$/gm, '//'), vm.createContext(m.sandbox), { filename: 'reconstruir.jsx', timeout: 20000 });
+  assert.equal(m.state.placed.length, 2);
+  assert.equal(m.app.pdfPlacePreferences.pageNumber, 7, 'se devuelve a su valor de partida');
+});
+
+test('colores: si add() con propiedades no vale se crea vacío y se rellena; si ya existe no se duplica', () => {
+  const normal = M.snapshot(run({ enumStyle: 'camel' }).doc);
+  const r = run({ enumStyle: 'camel', colorsAddWithPropsThrows: true });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /No se pudo crear el color/);
+  const s = M.snapshot(r.doc);
+  assert.deepEqual(s.colors, normal.colors, 'los mismos colores, con los mismos valores');
+  // un color repetido en los datos: no queda ningún color suelto con nombre automático
+  const dup = script.replace('{"n":"Rojo",', '{"n":"Rojo","m":"Process","s":"CMYK","v":[0,100,100,0]},\n{"n":"Rojo",');
+  assert.notEqual(dup, script);
+  const r2 = run({ enumStyle: 'camel' }, dup);
+  assert.equal(r2.error, null);
+  assert.deepEqual(M.snapshot(r2.doc).colors.map((c) => c.name), normal.colors.map((c) => c.name));
 });
