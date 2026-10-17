@@ -54,7 +54,8 @@ en silencio. Hay dos archivos que se escriben en el escritorio del ordenador con
   `var DIAG = false;` por `true` en la cabecera del script.
 
 Con esos dos archivos (y, si sale una ventana de error de InDesign, su texto tal cual) se puede corregir la herramienta
-sin ver la pantalla. Si no tienes acceso a ese ordenador, quien lo tenga puede ejecutar los dos scripts, abrir los
+sin ver la pantalla. Para pedirle la prueba a un asistente con acceso remoto al ordenador de CS3 (Cowork, por ejemplo) hay un texto
+listo para pegar en [`PROBAR_EN_CS3_CON_COWORK.md`](PROBAR_EN_CS3_CON_COWORK.md). Si no tienes acceso a ese ordenador, quien lo tenga puede ejecutar los dos scripts, abrir los
 archivos y copiar su contenido literalmente; si en vez de la ventana de InDesign prefiere ver los errores con número de
 línea, el *ExtendScript Toolkit* que acompaña a CS3 (doble clic en el `.jsx`, elegir «Adobe InDesign CS3» y pulsar ▶)
 los muestra en su consola.
