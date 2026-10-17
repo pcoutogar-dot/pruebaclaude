@@ -196,9 +196,109 @@ test('trazados: si CS3 no deja fijar entirePath se anota y se sigue', () => {
   assert.match(r.state.alerts[0], /objeto\.trazado x2/);
 });
 
-test('se registra el resultado en un archivo junto al script', () => {
+test('el registro completo se guarda en el Escritorio, con el entorno y los pasos', () => {
   const r = run({ enumStyle: 'camel' });
-  assert.match(r.state.logFile, /^\ufeffDocumento reconstruido/);
+  const log = r.state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(log, /^\ufeffIDML a CS3 - registro de la reconstrucción\r\n/);
+  assert.match(log, /Entorno: InDesign 5\.0 \| idioma es_ES \| Windows XP 5\.1 \(mock\) \| ExtendScript 3\.0\.0 build 42/);
+  assert.match(log, /Documento reconstruido: 3 páginas, 15 objetos/);
+  assert.match(log, /PASOS:/);
+  for (const fase of ['fuentes instaladas', 'documento', 'muestras de fábrica', 'capas', 'colores', 'estilos', 'páginas maestras', 'páginas', 'imágenes', 'objetos', 'textos', 'final']) {
+    assert.ok(log.includes('> ' + fase), 'falta la fase ' + fase);
+  }
+  assert.doesNotMatch(log, /INCOMPLETA|FALLÓ/);
+  assert.match(r.state.alerts[0], /Registro completo, con los mensajes de error de CS3: \/virtual\/desktop\/resultado_reconstruccion\.txt$/);
+});
+
+test('sin Escritorio, el registro se guarda junto al script', () => {
+  const r = run({ enumStyle: 'camel', noDesktop: true });
+  assert.match(r.state.files['/virtual/scripts/resultado_reconstruccion.txt'], /Documento reconstruido: 3 páginas/);
+  assert.equal(r.state.files['/virtual/desktop/resultado_reconstruccion.txt'], undefined);
+});
+
+test('si no se puede escribir el registro, el script termina igual y avisa en pantalla', () => {
+  const r = run({ enumStyle: 'camel', rejectFileWrite: true });
+  assert.equal(r.error, null);
+  assert.match(r.state.alerts[0], /^Documento reconstruido: 3 páginas/);
+  assert.match(r.state.alerts[0], /No se pudo guardar el registro en el Escritorio \(esto es solo el resumen\)\.$/);
+  assert.doesNotMatch(r.state.alerts[0], /Registro completo/);
+});
+
+test('el registro se guarda al empezar cada fase: si InDesign se cuelga, queda dicho dónde', () => {
+  const r = run({ enumStyle: 'camel', fileHistory: true });
+  const h = r.state.history['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.ok(h.length >= 13, 'una escritura por fase como mínimo');
+  const colores = h.find((x) => x.includes('> colores') && !x.includes('> estilos'));
+  assert.match(colores, /^\ufeff\*\* EJECUCION INCOMPLETA \*\*/);
+  assert.doesNotMatch(colores, /> estilos/);
+  assert.doesNotMatch(h[h.length - 1], /INCOMPLETA/);
+});
+
+test('los mensajes de error de CS3 llegan al registro junto a cada propiedad rechazada', () => {
+  const r = run({ enumStyle: 'camel', rejectProps: ['hyphenation', 'topLeftCornerRadius'] });
+  const log = r.state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(log, /PROPIEDADES QUE CS3 NO ACEPTÓ \(2\), con el mensaje de error de CS3:/);
+  assert.match(log, /\n  estilo\.hyphenation x1 {3}<- {3}Object does not support the property or method 'hyphenation'/);
+  assert.match(log, /\n  objeto\.topLeftCornerRadius x1 {3}<- {3}Object does not support the property or method 'topLeftCornerRadius'/);
+  assert.doesNotMatch(r.state.alerts[0], /Object does not support/, 'la pantalla va resumida; el detalle está en el registro');
+});
+
+test('si una fase entera falla, queda anotada y las demás se hacen igualmente', () => {
+  const rota = script.replace('function findBuiltins() {', 'function findBuiltins() { throw new Error("boom"); ');
+  assert.notEqual(rota, script);
+  const r = run({ enumStyle: 'camel' }, rota);
+  assert.equal(r.error, null);
+  assert.match(r.state.alerts[0], /ERROR en la fase «muestras de fábrica»: boom/);
+  assert.match(r.state.alerts[0], /^Documento reconstruido: 3 páginas, 15 objetos/);
+  const log = r.state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(log, /FALLÓ: boom/);
+});
+
+test('un error inesperado al final no deja InDesign sin diálogos ni sin registro', () => {
+  const rota = script.replace('function alertLines() {', 'function alertLines() { throw new Error("kaput"); ');
+  const r = run({ enumStyle: 'camel' }, rota);
+  assert.equal(r.error, null);
+  assert.match(r.state.alerts[0], /^Error inesperado: kaput/);
+  assert.match(r.state.files['/virtual/desktop/resultado_reconstruccion.txt'], /FALLO GRAVE: Error inesperado: kaput/);
+  assert.equal(String(r.app.scriptPreferences.userInteractionLevel), 'UserInteractionLevels.InteractWithAll', 'se devuelve el nivel de interacción original');
+  assert.equal(r.app.scriptPreferences.enableRedraw, true);
+});
+
+test('si InDesign no deja añadir páginas, el script no se queda en un bucle infinito', () => {
+  const r = run({ enumStyle: 'camel', pagesAddNoop: true });
+  assert.equal(r.error, null);
+  assert.match(r.state.alerts[0], /Solo se pudieron crear 1 de 3 páginas/);
+  const r2 = run({ enumStyle: 'camel', pagesAddThrows: true });
+  assert.equal(r2.error, null);
+  assert.match(r2.state.alerts[0], /Solo se pudieron crear 1 de 3 páginas: No se pueden añadir más páginas/);
+});
+
+test('modo paso a paso: anota cada objeto y estilo; se activa solo si la ejecución anterior se quedó a medias', () => {
+  const normal = run({ enumStyle: 'camel' }).state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(normal, /Modo paso a paso: no/);
+  assert.doesNotMatch(normal, /objeto u/);
+  const manual = run({ enumStyle: 'camel' }, script.replace('var DIAG = false;', 'var DIAG = true;')).state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(manual, /Modo paso a paso: sí/);
+  assert.match(manual, /\n {2}[\d.]+ s {5}estilo de párrafo Titulo/);
+  assert.match(manual, /\n {2}[\d.]+ s {5}objeto u\w+ \(text\)/);
+  assert.match(manual, /\n {2}[\d.]+ s {5}tabla de 2x2/);
+  // la ejecución anterior dejó un registro "incompleto"
+  const vfs = Object.assign({}, VFS, { '/virtual/desktop/resultado_reconstruccion.txt': '\ufeff** EJECUCION INCOMPLETA ** se cortó\r\n' });
+  const auto = run({ enumStyle: 'camel', vfs });
+  const log = auto.state.files['/virtual/desktop/resultado_reconstruccion.txt'];
+  assert.match(log, /Modo paso a paso: sí/);
+  assert.match(log, /La ejecución anterior se quedó a medias/);
+  // y si la anterior terminó bien, no
+  const vfs2 = Object.assign({}, VFS, { '/virtual/desktop/resultado_reconstruccion.txt': '\ufeffIDML a CS3 - registro de la reconstrucción\r\n' });
+  assert.match(run({ enumStyle: 'camel', vfs: vfs2 }).state.files['/virtual/desktop/resultado_reconstruccion.txt'], /Modo paso a paso: no/);
+});
+
+test('constantes con acrónimos en minúsculas (ColorSpace.cmyk) o con otra grafía también se encuentran', () => {
+  const normal = M.snapshot(run({ enumStyle: 'camel' }).doc);
+  const r = run({ enumStyle: 'camel', lowerAcronyms: true });
+  assert.equal(r.error, null);
+  assert.doesNotMatch(r.state.alerts[0], /no aceptó|No se pudo/);
+  assert.deepEqual(M.snapshot(r.doc), normal);
 });
 
 test('CS3 estricto: esquinas, ajuste de texto, tonos y numeración con las diferencias propias de CS3', () => {

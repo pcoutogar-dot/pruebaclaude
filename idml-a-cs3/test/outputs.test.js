@@ -22,7 +22,7 @@ const text = (f) => (typeof f.data === 'string' ? f.data : Buffer.from(f.data).t
 test('convert(): carpeta y archivos esperados', () => {
   assert.equal(res.folder, 'Mi_Libro_n_para_CS3');
   const names = res.files.map((f) => f.name.slice(res.folder.length + 1));
-  assert.deepEqual(names.filter((n) => !n.includes('/')), ['1_reconstruir_en_CS3.jsx', '2_EXPERIMENTAL_documento.inx', 'LEEME.txt', 'informe.html']);
+  assert.deepEqual(names.filter((n) => !n.includes('/')), ['0_comprobar_CS3.jsx', '1_reconstruir_en_CS3.jsx', '2_EXPERIMENTAL_documento.inx', 'LEEME.txt', 'informe.html']);
   assert.equal(names.filter((n) => n.startsWith('textos/')).length, 4);
   assert.equal(names.filter((n) => n.startsWith('textos_con_formato/')).length, 4);
   assert.deepEqual(names.filter((n) => n.startsWith('imagenes_incrustadas/')), ['imagenes_incrustadas/embebida.png']);
@@ -182,7 +182,7 @@ test('CLI: crea el zip y resume; un .indd da un mensaje claro y código de salid
 
 test('un nombre de archivo con saltos de línea no puede colarse como código en el script', () => {
   const r = convert(bytes, { name: 'a\nvar malo = 1;\u2028alert(2).idml', date: DATE });
-  const jsx = text(r.files.find((f) => f.name.endsWith('.jsx')));
+  const jsx = text(r.files.find((f) => f.name.endsWith('1_reconstruir_en_CS3.jsx')));
   const line = jsx.split('\n').find((l) => l.includes('Documento original'));
   assert.match(line, /^\/\/  Documento original: a var malo = 1; alert\(2\)/);
   assert.ok(!/^var malo/m.test(jsx));

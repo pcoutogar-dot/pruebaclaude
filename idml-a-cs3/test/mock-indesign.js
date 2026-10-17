@@ -4,46 +4,12 @@
 // resultaría. Las propiedades que CS3 no tiene lanzan error, como haría ExtendScript.
 const vm = require('node:vm');
 
-const ENUMS = {
-  MeasurementUnits: ['Points', 'Millimeters', 'Picas', 'Inches', 'Centimeters', 'Ciceros', 'Agates'],
-  RulerOrigin: ['SpreadOrigin', 'PageOrigin', 'SpineOrigin'],
-  PageBindingOptions: ['LeftToRight', 'RightToLeft'],
-  ColorModel: ['Process', 'Spot', 'Registration'],
-  ColorSpace: ['CMYK', 'RGB', 'LAB'],
-  GradientType: ['Linear', 'Radial'],
-  LocationOptions: ['AtBeginning', 'AtEnd', 'Before', 'After'],
-  NothingEnum: ['Nothing'],
-  UserInteractionLevels: ['NeverInteract', 'InteractWithAll', 'InteractWithAlerts'],
-  FitOptions: ['FillProportionally', 'Proportionally', 'ContentToFrame', 'FrameToContent'],
-  SpecialCharacters: ['AutoPageNumber', 'NextPageNumber', 'PreviousPageNumber', 'IndentHereTab', 'RightIndentTab'],
-  CoordinateSpaces: ['PasteboardCoordinates', 'InnerCoordinates'],
-  AnchorPoint: ['CenterAnchor', 'TopLeftAnchor'],
-  PathType: ['OpenPath', 'ClosedPath'],
-  TabStopAlignment: ['LeftAlign', 'CenterAlign', 'RightAlign', 'CharacterAlign'],
-  Justification: ['LeftAlign', 'CenterAlign', 'RightAlign', 'LeftJustified', 'CenterJustified', 'RightJustified', 'FullyJustified', 'ToBindingSide', 'AwayFromBindingSide'],
-  Capitalization: ['Normal', 'SmallCaps', 'AllCaps', 'CapToSmallCap'],
-  Position: ['Normal', 'Superscript', 'Subscript', 'OTSuperscript'],
-  StartParagraph: ['Anywhere', 'NextColumn', 'NextFrame', 'NextPage'],
-  SingleWordJustification: ['LeftAlign', 'CenterAlign', 'RightAlign', 'FullyJustified'],
-  StrokeAlignment: ['CenterAlignment', 'InsideAlignment', 'OutsideAlignment'],
-  EndCap: ['ButtEndCap', 'RoundEndCap', 'ProjectingEndCap'],
-  EndJoin: ['MiterEndJoin', 'RoundEndJoin', 'BevelEndJoin'],
-  CornerOptions: ['None', 'RoundedCorner', 'InverseRoundedCorner', 'InsetCorner', 'BevelCorner', 'FancyCorner'],
-  VerticalJustification: ['TopAlign', 'CenterAlign', 'BottomAlign', 'JustifyAlign'],
-  FirstBaselineOffset: ['AscentOffset', 'CapHeight', 'LeadingOffset', 'XHeight', 'FixedHeight'],
-  TextWrapModes: ['None', 'BoundingBoxTextWrap', 'Contour', 'JumpObjectTextWrap', 'NextColumnTextWrap'],
-  TextWrapTypes: ['None', 'BoundingBoxTextWrap', 'Contour', 'JumpObjectTextWrap', 'NextColumnTextWrap', 'UserModified'],
-  TextWrapSideOptions: ['BothSides', 'LeftSide', 'RightSide', 'SideTowardsSpine', 'SideAwayFromSpine', 'LargestArea'],
-  Leading: ['Auto'],
-  ListType: ['NoList', 'BulletList', 'NumberedList'],
-  BulletCharacterType: ['UnicodeOnly', 'UnicodeWithFont', 'GlyphWithFont'],
-  RuleWidth: ['ColumnWidth', 'TextWidth'],
-};
+const { ENUMS } = require('../src/enums');
 
 const SPECIAL_CHAR = { AutoPageNumber: '\u0018', NextPageNumber: '\u0019', PreviousPageNumber: '\u0017', IndentHereTab: '\u0007', RightIndentTab: '\u0008' };
 
 const TEXT_PROPS = ['pointSize', 'leading', 'fontStyle', 'appliedFont', 'tracking', 'horizontalScale', 'verticalScale', 'baselineShift', 'skew', 'kerningValue', 'capitalization', 'position', 'underline', 'strikeThru', 'noBreak', 'ligatures', 'overprintFill', 'fillColor', 'strokeColor', 'fillTint', 'strokeTint', 'strokeWeight', 'justification', 'firstLineIndent', 'leftIndent', 'rightIndent', 'lastLineIndent', 'spaceBefore', 'spaceAfter', 'keepWithNext', 'keepLinesTogether', 'keepAllLinesTogether', 'keepFirstLines', 'keepLastLines', 'startParagraph', 'hyphenation', 'hyphenateWordsLongerThan', 'hyphenateAfterFirst', 'hyphenateBeforeLast', 'hyphenateLadderLimit', 'hyphenateCapitalizedWords', 'dropCapCharacters', 'dropCapLines', 'autoLeading', 'alignToBaseline', 'minimumWordSpacing', 'desiredWordSpacing', 'maximumWordSpacing', 'minimumLetterSpacing', 'desiredLetterSpacing', 'maximumLetterSpacing', 'minimumGlyphScaling', 'desiredGlyphScaling', 'maximumGlyphScaling', 'singleWordJustification', 'ruleAbove', 'ruleAboveColor', 'ruleAboveTint', 'ruleAboveLineWeight', 'ruleAboveOffset', 'ruleAboveLeftIndent', 'ruleAboveRightIndent', 'ruleAboveWidth', 'ruleBelow', 'ruleBelowColor', 'ruleBelowTint', 'ruleBelowLineWeight', 'ruleBelowOffset', 'ruleBelowLeftIndent', 'ruleBelowRightIndent', 'ruleBelowWidth', 'bulletsAndNumberingListType', 'bulletsTextAfter'];
-const ITEM_PROPS = ['geometricBounds', 'fillColor', 'fillTint', 'strokeColor', 'strokeTint', 'strokeWeight', 'strokeAlignment', 'endCap', 'endJoin', 'miterLimit', 'overprintFill', 'overprintStroke', 'gradientFillAngle', 'gradientStrokeAngle', 'topLeftCornerOption', 'topRightCornerOption', 'bottomLeftCornerOption', 'bottomRightCornerOption', 'topLeftCornerRadius', 'topRightCornerRadius', 'bottomLeftCornerRadius', 'bottomRightCornerRadius', 'itemLayer', 'label', 'visible', 'locked', 'rotationAngle', 'nextTextFrame', 'previousTextFrame', 'contents'];
+const ITEM_PROPS = ['geometricBounds', 'fillColor', 'fillTint', 'strokeColor', 'strokeTint', 'strokeWeight', 'strokeAlignment', 'endCap', 'endJoin', 'miterLimit', 'overprintFill', 'overprintStroke', 'gradientFillAngle', 'gradientStrokeAngle', 'topLeftCornerOption', 'topRightCornerOption', 'bottomLeftCornerOption', 'bottomRightCornerOption', 'topLeftCornerRadius', 'topRightCornerRadius', 'bottomLeftCornerRadius', 'bottomRightCornerRadius', 'itemLayer', 'label', 'visible', 'locked', 'rotationAngle', 'leftLineEnd', 'rightLineEnd', 'nextTextFrame', 'previousTextFrame', 'contents'];
 
 function createMock(opts) {
   opts = opts || {};
@@ -51,7 +17,7 @@ function createMock(opts) {
   const cs3 = !!opts.cs3;
   const style = opts.enumStyle || 'camel';
   const reject = new Set(opts.rejectProps || []);
-  const state = { docs: [], alerts: [], confirms: [], dialogs: [], placed: [] };
+  const state = { docs: [], alerts: [], confirms: [], dialogs: [], placed: [], files: {}, history: {}, closed: [] };
 
   const fail = (p) => { throw new Error("Object does not support the property or method '" + p + "'"); };
   const camel = (v) => v.charAt(0).toLowerCase() + v.slice(1);
@@ -64,7 +30,7 @@ function createMock(opts) {
     const o = {};
     for (const v of ENUMS[cls]) {
       const val = { __enum: cls + '.' + v, valueOf() { return this.__enum; }, toString() { return this.__enum; } };
-      if (/^[A-Z]+$/.test(v)) o[v] = val; else if (style === 'camel') o[camel(v)] = val; else o[upper(v)] = val;
+      if (/^[A-Z]+$/.test(v)) o[opts.lowerAcronyms ? v.toLowerCase() : v] = val; else if (style === 'camel') o[camel(v)] = val; else o[upper(v)] = val;
     }
     enumObjs[cls] = o;
   }
@@ -85,7 +51,7 @@ function createMock(opts) {
         if (k === '__self') return p;
         if (extra && Object.prototype.hasOwnProperty.call(extra, k)) { const v = extra[k]; return typeof v === 'function' && v.__getter ? v() : v; }
         if (k === 'isValid') return true;
-        if (k === 'reflect') return { name: type };
+        if (k === 'reflect') return { name: type, properties: Array.from(new Set(allowed.concat(extra ? Object.keys(extra).filter((x) => !x.startsWith('__')) : []))).map((n) => ({ name: n })) };
         return store[k];
       },
       set(t, k, v) {
@@ -226,7 +192,7 @@ function createMock(opts) {
     st.facing = true;
     const mkStyle = (name, kind) => {
       const bulletChar = obj('BulletChar', ['bulletCharacterType', 'bulletCharacterValue']);
-      const s = obj(kind, ['name', 'basedOn', 'nextStyle'].concat(TEXT_PROPS), { name }, { bulletChar });
+      const s = obj(kind, ['name', 'basedOn', 'nextStyle'].concat(TEXT_PROPS), { name }, { bulletChar, tabStops: null });
       s.__store.tabs = [];
       s.__store.bulletRef = bulletChar;
       Object.defineProperty(s.__store, 'tabStops', { enumerable: false, value: null, writable: true });
@@ -447,7 +413,7 @@ function createMock(opts) {
       documentPreferences: dp,
       marginPreferences: st.margin,
       gridPreferences: gridPrefs,
-      colors: coll(st.colors, { add: (init) => { if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
+      colors: coll(st.colors, { add: (init) => { init = init || { name: 'Color ' + (st.colors.length + 1) }; if (st.colors.concat(st.tints, st.gradients).some((c) => c.name === init.name)) throw new Error('name must be unique'); const c = named(init, ['name', 'model', 'space', 'colorValue'], 'Color'); st.colors.push(c); return c; } }),
       tints: coll(st.tints, {
         add: (a, b) => {
           const twoArgs = a && a.__type === 'Color';
@@ -474,7 +440,7 @@ function createMock(opts) {
       paragraphStyles: coll(st.paragraphStyles, { add: (init) => { if (st.paragraphStyles.some((s) => s.name === init.name)) throw new Error('name must be unique'); const s = withTabs(mkStyle(init.name, 'ParagraphStyle')); st.paragraphStyles.push(s); return s; } }),
       characterStyles: coll(st.characterStyles, { add: (init) => { if (st.characterStyles.some((s) => s.name === init.name)) throw new Error('name must be unique'); const s = withTabs(mkStyle(init.name, 'CharacterStyle')); st.characterStyles.push(s); return s; } }),
       masterSpreads: coll(st.masters, { add: () => { const m = makeMaster(false); st.masters.push(m); return m; } }),
-      pages: coll(st.pagesArr, { add: () => addPage() }),
+      pages: coll(st.pagesArr, { add: () => { if (opts.pagesAddThrows) throw new Error('No se pueden añadir más páginas'); return opts.pagesAddNoop ? st.pagesArr[st.pagesArr.length - 1] : addPage(); } }),
     };
     // las layers se añaden "encima" del todo; el objeto Document usa una vista de swatches calculada
     Object.defineProperty(ex, 'swatches', {
@@ -484,7 +450,20 @@ function createMock(opts) {
       },
       enumerable: true,
     });
-    const docProxy = new Proxy(ex, { get: (t, k) => (k === '__store' ? st : k === '__type' ? 'Document' : k === 'isValid' ? true : t[k]), set: (t, k) => fail(String(k)) });
+    ex.close = (opt) => {
+      if (reject.has('close')) fail('close');
+      const i = state.docs.indexOf(docProxy);
+      if (i >= 0) state.docs.splice(i, 1);
+      state.closed.push(enumName(opt));
+    };
+    Object.defineProperty(ex, 'spreads', {
+      get() { return coll(spreadsOf().map((g) => ({ pages: coll(g.slice()), item: null }))); },
+      enumerable: true,
+    });
+    const docProxy = new Proxy(ex, {
+      get: (t, k) => (k === '__store' ? st : k === '__type' ? 'Document' : k === 'isValid' ? true : t[k]),
+      set: (t, k, v) => { if (k === 'zeroPoint' && !reject.has('zeroPoint')) { st.zeroPoint = v; return true; } return fail(String(k)); },
+    });
     return docProxy;
   }
 
@@ -495,30 +474,50 @@ function createMock(opts) {
   }
   const documents = coll(state.docs, { add: () => { const d = newDocument(); state.docs.push(d); return d; } });
   const app = {
-    name: 'Adobe InDesign', version: '5.0',
+    name: 'Adobe InDesign', version: '5.0', locale: 'es_ES',
     documents,
     fonts: coll(fonts, {}),
-    scriptPreferences: obj('ScriptPreferences', ['userInteractionLevel', 'enableRedraw'], { userInteractionLevel: enumObjs.UserInteractionLevels[style === 'camel' ? 'interactWithAll' : 'INTERACT_WITH_ALL'], enableRedraw: true }),
+    scriptPreferences: obj('ScriptPreferences', ['userInteractionLevel', 'enableRedraw', 'measurementUnit'], { userInteractionLevel: enumObjs.UserInteractionLevels[style === 'camel' ? 'interactWithAll' : 'INTERACT_WITH_ALL'], enableRedraw: true, measurementUnit: enumObjs.MeasurementUnits[style === 'camel' ? 'points' : 'POINTS'] }),
     pdfPlacePreferences: obj('PdfPlacePreferences', ['pageNumber']),
     activeWindow: obj('Window', ['activePage']),
     transformationMatrices: { add: (init) => init },
   };
 
-  // ---- sistema de archivos virtual
-  const vfs = opts.vfs || {};
+  // ---- sistema de archivos virtual (los archivos que escribe el script se quedan en state.files y en vfs)
+  const vfs = Object.assign({}, opts.vfs || {});
+  state.vfs = vfs;
   const norm = (p) => String(p).replace(/\\/g, '/');
+  const DESKTOP = '/virtual/desktop';
+  const TEMP = '/virtual/tmp';
   class MFile {
-    constructor(p) { this.path = norm(p); }
+    constructor(p) { this.path = norm(p); this.encoding = ''; }
     get exists() { return this.path in vfs && vfs[this.path] !== 'dir'; }
     get name() { return encodeURI(this.path.split('/').pop()); }
     get fsName() { return this.path; }
     get parent() { return new MFolder(this.path.split('/').slice(0, -1).join('/') || '/'); }
-    open() { return true; } write(s) { state.logFile = s; return true; } close() { return true; }
+    open(mode) { this.mode = mode; return !(opts.rejectFileWrite && mode === 'w'); }
+    write(x) {
+      const v = String(x);
+      vfs[this.path] = v; state.files[this.path] = v;
+      if (opts.fileHistory) { (state.history[this.path] = state.history[this.path] || []).push(v); }
+      if (/resultado_reconstruccion\.txt$/.test(this.path)) state.logFile = v;
+      return true;
+    }
+    read(n) { const v = vfs[this.path]; return typeof v === 'string' ? (n ? v.slice(0, n) : v) : ''; }
+    close() { return true; }
+    remove() { delete vfs[this.path]; return true; }
   }
   class MFolder {
     constructor(p) { this.path = norm(p); }
     get fsName() { return this.path; }
     get name() { return encodeURI(this.path.split('/').pop()); }
+    get exists() {
+      if (this.path === DESKTOP) return !opts.noDesktop;
+      if (this.path === TEMP) return true;
+      if (vfs[this.path] === 'dir') return true;
+      const pre = this.path.replace(/\/$/, '') + '/';
+      return Object.keys(vfs).some((k) => k.startsWith(pre));
+    }
     getFiles() {
       const pre = this.path.replace(/\/$/, '') + '/';
       const seen = new Map();
@@ -530,6 +529,8 @@ function createMock(opts) {
       }
       return Array.from(seen.values());
     }
+    static get desktop() { return new MFolder(DESKTOP); }
+    static get temp() { return new MFolder(TEMP); }
     static selectDialog(msg) { state.dialogs.push(msg); return opts.pickFolder ? new MFolder(opts.pickFolder) : null; }
   }
   Object.setPrototypeOf(MFolder, Function.prototype);
@@ -540,7 +541,7 @@ function createMock(opts) {
     Folder: MFolder,
     alert: (m) => { state.alerts.push(String(m)); },
     confirm: (m) => { state.confirms.push(String(m)); return !!opts.confirmYes; },
-    $: { fileName: opts.scriptPath || '/virtual/scripts/reconstruir.jsx', global: null },
+    $: { fileName: opts.scriptPath || '/virtual/scripts/reconstruir.jsx', global: null, os: 'Windows XP 5.1 (mock)', version: '3.0.0', build: 42, writeln: (m) => { (state.console = state.console || []).push(String(m)); } },
   });
   sandbox.File.prototype = MFile.prototype;
   sandbox.$.global = sandbox;
@@ -554,7 +555,7 @@ function runJsx(code, opts) {
   // ExtendScript interpreta las directivas #target / #include antes de ejecutar
   const src = code.replace(/^#.*$/gm, '//');
   try { vm.runInContext(src, ctx, { filename: 'reconstruir.jsx', timeout: 20000 }); } catch (e) { error = e; }
-  return { state: m.state, error, doc: m.state.docs[0] };
+  return { state: m.state, error, doc: m.state.docs[0], app: m.app };
 }
 
 // instantánea plana del documento para las pruebas

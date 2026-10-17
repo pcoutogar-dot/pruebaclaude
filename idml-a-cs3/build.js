@@ -7,16 +7,18 @@ const fs = require('fs');
 const path = require('path');
 
 const SRC = path.join(__dirname, 'src');
-const MODULES = ['xml', 'zip', 'geometry', 'props', 'idml', 'jsxgen', 'inx', 'report', 'convert'];
+const MODULES = ['xml', 'zip', 'geometry', 'props', 'enums', 'version', 'idml', 'jsxgen', 'inx', 'report', 'convert'];
 
 function bundle() {
   const defs = MODULES.map((name) => {
     const code = fs.readFileSync(path.join(SRC, name + '.js'), 'utf8');
     return '__defs[' + JSON.stringify(name) + '] = function (module, exports, require) {\n' + code + '\n};';
   });
-  // el texto del script para CS3 va incrustado como cadena
+  // el texto de los scripts para CS3 va incrustado como cadena
   const runtime = fs.readFileSync(path.join(SRC, 'runtime.jsx'), 'utf8');
   defs.push('__defs["runtime_src"] = function (module) { module.exports = ' + JSON.stringify(runtime) + '; };');
+  const probe = fs.readFileSync(path.join(SRC, 'probe.jsx'), 'utf8');
+  defs.push('__defs["probe_src"] = function (module) { module.exports = ' + JSON.stringify(probe) + '; };');
   return '(function (global) {\n"use strict";\nvar __defs = {}, __cache = {};\n' +
     'function __require(name) {\n  name = name.replace(/^\\.\\//, "");\n  if (__cache[name]) { return __cache[name].exports; }\n' +
     '  if (!__defs[name]) { throw new Error("módulo no encontrado: " + name); }\n' +

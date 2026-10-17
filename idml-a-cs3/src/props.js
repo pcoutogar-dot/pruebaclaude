@@ -9,7 +9,7 @@ const { round } = require('./geometry');
 const { kidsEl, firstEl, textOf } = require('./xml');
 
 // tipos: n número, i entero, b booleano, s texto, e enumeración (clase), c color
-const TEXT_ATTRS = {
+const CHAR_ATTRS = {
   PointSize: ['pointSize', 'n'],
   FontStyle: ['fontStyle', 's'],
   Tracking: ['tracking', 'n'],
@@ -30,6 +30,9 @@ const TEXT_ATTRS = {
   FillTint: ['fillTint', 'tint'],
   StrokeTint: ['strokeTint', 'tint'],
   StrokeWeight: ['strokeWeight', 'n'],
+};
+
+const PARA_ATTRS = {
   // párrafo
   Justification: ['justification', 'e', 'Justification'],
   FirstLineIndent: ['firstLineIndent', 'n'],
@@ -74,6 +77,9 @@ const TEXT_ATTRS = {
   RuleBelowLeftIndent: ['ruleBelowLeftIndent', 'n'], RuleBelowRightIndent: ['ruleBelowRightIndent', 'n'],
   RuleBelowWidth: ['ruleBelowWidth', 'e', 'RuleWidth'],
 };
+
+// los estilos de párrafo aceptan los dos grupos; los de carácter y los rangos, solo el primero
+const TEXT_ATTRS = Object.assign({}, CHAR_ATTRS, PARA_ATTRS);
 
 // Atributos de texto que existen en IDML pero CS3 no sabe reproducir con este conversor.
 const TEXT_UNSUPPORTED = {
@@ -273,6 +279,6 @@ function framePrefs(el, ctx) {
 }
 
 module.exports = {
-  TEXT_ATTRS, OBJECT_ATTRS, FRAME_ATTRS, num, convertValue, pickAttrs, readProperties, readPropValue,
+  TEXT_ATTRS, CHAR_ATTRS, PARA_ATTRS, OBJECT_ATTRS, FRAME_ATTRS, num, convertValue, pickAttrs, readProperties, readPropValue,
   textProps, objectProps, framePrefs,
 };

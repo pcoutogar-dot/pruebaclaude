@@ -1,7 +1,7 @@
 'use strict';
 // Orquesta la conversión: IDML -> carpeta de resultados (script .jsx, INX experimental, textos, informe...).
 const { readPackage, buildModel, UserError } = require('./idml');
-const { buildScript } = require('./jsxgen');
+const { buildScript, buildProbe } = require('./jsxgen');
 const { buildInx } = require('./inx');
 const R = require('./report');
 const { writeZip } = require('./zip');
@@ -20,8 +20,9 @@ function convert(bytes, options) {
   const nameRaw = String(options.name || 'documento').replace(/\.idml$/i, '');
   const model = buildModel(pkg, { name: nameRaw });
   const folder = safeName(nameRaw) + '_para_CS3';
-  const names = { jsx: '1_reconstruir_en_CS3.jsx', inx: options.inx === false ? null : '2_EXPERIMENTAL_documento.inx' };
+  const names = { probe: '0_comprobar_CS3.jsx', jsx: '1_reconstruir_en_CS3.jsx', inx: options.inx === false ? null : '2_EXPERIMENTAL_documento.inx' };
   const files = [];
+  files.push({ name: names.probe, data: buildProbe({ date }) });
   files.push({ name: names.jsx, data: buildScript(model, { date }) });
   let inxStats = null;
   if (names.inx) {
@@ -45,4 +46,4 @@ function convert(bytes, options) {
   };
 }
 
-module.exports = { convert, safeName, UserError, writeZip };
+module.exports = { convert, safeName, UserError, writeZip, buildProbe };
