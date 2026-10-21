@@ -89,4 +89,4 @@ body{font-family:"Liberation Sans",Arial,sans-serif;color:var(--ink);-webkit-pri
 
 /* Pie colocado fuera del escenario escalado: dentro de él Chrome lo recorta en la 1.ª página al imprimir */
 .page > .foot{left:75.8px;top:1098px;transform:scale(.95976);transform-origin:0 0}
-.page > .pnum{right:75.8px;top:1094px;transform:scale(.95976);transform-origin:100% 0}
+.page > .pnum{right:75.8px;top:1093.6px;font-size:14.6px;color:#24262a;transform:scale(.95976);transform-origin:100% 0}
