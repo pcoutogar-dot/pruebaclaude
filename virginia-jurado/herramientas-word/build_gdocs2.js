@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const D=require('docx');
 const {Document,Packer,Paragraph,TextRun,ImageRun,Table,TableRow,TableCell,WidthType,BorderStyle,ShadingType,
- AlignmentType,VerticalAlign,LineRuleType,Footer,PageNumber,LevelFormat,UnderlineType,TableLayoutType,SectionType,HeightRule,Header,HorizontalPositionRelativeFrom,VerticalPositionRelativeFrom,TextWrappingType}=D;
+ AlignmentType,VerticalAlign,LineRuleType,Footer,PageNumber,LevelFormat,UnderlineType,TableLayoutType,SectionType,HeightRule,Header,TabStopType,HorizontalPositionRelativeFrom,VerticalPositionRelativeFrom,TextWrappingType}=D;
 const S=__dirname, G=S+'/gd', OUT=process.argv[2];
 const table=JSON.parse(fs.readFileSync(S+'/table.json','utf8'));
 const TW=11906/827, tw=px=>Math.round(px*TW);
@@ -117,9 +117,21 @@ function groupBadge({w,h,off=24,badge=52,paras}){
   return new TextRun({text:id});
 }
 // imagen de fondo detrás del texto, anclada al propio párrafo (se mueve con él)
-const behind=(f,wpx,hpx,xPage,yPara=0)=>new ImageRun({type:'png',data:fs.readFileSync(path.join(G,f)),transformation:{width:P96(wpx),height:P96(hpx)},
-  floating:{horizontalPosition:{relative:HorizontalPositionRelativeFrom.PAGE,offset:EMU(xPage)},verticalPosition:{relative:VerticalPositionRelativeFrom.PARAGRAPH,offset:EMU(yPara)},
+const behind=(f,wpx,hpx,xPage,yPara=0,rel=HorizontalPositionRelativeFrom.PAGE)=>new ImageRun({type:'png',data:fs.readFileSync(path.join(G,f)),transformation:{width:P96(wpx),height:P96(hpx)},
+  floating:{horizontalPosition:{relative:rel,offset:EMU(xPage)},verticalPosition:{relative:VerticalPositionRelativeFrom.PARAGRAPH,offset:EMU(yPara)},
     behindDocument:true,allowOverlap:true,lockAnchor:true,wrap:{type:TextWrappingType.NONE}}});
+function pillRow(items,{x0=0,gap=6,h,pt,padL,rel,center=false,pageW=0,mkRuns,after=0}){
+  let x=x0; const widths=items.map(p=>p.w+padL*2);
+  if(center){const tot=widths.reduce((a,b)=>a+b,0)+gap*(items.length-1); x=(pageW-tot)/2;}
+  const kids=[],tabs=[];
+  items.forEach((p,j)=>{
+    kids.push(behind(p.img,widths[j],h,x,-(h-pt*1.389*1.5)/2,rel));
+    tabs.push({type:TabStopType.LEFT,position:tw(x+padL)});
+    kids.push(new TextRun({text:'\t'}),...mkRuns(p));
+    x+=widths[j]+gap;
+  });
+  return new Paragraph({tabStops:tabs,spacing:{before:0,after:tw(after),line:240,lineRule:LineRuleType.AUTO},children:kids});
+}
 const pill=(lab,t,w,{h=19,pt=7.5,stroke='CFE3EC'}={})=>shape({w:w+30,h,adj:50000,fill:'FFFFFF',line:stroke,ins:[0,6,0,6],
   paras:[px([rx(lab+' ',{bold:true,pt}),rx(t,{pt,color:'2B2B2B'})],{line:240})]});
 const chip=(t,w)=>shape({w:w+34,h:29,adj:50000,fill:'FFFFFF',line:'8A8F94',ins:[0,4,0,4],paras:[px([rx(t,{pt:8.5,color:'4B4F53'})])]});
@@ -134,10 +146,11 @@ const cover=[
     new TextRun({text:'DECRETO 51/2025,',font:'Poppins',bold:true,size:63,color:NAVY}),new TextRun({break:1}),
     new TextRun({text:'DE 24 DE FEBRERO',font:'Poppins',bold:true,size:63,color:NAVY})]}),
   new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(4)},children:[img('squig.png',244,24)]}),
-  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(10),line:240,lineRule:LineRuleType.AUTO},children:[
+  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(20),line:240,lineRule:LineRuleType.AUTO},children:[
     new TextRun({text:'Por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',size:21,color:'3A4A55'})]}),
-  ...SZ.chips.map((row,ri)=>new Paragraph({style:'tight',alignment:AlignmentType.CENTER,spacing:{before:ri?tw(6):0,after:0},children:row.flatMap((c,i)=>[...(i?[new TextRun({text:' ',size:2,characterSpacing:120})]:[]),chip(c.t,c.w)])})),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(10),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(58),height:P96(55)}})]})];
+  ...SZ.chips.map((row,ri)=>pillRow(row,{h:29,pt:8.5,padL:17,gap:8,center:true,pageW:827,rel:HorizontalPositionRelativeFrom.PAGE,after:ri?0:12,
+      mkRuns:c=>[new TextRun({text:c.t.replace(/ /g,'\u00a0'),font:'Poppins',size:17,color:'4B4F53'})]})),
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(22),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(58),height:P96(55)}})]})];
 
 // ---------------- página 2: estructura ----------------
 const p2=[];
@@ -165,7 +178,8 @@ titulos.forEach(([kick,name,node,[nw,nh]],i)=>{
     // agrupar en filas que quepan en 603 px (como en el diseño)
     let rows=[[]],acc=0;
     pl.forEach(p=>{const w=p.w+30+6; if(acc+w>600&&rows[rows.length-1].length){rows.push([]);acc=0;} rows[rows.length-1].push(p); acc+=w;});
-    rows.forEach((r,ri)=>content.push(new Paragraph({style:'tight',spacing:{before:ri?tw(4):0,after:0},children:r.flatMap((p,j)=>[...(j?[new TextRun({text:' ',size:2,characterSpacing:110})]:[]),pill(p.lab,p.t,p.w)])})));
+    rows.forEach((r,ri)=>content.push(pillRow(r,{x0:0,h:19,pt:7.5,padL:15,rel:HorizontalPositionRelativeFrom.COLUMN,after:ri<rows.length-1?6:0,
+      mkRuns:p=>[new TextRun({text:p.lab.replace(/ /g,'\u00a0')+'\u00a0',font:'Poppins',bold:true,size:15,color:NAVY}),new TextRun({text:p.t.replace(/ /g,'\u00a0'),font:'Poppins',size:15,color:'2B2B2B'})]})));
   }
   content.push(new Paragraph({spacing:{before:0,after:0,line:tw(last?2:6),lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]}));
   rowsT.push(new TableRow({children:[

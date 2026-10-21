@@ -5,100 +5,118 @@
    {
     "lab": "Capítulo I",
     "t": "Planificación de recursos humanos",
-    "w": 236.9
+    "w": 236.9,
+    "img": "pill_1_0.png"
    },
    {
     "lab": "Capítulo II",
     "t": "Planes de ordenación de recursos humanos",
-    "w": 286.8
+    "w": 286.8,
+    "img": "pill_1_1.png"
    },
    {
     "lab": "Capítulo III",
     "t": "Oferta de empleo público",
-    "w": 193.5
+    "w": 193.5,
+    "img": "pill_1_2.png"
    }
   ],
   [
    {
     "lab": "Capítulo I",
     "t": "Normas generales",
-    "w": 149.8
+    "w": 149.8,
+    "img": "pill_2_0.png"
    },
    {
     "lab": "Capítulo II",
     "t": "Sistema de selección",
-    "w": 167.7
+    "w": 167.7,
+    "img": "pill_2_1.png"
    },
    {
     "lab": "Capítulo III",
     "t": "Inicio y desarrollo de los procesos selectivos",
-    "w": 289.9
+    "w": 289.9,
+    "img": "pill_2_2.png"
    },
    {
     "lab": "Capítulo IV",
     "t": "Personal funcionario en prácticas",
-    "w": 236.4
+    "w": 236.4,
+    "img": "pill_2_3.png"
    },
    {
     "lab": "Capítulo V",
     "t": "Comisiones de selección",
-    "w": 188.2
+    "w": 188.2,
+    "img": "pill_2_4.png"
    },
    {
     "lab": "Capítulo VI",
     "t": "Selección de personal funcionario interino y personal laboral temporal",
-    "w": 428.3
+    "w": 428.3,
+    "img": "pill_2_5.png"
    }
   ],
   [
    {
     "lab": "Capítulo I",
     "t": "Normas generales",
-    "w": 149.8
+    "w": 149.8,
+    "img": "pill_3_0.png"
    },
    {
     "lab": "Capítulo II",
     "t": "Promoción interna vertical del personal funcionario de carrera",
-    "w": 381.3
+    "w": 381.3,
+    "img": "pill_3_1.png"
    },
    {
     "lab": "Capítulo III",
     "t": "Promoción interna horizontal del personal funcionario de carrera",
-    "w": 397.1
+    "w": 397.1,
+    "img": "pill_3_2.png"
    }
   ],
   [
    {
     "lab": "Capítulo I",
     "t": "Normas generales",
-    "w": 149.8
+    "w": 149.8,
+    "img": "pill_4_0.png"
    },
    {
     "lab": "Capítulo II",
     "t": "Procedimientos ordinarios de provisión de personal funcionario de carrera",
-    "w": 444.3
+    "w": 444.3,
+    "img": "pill_4_1.png"
    },
    {
     "lab": "Capítulo III",
     "t": "Procedimientos de provisión de carácter extraordinario",
-    "w": 347.6
+    "w": 347.6,
+    "img": "pill_4_2.png"
    }
   ],
   [
    {
     "lab": "Capítulo I",
     "t": "Adquisición y pérdida de la condición de personal funcionario de carrera",
-    "w": 434.3
+    "w": 434.3,
+    "img": "pill_5_0.png"
    },
    {
     "lab": "Capítulo II",
     "t": "Rehabilitación de la condición de personal funcionario de carrera",
-    "w": 398.6
+    "w": 398.6,
+    "img": "pill_5_1.png"
    },
    {
     "lab": "Capítulo III",
     "t": "Adquisición y pérdida de la condición de personal laboral fijo",
-    "w": 378.6
+    "w": 378.6,
+    "img": "pill_5_2.png"
    }
   ]
  ],
@@ -106,29 +124,35 @@
   [
    {
     "t": "Planificación",
-    "w": 75.3
+    "w": 75.3,
+    "img": "chip_0_0.png"
    },
    {
     "t": "Selección de personal",
-    "w": 130.3
+    "w": 130.3,
+    "img": "chip_0_1.png"
    },
    {
     "t": "Promoción interna",
-    "w": 108.9
+    "w": 108.9,
+    "img": "chip_0_2.png"
    }
   ],
   [
    {
     "t": "Provisión de puestos de trabajo",
-    "w": 185.9
+    "w": 185.9,
+    "img": "chip_1_0.png"
    },
    {
     "t": "Movilidad",
-    "w": 57.0
+    "w": 57.0,
+    "img": "chip_1_1.png"
    },
    {
     "t": "Adquisición y pérdida de la relación de servicio",
-    "w": 278.3
+    "w": 278.3,
+    "img": "chip_1_2.png"
    }
   ]
  ],
