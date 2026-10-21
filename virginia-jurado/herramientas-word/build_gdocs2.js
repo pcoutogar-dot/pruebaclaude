@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const D=require('docx');
 const {Document,Packer,Paragraph,TextRun,ImageRun,Table,TableRow,TableCell,WidthType,BorderStyle,ShadingType,
- AlignmentType,VerticalAlign,LineRuleType,Footer,PageNumber,LevelFormat,UnderlineType,TableLayoutType,SectionType,HeightRule,Header}=D;
+ AlignmentType,VerticalAlign,LineRuleType,Footer,PageNumber,LevelFormat,UnderlineType,TableLayoutType,SectionType,HeightRule,Header,HorizontalPositionRelativeFrom,VerticalPositionRelativeFrom,TextWrappingType}=D;
 const S=__dirname, G=S+'/gd', OUT=process.argv[2];
 const table=JSON.parse(fs.readFileSync(S+'/table.json','utf8'));
 const TW=11906/827, tw=px=>Math.round(px*TW);
@@ -116,6 +116,10 @@ function groupBadge({w,h,off=24,badge=52,paras}){
   SHAPES[id]=`<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${W}" cy="${H}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${n}" name="Titular ${n}"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"><wpg:wgp><wpg:cNvGrpSpPr/><wpg:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></wpg:grpSpPr>${box}${pic}</wpg:wgp></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   return new TextRun({text:id});
 }
+// imagen de fondo detrás del texto, anclada al propio párrafo (se mueve con él)
+const behind=(f,wpx,hpx,xPage,yPara=0)=>new ImageRun({type:'png',data:fs.readFileSync(path.join(G,f)),transformation:{width:P96(wpx),height:P96(hpx)},
+  floating:{horizontalPosition:{relative:HorizontalPositionRelativeFrom.PAGE,offset:EMU(xPage)},verticalPosition:{relative:VerticalPositionRelativeFrom.PARAGRAPH,offset:EMU(yPara)},
+    behindDocument:true,allowOverlap:true,lockAnchor:true,wrap:{type:TextWrappingType.NONE}}});
 const pill=(lab,t,w,{h=19,pt=7.5,stroke='CFE3EC'}={})=>shape({w:w+30,h,adj:50000,fill:'FFFFFF',line:stroke,ins:[0,6,0,6],
   paras:[px([rx(lab+' ',{bold:true,pt}),rx(t,{pt,color:'2B2B2B'})],{line:240})]});
 const chip=(t,w)=>shape({w:w+34,h:29,adj:50000,fill:'FFFFFF',line:'8A8F94',ins:[0,4,0,4],paras:[px([rx(t,{pt:8.5,color:'4B4F53'})])]});
@@ -137,11 +141,13 @@ const cover=[
 
 // ---------------- página 2: estructura ----------------
 const p2=[];
-p2.push(new Paragraph({style:'tight',children:[groupBadge({w:669,h:146,
-  paras:[px([rx('Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',{bold:true,pt:12})],{jc:'left',line:276})]})]}));
+p2.push(new Paragraph({spacing:{before:0,after:0,line:tw(48),lineRule:LineRuleType.EXACT},children:[behind('decree_bg.png',697,172,53,0),new TextRun({text:'',size:2})]}));
+p2.push(new Paragraph({indent:{left:tw(30),right:tw(34)},spacing:{before:0,after:tw(30),line:tw(24.5),lineRule:LineRuleType.EXACT},children:[
+  new TextRun({text:'Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',bold:true,size:24,color:NAVY})]}));
 p2.push(sp(12));
-p2.push(new Paragraph({style:'tight',children:[shape({w:Math.round(SZ.label_w)+46,h:32,prst:'flowChartDelay',fill:NAVY,ins:[0,10,0,6],
-  paras:[px([rx('ESTRUCTURA',{bold:true,pt:8.5,color:'FFFFFF',spacing:42})])]})]}));
+p2.push(new Paragraph({indent:{left:tw(22)},spacing:{before:0,after:0,line:tw(33),lineRule:LineRuleType.EXACT},children:[
+  behind('label_bg.png',147,33,79,0),
+  new TextRun({text:'ESTRUCTURA',font:'Poppins',bold:true,size:17,color:'FFFFFF',characterSpacing:42,position:5})]}));
 p2.push(sp(8));
 const titulos=[
  ['Título preliminar','Disposiciones generales','node_dot.png',[44,25]],['Título I','Planificación y ordenación del empleo público','node_I.png',[44,49]],
@@ -172,9 +178,9 @@ titulos.forEach(([kick,name,node,[nw,nh]],i)=>{
 });
 p2.push(new Table({width:{size:tw(669),type:WidthType.DXA},columnWidths:[CA,CB,CC],layout:TableLayoutType.FIXED,borders:{...NOB,insideHorizontal:NB,insideVertical:NB},rows:rowsT}));
 p2.push(sp(10));
-p2.push(new Paragraph({spacing:{before:0,after:0},children:[img('ast.png',22,23),
+p2.push(new Paragraph({spacing:{before:0,after:0},children:[behind('bar.png',60.8,5,342.3,20.5),img('ast.png',22,23),
   new TextRun({text:'  Este decreto desarrolla los Títulos ',font:'Poppins',size:20,color:NAVY}),
-  new TextRun({text:'8, 9 y 10',font:'Poppins',bold:true,size:22,color:NAVY,shading:{type:ShadingType.CLEAR,color:'auto',fill:SKY}}),
+  new TextRun({text:'8, 9 y 10',font:'Poppins',bold:true,size:22,color:NAVY}),
   new TextRun({text:' de la ',font:'Poppins',size:20,color:NAVY}),new TextRun({text:'LFPA',font:'Poppins',bold:true,size:20,color:NAVY}),new TextRun({text:'.',font:'Poppins',size:20,color:NAVY})]}));
 
 // ---------------- página 3: barra de título + tabla ----------------
@@ -192,7 +198,7 @@ const doc=new Document({creator:'Opovisual',title:'Decreto 51/2025, de 24 de feb
   sections:[
     {properties:{titlePage:true,page:{...page,margin:{top:0,bottom:tw(300),left:0,right:0,header:0,footer:0}}},
      footers:{first:coverFooter,default:emptyF},children:cover},
-    {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(46),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},
+    {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(40),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},
      children:[...p2,new Paragraph({pageBreakBefore:true,spacing:{before:0,after:0,line:20,lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]}),...p3]}]});
 const JSZip=require('/opt/node-tools/node_modules/jszip');
 Packer.toBuffer(doc).then(async b=>{
