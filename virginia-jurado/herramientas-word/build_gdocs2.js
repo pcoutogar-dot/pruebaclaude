@@ -108,34 +108,41 @@ function shape({w,h,prst='roundRect',adj=null,fill='FFFFFF',line=null,lineW=0.75
   SHAPES[id]=`<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${EMU(w)}" cy="${EMU(h)}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${n}" name="Forma ${n}"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"><wps:wsp><wps:cNvSpPr/><wps:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${EMU(w)}" cy="${EMU(h)}"/></a:xfrm><a:prstGeom prst="${prst}">${av}</a:prstGeom><a:solidFill><a:srgbClr val="${fill}"/></a:solidFill>${ln}</wps:spPr><wps:txbx><w:txbxContent>${paras.join('')}</w:txbxContent></wps:txbx><wps:bodyPr rot="0" vert="horz" wrap="square" lIns="${EMU(ins[3])}" tIns="${EMU(ins[0])}" rIns="${EMU(ins[1])}" bIns="${EMU(ins[2])}" anchor="${anchor}" anchorCtr="0"><a:noAutofit/></wps:bodyPr></wps:wsp></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
   return new TextRun({text:id});
 }
-const pill=(lab,t,w,{h=23,pt=7.5,stroke='CFE3EC'}={})=>shape({w:w+30,h,adj:50000,fill:'FFFFFF',line:stroke,ins:[0,6,0,6],
+function groupBadge({w,h,off=24,badge=52,paras}){
+  const id='§SH'+(++SID)+'§', n=5000+SID, bw=w-off;
+  const box=`<wps:wsp><wps:cNvPr id="${n+900}" name="Bloque"/><wps:cNvSpPr/><wps:spPr><a:xfrm><a:off x="${EMU(off)}" y="${EMU(off)}"/><a:ext cx="${EMU(bw)}" cy="${EMU(h)}"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 11000"/></a:avLst></a:prstGeom><a:solidFill><a:srgbClr val="D1EDF9"/></a:solidFill><a:ln><a:noFill/></a:ln></wps:spPr><wps:txbx><w:txbxContent>${paras.join('')}</w:txbxContent></wps:txbx><wps:bodyPr rot="0" vert="horz" wrap="square" lIns="${EMU(30)}" tIns="${EMU(12)}" rIns="${EMU(26)}" bIns="${EMU(10)}" anchor="ctr" anchorCtr="0"><a:noAutofit/></wps:bodyPr></wps:wsp>`;
+  const pic=`<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${n+901}" name="Librito"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdBADGE"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${EMU(badge)}" cy="${EMU(badge)}"/></a:xfrm><a:prstGeom prst="ellipse"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>`;
+  const W=EMU(w),H=EMU(h+off);
+  SHAPES[id]=`<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${W}" cy="${H}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="${n}" name="Titular ${n}"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"><wpg:wgp><wpg:cNvGrpSpPr/><wpg:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${W}" cy="${H}"/><a:chOff x="0" y="0"/><a:chExt cx="${W}" cy="${H}"/></a:xfrm></wpg:grpSpPr>${box}${pic}</wpg:wgp></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+  return new TextRun({text:id});
+}
+const pill=(lab,t,w,{h=19,pt=7.5,stroke='CFE3EC'}={})=>shape({w:w+30,h,adj:50000,fill:'FFFFFF',line:stroke,ins:[0,6,0,6],
   paras:[px([rx(lab+' ',{bold:true,pt}),rx(t,{pt,color:'2B2B2B'})],{line:240})]});
 const chip=(t,w)=>shape({w:w+34,h:29,adj:50000,fill:'FFFFFF',line:'8A8F94',ins:[0,4,0,4],paras:[px([rx(t,{pt:8.5,color:'4B4F53'})])]});
 
 // ---------------- portada: bandas en cabecera/pie, texto editable en el centro ----------------
 const band=(f,h)=>new Paragraph({spacing:{before:0,after:0,line:240,lineRule:LineRuleType.AUTO},children:[img(f,827,h)]});
-const coverHeader=new Header({children:[band('band_top.png',381)]});
-const coverFooter=new Footer({children:[band('band_bot.png',332)]});
+const coverFooter=new Footer({children:[new Paragraph({style:'tight',children:[img('band_bot2.png',827,300)]})]});
 const cover=[
-  sp(26),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0,line:216,lineRule:LineRuleType.AUTO},children:[
+  new Paragraph({style:'tight',children:[img('band_top2.png',827,330)]}),
+  sp(30),
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0,line:200,lineRule:LineRuleType.AUTO},children:[
     new TextRun({text:'DECRETO 51/2025,',font:'Poppins',bold:true,size:63,color:NAVY}),new TextRun({break:1}),
     new TextRun({text:'DE 24 DE FEBRERO',font:'Poppins',bold:true,size:63,color:NAVY})]}),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(2),after:tw(8)},children:[img('squig.png',244,24)]}),
-  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(16),line:250,lineRule:LineRuleType.AUTO},children:[
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(4)},children:[img('squig.png',244,24)]}),
+  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(10),line:240,lineRule:LineRuleType.AUTO},children:[
     new TextRun({text:'Por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',size:21,color:'3A4A55'})]}),
-  ...SZ.chips.map((row,ri)=>new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:ri?tw(6):0,after:0},children:row.flatMap((c,i)=>[...(i?[new TextRun({text:'  ',size:12})]:[]),chip(c.t,c.w)])})),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(16),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(70),height:P96(66)}})]})];
+  ...SZ.chips.map((row,ri)=>new Paragraph({style:'tight',alignment:AlignmentType.CENTER,spacing:{before:ri?tw(6):0,after:0},children:row.flatMap((c,i)=>[...(i?[new TextRun({text:' ',size:2,characterSpacing:120})]:[]),chip(c.t,c.w)])})),
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(10),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(58),height:P96(55)}})]})];
 
 // ---------------- página 2: estructura ----------------
 const p2=[];
-p2.push(new Paragraph({spacing:{before:0,after:tw(4)},children:[img('badge.png',40,40)]}));
-p2.push(new Paragraph({spacing:{before:0,after:0},children:[shape({w:669,h:150,adj:11000,fill:'D1EDF9',ins:[14,28,14,28],anchor:'ctr',
-  paras:[px([rx('Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',{bold:true,pt:12})],{jc:'left',line:300})]})]}));
-p2.push(sp(18));
-p2.push(new Paragraph({spacing:{before:0,after:0},children:[shape({w:Math.round(SZ.label_w)+46,h:32,prst:'flowChartDelay',fill:NAVY,ins:[0,10,0,6],
+p2.push(new Paragraph({style:'tight',children:[groupBadge({w:669,h:146,
+  paras:[px([rx('Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',{bold:true,pt:12})],{jc:'left',line:276})]})]}));
+p2.push(sp(12));
+p2.push(new Paragraph({style:'tight',children:[shape({w:Math.round(SZ.label_w)+46,h:32,prst:'flowChartDelay',fill:NAVY,ins:[0,10,0,6],
   paras:[px([rx('ESTRUCTURA',{bold:true,pt:8.5,color:'FFFFFF',spacing:42})])]})]}));
-p2.push(sp(14));
+p2.push(sp(8));
 const titulos=[
  ['Título preliminar','Disposiciones generales','node_dot.png',[44,25]],['Título I','Planificación y ordenación del empleo público','node_I.png',[44,49]],
  ['Título II','Selección de personal','node_II.png',[44,49]],['Título III','Promoción interna del personal funcionario de carrera y del personal laboral','node_III.png',[44,49]],
@@ -147,24 +154,24 @@ titulos.forEach(([kick,name,node,[nw,nh]],i)=>{
   const last=i===titulos.length-1, pl=SZ.pills[i];
   const content=[
     new Paragraph({spacing:{before:0,after:tw(3)},children:[new TextRun({text:kick.toUpperCase(),font:'Poppins',bold:true,size:12,color:'6F8290'})]}),
-    new Paragraph({spacing:{before:0,after:tw(pl.length?6:0)},children:[new TextRun({text:name,font:'Poppins',bold:true,size:21,color:NAVY})]})];
+    new Paragraph({spacing:{before:0,after:tw(pl.length?3:0)},children:[new TextRun({text:name,font:'Poppins',bold:true,size:21,color:NAVY})]})];
   if(pl.length){
     // agrupar en filas que quepan en 603 px (como en el diseño)
     let rows=[[]],acc=0;
     pl.forEach(p=>{const w=p.w+30+6; if(acc+w>600&&rows[rows.length-1].length){rows.push([]);acc=0;} rows[rows.length-1].push(p); acc+=w;});
-    rows.forEach((r,ri)=>content.push(new Paragraph({spacing:{before:ri?tw(5):0,after:0},children:r.flatMap((p,j)=>[...(j?[new TextRun({text:' ',size:12})]:[]),pill(p.lab,p.t,p.w)])})));
+    rows.forEach((r,ri)=>content.push(new Paragraph({style:'tight',spacing:{before:ri?tw(4):0,after:0},children:r.flatMap((p,j)=>[...(j?[new TextRun({text:' ',size:2,characterSpacing:110})]:[]),pill(p.lab,p.t,p.w)])})));
   }
-  content.push(new Paragraph({spacing:{before:0,after:0,line:tw(last?2:12),lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]}));
+  content.push(new Paragraph({spacing:{before:0,after:0,line:tw(last?2:6),lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]}));
   rowsT.push(new TableRow({children:[
     new TableCell({columnSpan:2,width:{size:CA+CB,type:WidthType.DXA},borders:NOB,margins:{top:0,bottom:0,left:0,right:0},verticalAlign:VerticalAlign.TOP,
-      children:[new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[img(node,nw,nh)]})]}),
+      children:[new Paragraph({style:'tight',alignment:AlignmentType.CENTER,children:[img(node,nw,nh)]})]}),
     new TableCell({rowSpan:2,width:{size:CC,type:WidthType.DXA},borders:NOB,margins:{top:tw(i===0?0:2),bottom:0,left:0,right:0},children:content})]}));
   rowsT.push(new TableRow({children:[
     new TableCell({width:{size:CA,type:WidthType.DXA},borders:{...NOB,right:last?NB:LINE},margins:{top:0,bottom:0,left:0,right:0},children:[sp(1)]}),
     new TableCell({width:{size:CB,type:WidthType.DXA},borders:{...NOB,left:last?NB:LINE},margins:{top:0,bottom:0,left:0,right:0},children:[sp(1)]})]}));
 });
 p2.push(new Table({width:{size:tw(669),type:WidthType.DXA},columnWidths:[CA,CB,CC],layout:TableLayoutType.FIXED,borders:{...NOB,insideHorizontal:NB,insideVertical:NB},rows:rowsT}));
-p2.push(sp(14));
+p2.push(sp(10));
 p2.push(new Paragraph({spacing:{before:0,after:0},children:[img('ast.png',22,23),
   new TextRun({text:'  Este decreto desarrolla los Títulos ',font:'Poppins',size:20,color:NAVY}),
   new TextRun({text:'8, 9 y 10',font:'Poppins',bold:true,size:22,color:NAVY,shading:{type:ShadingType.CLEAR,color:'auto',fill:SKY}}),
@@ -172,19 +179,19 @@ p2.push(new Paragraph({spacing:{before:0,after:0},children:[img('ast.png',22,23)
 
 // ---------------- página 3: barra de título + tabla ----------------
 const p3=[
-  new Paragraph({spacing:{before:0,after:0},children:[shape({w:669,h:48,adj:50000,fill:NAVY,ins:[0,10,0,10],paras:[px([rx('Título preliminar: Disposiciones generales',{bold:true,pt:15,color:'FFFFFF'})])]})]}),
+  new Paragraph({style:'tight',children:[shape({w:669,h:48,adj:50000,fill:NAVY,ins:[0,10,0,10],paras:[px([rx('Título preliminar: Disposiciones generales',{bold:true,pt:15,color:'FFFFFF'})])]})]}),
   sp(10), buildTable(), sp(2)];
 
 const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({children:[PageNumber.CURRENT],font:'Arial',size:21,color:'24262A'})]})]});
 const emptyF=new Footer({children:[new Paragraph({children:[]})]}), emptyH=new Header({children:[new Paragraph({children:[]})]});
 const page={size:{width:11906,height:16838}};
 const doc=new Document({creator:'Opovisual',title:'Decreto 51/2025, de 24 de febrero',
-  styles:{default:{document:{run:{font:'Poppins',size:20,color:NAVY},paragraph:{spacing:{before:0,after:0}}}}},
+  styles:{default:{document:{run:{font:'Poppins',size:20,color:NAVY},paragraph:{spacing:{before:0,after:0}}}},paragraphStyles:[{id:'tight',name:'Ajustado',basedOn:'Normal',run:{size:2},paragraph:{spacing:{before:0,after:0,line:240,lineRule:LineRuleType.AUTO}}}]},
   numbering:{config:[{reference:'vi',levels:[{level:0,format:LevelFormat.BULLET,text:'●',alignment:AlignmentType.LEFT,
     style:{paragraph:{indent:{left:tw(12),hanging:tw(11)}},run:{color:'6FD0E0',size:12,font:'Arial'}}}]}]},
   sections:[
-    {properties:{titlePage:true,page:{...page,margin:{top:tw(381),bottom:tw(332),left:0,right:0,header:0,footer:0}}},
-     headers:{first:coverHeader,default:emptyH},footers:{first:coverFooter,default:emptyF},children:cover},
+    {properties:{titlePage:true,page:{...page,margin:{top:0,bottom:tw(300),left:0,right:0,header:0,footer:0}}},
+     footers:{first:coverFooter,default:emptyF},children:cover},
     {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(46),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},
      children:[...p2,new Paragraph({pageBreakBefore:true,spacing:{before:0,after:0,line:20,lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]}),...p3]}]});
 const JSZip=require('/opt/node-tools/node_modules/jszip');
@@ -197,6 +204,10 @@ Packer.toBuffer(doc).then(async b=>{
     x=x.replace(re,xml); n++;
   }
   z.file('word/document.xml',x);
+  z.file('word/media/librito_grupo.png',fs.readFileSync(G+'/badge.png'));
+  let rels=await z.file('word/_rels/document.xml.rels').async('string');
+  rels=rels.replace('</Relationships>','<Relationship Id="rIdBADGE" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/librito_grupo.png"/></Relationships>');
+  z.file('word/_rels/document.xml.rels',rels);
   fs.writeFileSync(OUT,await z.generateAsync({type:'nodebuffer',compression:'DEFLATE'}));
   console.log('written',OUT,'formas',n);
 });
