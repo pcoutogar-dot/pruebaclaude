@@ -1,0 +1,239 @@
+{
+ "rows": [
+  [
+   []
+  ],
+  [
+   [
+    {
+     "lab": "Capítulo I",
+     "t": "Planificación de recursos humanos",
+     "x": 160,
+     "tw": 236.87,
+     "nsp": 0,
+     "img": "p_1_0_0.png"
+    },
+    {
+     "lab": "Capítulo II",
+     "t": "Planes de ordenación de recursos humanos",
+     "x": 433.04,
+     "tw": 286.76,
+     "nsp": 13,
+     "img": "p_1_0_1.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo III",
+     "t": "Oferta de empleo público",
+     "x": 160,
+     "tw": 193.5,
+     "nsp": 0,
+     "img": "p_1_1_0.png"
+    }
+   ]
+  ],
+  [
+   [
+    {
+     "lab": "Capítulo I",
+     "t": "Normas generales",
+     "x": 160,
+     "tw": 149.8,
+     "nsp": 0,
+     "img": "p_2_0_0.png"
+    },
+    {
+     "lab": "Capítulo II",
+     "t": "Sistema de selección",
+     "x": 345.97,
+     "tw": 167.66,
+     "nsp": 13,
+     "img": "p_2_0_1.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo III",
+     "t": "Inicio y desarrollo de los procesos selectivos",
+     "x": 160,
+     "tw": 289.84,
+     "nsp": 0,
+     "img": "p_2_1_0.png"
+    },
+    {
+     "lab": "Capítulo IV",
+     "t": "Personal funcionario en prácticas",
+     "x": 486.01,
+     "tw": 236.36,
+     "nsp": 13,
+     "img": "p_2_1_1.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo V",
+     "t": "Comisiones de selección",
+     "x": 160,
+     "tw": 188.22,
+     "nsp": 0,
+     "img": "p_2_2_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo VI",
+     "t": "Selección de personal funcionario interino y personal laboral temporal",
+     "x": 160,
+     "tw": 428.27,
+     "nsp": 0,
+     "img": "p_2_3_0.png"
+    }
+   ]
+  ],
+  [
+   [
+    {
+     "lab": "Capítulo I",
+     "t": "Normas generales",
+     "x": 160,
+     "tw": 149.8,
+     "nsp": 0,
+     "img": "p_3_0_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo II",
+     "t": "Promoción interna vertical del personal funcionario de carrera",
+     "x": 160,
+     "tw": 381.26,
+     "nsp": 0,
+     "img": "p_3_1_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo III",
+     "t": "Promoción interna horizontal del personal funcionario de carrera",
+     "x": 160,
+     "tw": 397.12,
+     "nsp": 0,
+     "img": "p_3_2_0.png"
+    }
+   ]
+  ],
+  [
+   [
+    {
+     "lab": "Capítulo I",
+     "t": "Normas generales",
+     "x": 160,
+     "tw": 149.8,
+     "nsp": 0,
+     "img": "p_4_0_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo II",
+     "t": "Procedimientos ordinarios de provisión de personal funcionario de carrera",
+     "x": 160,
+     "tw": 444.29,
+     "nsp": 0,
+     "img": "p_4_1_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo III",
+     "t": "Procedimientos de provisión de carácter extraordinario",
+     "x": 160,
+     "tw": 347.55,
+     "nsp": 0,
+     "img": "p_4_2_0.png"
+    }
+   ]
+  ],
+  [
+   [
+    {
+     "lab": "Capítulo I",
+     "t": "Adquisición y pérdida de la condición de personal funcionario de carrera",
+     "x": 160,
+     "tw": 434.32,
+     "nsp": 0,
+     "img": "p_5_0_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo II",
+     "t": "Rehabilitación de la condición de personal funcionario de carrera",
+     "x": 160,
+     "tw": 398.61,
+     "nsp": 0,
+     "img": "p_5_1_0.png"
+    }
+   ],
+   [
+    {
+     "lab": "Capítulo III",
+     "t": "Adquisición y pérdida de la condición de personal laboral fijo",
+     "x": 160,
+     "tw": 378.55,
+     "nsp": 0,
+     "img": "p_5_2_0.png"
+    }
+   ]
+  ]
+ ],
+ "chips": [
+  {
+   "n": 13,
+   "items": [
+    {
+     "t": "Planificación",
+     "x": 215.24,
+     "tw": 75.32,
+     "img": "c_0_0.png"
+    },
+    {
+     "t": "Selección de personal",
+     "x": 331.55,
+     "tw": 130.33,
+     "img": "c_0_1.png"
+    },
+    {
+     "t": "Promoción interna",
+     "x": 502.87,
+     "tw": 108.89,
+     "img": "c_0_2.png"
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "items": [
+    {
+     "t": "Provisión de puestos de trabajo",
+     "x": 111.89,
+     "tw": 185.93,
+     "img": "c_1_0.png"
+    },
+    {
+     "t": "Movilidad",
+     "x": 338.81,
+     "tw": 57.02,
+     "img": "c_1_1.png"
+    },
+    {
+     "t": "Adquisición y pérdida de la relación de servicio",
+     "x": 436.82,
+     "tw": 278.29,
+     "img": "c_1_2.png"
+    }
+   ]
+  }
+ ]
+}

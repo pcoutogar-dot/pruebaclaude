@@ -19,3 +19,8 @@ Docs maqueta algo distinto que Word/LibreOffice.
 - Portada editable: bandas de personas en la cabecera/pie de la primera página (sección con márgenes 0) y texto real en el centro.
 - Formas redondeadas (titular, píldoras, chips, «ESTRUCTURA», barra de título) como formas DrawingML en línea:
   Google Docs las convierte en dibujos con texto editable (doble clic). `gd_sizes.json` = anchos medidos con Poppins.
+
+### v7 (`build_gdocs3.js`) — reglas aprendidas de Google Docs
+- Docs ignora interlineado «exacto» (lo trata como múltiplo) y los tabuladores: usar interlineado sencillo y espacios.
+- Docs coloca mal imágenes flotantes dentro de tablas: la línea de tiempo va sin tabla (bolitas y línea = fondos por párrafo).
+- Fondos «detrás del texto» anclados al propio párrafo, posición horizontal respecto a la PÁGINA, sin espacio «antes».
