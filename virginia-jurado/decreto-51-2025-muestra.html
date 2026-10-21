@@ -27,6 +27,11 @@
 .callout.nota p{padding-left:0;font-size:14px;line-height:24px;color:var(--navy)}
 .nota .big{font-weight:700;font-size:15.5px;background:linear-gradient(transparent 62%,var(--sky) 62%)}
 
+.est td.d{position:relative}
+.est td.d h3,.est td.d ul{padding-right:46px}
+.ico{position:absolute;right:12px;top:9px;width:34px;height:34px;border-radius:50%;background:var(--sky-pale);display:flex;align-items:center;justify-content:center}
+.ico svg{width:19px;height:19px}
+.kic{display:block;width:22px;height:22px;margin:9px 0 0 19px}
 /* ---------- Página 2 · Tabla "Título preliminar" ---------- */
 .tbl{position:absolute;left:79px;top:121px;width:670px;border-collapse:collapse;table-layout:fixed;border:1px solid var(--sky-pale)}
 .tbl td{border:1px solid var(--sky-pale);vertical-align:top;padding:0}
@@ -55,6 +60,18 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5z" fill="#143548"/><path d="M14 2v5h5z" fill="#9ddfea"/><g fill="#fff"><rect x="7.6" y="10.5" width="8.8" height="1.6"/><rect x="7.6" y="14" width="8.8" height="1.6"/><rect x="7.6" y="17.5" width="5.6" height="1.6"/></g></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><g fill="#143548"><rect x="4" y="13" width="4" height="7.4"/><rect x="10" y="9" width="4" height="11.4"/><rect x="16" y="4.5" width="4" height="15.9"/><rect x="2" y="20.4" width="20" height="1.8"/></g></symbol>
+  <symbol id="i-sel" viewBox="0 0 24 24"><g fill="#143548"><circle cx="9" cy="7" r="4"/><path d="M1.5 21c0-4.3 3.4-7.4 7.5-7.4s7.5 3.1 7.5 7.4z"/></g><path d="M15.2 10.6l2.4 2.4 4.6-5" stroke="#143548" stroke-width="2.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-prom" viewBox="0 0 24 24"><path d="M2 21.5h20V3h-5.5v5h-5v5h-5v4.5H2z" fill="#143548"/></symbol>
+  <symbol id="i-prov" viewBox="0 0 24 24"><path d="M8.5 7V4.8c0-.7.6-1.3 1.3-1.3h4.4c.7 0 1.3.6 1.3 1.3V7" stroke="#143548" stroke-width="2" fill="none"/><rect x="2.5" y="7" width="19" height="13.5" rx="2" fill="#143548"/><rect x="2.5" y="12.4" width="19" height="1.5" fill="#fff"/><rect x="10.5" y="11.2" width="3" height="3.9" rx=".6" fill="#9ddfea"/></symbol>
+  <symbol id="i-adq" viewBox="0 0 24 24"><g fill="#143548"><circle cx="8.5" cy="7" r="4"/><path d="M1 21c0-4.3 3.4-7.4 7.5-7.4S16 16.7 16 21z"/><rect x="16.5" y="5.2" width="6" height="2"/><rect x="18.5" y="3.2" width="2" height="6"/><rect x="16.5" y="12.2" width="6" height="2"/></g></symbol>
+  <symbol id="i-obj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#143548"/><circle cx="12" cy="12" r="6.6" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#143548"/></symbol>
+  <symbol id="i-amb" viewBox="0 0 24 24"><g fill="#143548"><path d="M12 2 2 7.2V9h20V7.2z"/><rect x="4" y="10.3" width="2.6" height="7.6"/><rect x="8.7" y="10.3" width="2.6" height="7.6"/><rect x="13.4" y="10.3" width="2.6" height="7.6"/><rect x="18" y="10.3" width="2.6" height="7.6"/><rect x="2" y="19" width="20" height="2.6"/></g></symbol>
+  <symbol id="i-pri" viewBox="0 0 24 24"><g fill="#143548"><rect x="11" y="3" width="2" height="16"/><rect x="7" y="19" width="10" height="2.2" rx=".5"/><rect x="3" y="5.6" width="18" height="1.8" rx=".6"/><path d="M1.2 14h7.6a3.8 3.2 0 0 1-7.6 0zM15.2 14h7.6a3.8 3.2 0 0 1-7.6 0z"/></g><path d="M5 7.4 2.2 14M5 7.4 7.8 14M19 7.4 16.2 14M19 7.4 21.8 14" stroke="#143548" stroke-width="1.1"/></symbol>
+  <symbol id="i-fun" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="19" rx="2" fill="#143548"/><rect x="8.5" y="1.5" width="7" height="3.4" rx="1" fill="#9ddfea"/><path d="M7 10.2l1.5 1.5L11.2 9M7 16.2l1.5 1.5 2.7-2.7" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="12.6" y="9.6" width="4.6" height="1.5" fill="#fff"/><rect x="12.6" y="15.6" width="4.6" height="1.5" fill="#fff"/></symbol>
+</svg>
 
 <!-- =============== PÁGINA 1 · ESTRUCTURA =============== -->
 <section class="page"><div class="stage">
@@ -68,12 +85,12 @@
   <table class="est">
     <colgroup><col style="width:118px"><col></colgroup>
     <tr><th colspan="2">ESTRUCTURA</th></tr>
-      <tr><td class="t"><small>Título</small><em class="w">Preliminar</em></td><td class="d"><h3>Disposiciones generales</h3></td></tr>
-      <tr><td class="t"><small>Título</small><em>I</em></td><td class="d"><h3>Planificación y ordenación del empleo público</h3><ul><li><b>Capítulo I</b><span>Planificación de recursos humanos</span></li><li><b>Capítulo II</b><span>Planes de ordenación de recursos humanos</span></li><li><b>Capítulo III</b><span>Oferta de empleo público</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>II</em></td><td class="d"><h3>Selección de personal</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Sistema de selección</span></li><li><b>Capítulo III</b><span>Inicio y desarrollo de los procesos selectivos</span></li><li><b>Capítulo IV</b><span>Personal funcionario en prácticas</span></li><li><b>Capítulo V</b><span>Comisiones de selección</span></li><li><b>Capítulo VI</b><span>Selección de personal funcionario interino y personal laboral temporal</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>III</em></td><td class="d"><h3>Promoción interna del personal funcionario de carrera y del personal laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Promoción interna vertical del personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Promoción interna horizontal del personal funcionario de carrera</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>IV</em></td><td class="d"><h3>Provisión de puestos de trabajo y movilidad del personal funcionario y laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Procedimientos ordinarios de provisión de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Procedimientos de provisión de carácter extraordinario</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>V</em></td><td class="d"><h3>Adquisición y pérdida de la relación de servicio</h3><ul><li><b>Capítulo I</b><span>Adquisición y pérdida de la condición de personal funcionario de carrera</span></li><li><b>Capítulo II</b><span>Rehabilitación de la condición de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Adquisición y pérdida de la condición de personal laboral fijo</span></li></ul></td></tr>
+      <tr><td class="t"><small>Título</small><em class="w">Preliminar</em></td><td class="d"><span class="ico"><svg><use href="#i-doc"/></svg></span><h3>Disposiciones generales</h3></td></tr>
+      <tr><td class="t"><small>Título</small><em>I</em></td><td class="d"><span class="ico"><svg><use href="#i-plan"/></svg></span><h3>Planificación y ordenación del empleo público</h3><ul><li><b>Capítulo I</b><span>Planificación de recursos humanos</span></li><li><b>Capítulo II</b><span>Planes de ordenación de recursos humanos</span></li><li><b>Capítulo III</b><span>Oferta de empleo público</span></li></ul></td></tr>
+      <tr><td class="t"><small>Título</small><em>II</em></td><td class="d"><span class="ico"><svg><use href="#i-sel"/></svg></span><h3>Selección de personal</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Sistema de selección</span></li><li><b>Capítulo III</b><span>Inicio y desarrollo de los procesos selectivos</span></li><li><b>Capítulo IV</b><span>Personal funcionario en prácticas</span></li><li><b>Capítulo V</b><span>Comisiones de selección</span></li><li><b>Capítulo VI</b><span>Selección de personal funcionario interino y personal laboral temporal</span></li></ul></td></tr>
+      <tr><td class="t"><small>Título</small><em>III</em></td><td class="d"><span class="ico"><svg><use href="#i-prom"/></svg></span><h3>Promoción interna del personal funcionario de carrera y del personal laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Promoción interna vertical del personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Promoción interna horizontal del personal funcionario de carrera</span></li></ul></td></tr>
+      <tr><td class="t"><small>Título</small><em>IV</em></td><td class="d"><span class="ico"><svg><use href="#i-prov"/></svg></span><h3>Provisión de puestos de trabajo y movilidad del personal funcionario y laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Procedimientos ordinarios de provisión de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Procedimientos de provisión de carácter extraordinario</span></li></ul></td></tr>
+      <tr><td class="t"><small>Título</small><em>V</em></td><td class="d"><span class="ico"><svg><use href="#i-adq"/></svg></span><h3>Adquisición y pérdida de la relación de servicio</h3><ul><li><b>Capítulo I</b><span>Adquisición y pérdida de la condición de personal funcionario de carrera</span></li><li><b>Capítulo II</b><span>Rehabilitación de la condición de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Adquisición y pérdida de la condición de personal laboral fijo</span></li></ul></td></tr>
   </table>
 
   <div class="callout nota" id="nota"><p>Este decreto desarrolla los Títulos <span class="big">8, 9 y 10</span> de la <b>LFPA</b>.</p></div>
@@ -95,7 +112,7 @@
 
     <!-- 1 · OBJETO -->
     <tr>
-      <td class="k"><div class="kk"><em>1</em><span>Objeto</span></div></td>
+      <td class="k"><div class="kk"><em>1</em><span>Objeto</span></div><svg class="kic"><use href="#i-obj"/></svg></td>
       <td class="s">Desarrollo LFPA en materia de:</td>
       <td class="c" colspan="2"><ul class="two">
         <li>Planificación y ordenación del empleo público</li>
@@ -109,7 +126,7 @@
 
     <!-- 2 · ÁMBITO DE APLICACIÓN -->
     <tr>
-      <td class="k" rowspan="4"><div class="kk"><em>2</em><span>Ámbito de aplicación</span></div></td>
+      <td class="k" rowspan="4"><div class="kk"><em>2</em><span>Ámbito de aplicación</span></div><svg class="kic"><use href="#i-amb"/></svg></td>
       <td class="s blue">Personal funcionario</td>
       <td class="c"><ul class="blue">
         <li>En las Consejerías,</li><li>Delegaciones del Gobierno,</li><li>Delegaciones Territoriales o Provinciales,</li><li>otros órganos dependientes o vinculados a la AJA,</li><li>y en las AA, ARE o APE</li></ul></td>
@@ -135,7 +152,7 @@
 
     <!-- 3 · PRINCIPIOS EN EL ACCESO -->
     <tr>
-      <td class="k" rowspan="5"><div class="kk"><em>3</em><span>Principios en el acceso al empleo público y la provisión de puestos<br><span class="ce test"><svg viewBox="0 0 10 9"><path fill="#143548" d="M5 9 C1 6 0 4.6 0 3 C0 1.2 1.3 0 2.8 0 C3.8 0 4.6.5 5 1.3 C5.4.5 6.2 0 7.2 0 C8.7 0 10 1.2 10 3 C10 4.6 9 6 5 9Z"/></svg>¡TEST!</span></span></div></td>
+      <td class="k" rowspan="5"><div class="kk"><em>3</em><span>Principios en el acceso al empleo público y la provisión de puestos<br><span class="ce test"><svg viewBox="0 0 10 9"><path fill="#143548" d="M5 9 C1 6 0 4.6 0 3 C0 1.2 1.3 0 2.8 0 C3.8 0 4.6.5 5 1.3 C5.4.5 6.2 0 7.2 0 C8.7 0 10 1.2 10 3 C10 4.6 9 6 5 9Z"/></svg>¡TEST!</span></span></div><svg class="kic"><use href="#i-pri"/></svg></td>
       <td class="s">Acceso F y L</td>
       <td class="c" colspan="2"><ul>
         <li>Procesos selectivos con respeto a los ppios CE <span class="g">igualdad, mérito y capacidad</span>.</li>
@@ -159,7 +176,7 @@
 
     <!-- 4 · FUNDAMENTOS Y CRITERIOS -->
     <tr>
-      <td class="k"><div class="kk"><em>4</em><span>Fundamentos y criterios de actuación en los planes de ordenación de RRHH</span></div></td>
+      <td class="k"><div class="kk"><em>4</em><span>Fundamentos y criterios de actuación en los planes de ordenación de RRHH</span></div><svg class="kic"><use href="#i-fun"/></svg></td>
       <td class="s">Los planes de ordenación de RRHH deben basarse en los siguientes <b>fundamentos</b> y <b>criterios de actuación</b>:</td>
       <td class="c" colspan="2"><ul>
         <li><span class="g">Transparencia y participación</span>.</li>
