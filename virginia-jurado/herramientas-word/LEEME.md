@@ -6,3 +6,11 @@
 4. `build.js`: crea el .docx con la librería `docx` (texto nativo + fondos detrás + tabla nativa de `table.json`).
 5. `calib.py --apply`: compara líneas base Word (LibreOffice) vs PDF y escribe `corr.json`; repetir 2 veces.
 6. `embed.py out.docx final.docx`: incrusta Poppins y Lora para que se vea igual sin tenerlas instaladas.
+
+## Versión para Google Docs (`build_gdocs.js`)
+
+Google Docs no admite imágenes detrás del texto ni interlineados exactos fiables, así que esta versión
+va todo en flujo: portada como imagen a página completa (sección con márgenes 0), titular y barra de
+título como tablas con fondo, línea de tiempo como tabla (bolitas = imágenes en línea; la línea es el
+borde entre dos columnas) y capítulos como texto resaltado. Deja holgura al final de cada página porque
+Docs maqueta algo distinto que Word/LibreOffice.
