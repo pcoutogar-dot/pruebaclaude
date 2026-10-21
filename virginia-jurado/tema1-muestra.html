@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tema 1 · La Constitución Española de 1978 — muestra de maquetación</title>
+<style>
+@font-face{font-family:"Poppins";font-weight:400;font-style:normal;src:url("assets/Poppins-Regular.ttf")}
+@font-face{font-family:"Poppins";font-weight:500;font-style:normal;src:url("assets/Poppins-Medium.ttf")}
+@font-face{font-family:"Poppins";font-weight:700;font-style:normal;src:url("assets/Poppins-Bold.ttf")}
+@font-face{font-family:"Poppins";font-weight:400;font-style:italic;src:url("assets/Poppins-Italic.ttf")}
+
+@page{size:210mm 297mm;margin:0}
+:root{
+  --navy:#143548;
+  --sky:#9ddfea;
+  --sky-mid:#bae7f3;
+  --sky-pale:#d1edf9;
+  --ink:#1f1f1f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff}
+body{font-family:"Liberation Sans",Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* Cada página es un escenario de 827x1170 px escalado a A4 */
+.page{width:210mm;height:297mm;overflow:hidden;position:relative;break-after:page;page-break-after:always;background:#fff}
+.page:last-child{break-after:auto;page-break-after:auto}
+.stage{width:827px;height:1170px;position:absolute;left:0;top:0;transform-origin:0 0;transform:scale(.95976)}
+.abs{position:absolute}
+.pop{font-family:"Poppins","Inter",sans-serif}
+
+/* ---------- Portada ---------- */
+.cover svg{position:absolute;left:0;top:0}
+.cover .tema{position:absolute;left:0;width:827px;text-align:center;top:427px;font:700 23.4px/1 "Poppins","Inter",sans-serif;letter-spacing:.3em;color:var(--navy);padding-left:.3em}
+.cover h1{position:absolute;left:0;width:827px;top:469px;text-align:center;font:700 54.6px/61px "Poppins","Inter",sans-serif;color:var(--navy);letter-spacing:-.005em}
+.chips{position:absolute;left:0;top:0;width:827px;height:0}
+.chip{position:absolute;height:29px;border:1px solid #8a8f94;border-radius:15px;font:400 11.5px/27px "Poppins","Inter",sans-serif;color:#4b4f53;text-align:center;white-space:nowrap}
+.cover .logo{position:absolute;left:376px;top:740px;width:74px}
+
+/* ---------- Cabecera / pie de página ---------- */
+.run{position:absolute;right:79px;top:31px;font:400 10.5px/1 "Poppins","Inter",sans-serif;color:#6f8290}
+.rule{position:absolute;left:79px;right:79px;top:50px;height:1px;background:var(--sky-pale)}
+.foot{position:absolute;left:79px;top:1144px;font:italic 400 9.4px/1 "Poppins","Inter",sans-serif;color:#9aa6ae}
+.pnum{position:absolute;right:79px;top:1140px;font:400 15px/1 "Liberation Sans",Arial,sans-serif;color:#222}
+
+/* ---------- Índice ---------- */
+.toc-title{position:absolute;left:79px;top:85px;font:400 15.4px/1.2 "Poppins","Inter",sans-serif;color:var(--navy)}
+.squig{position:absolute}
+.indice{position:absolute;left:735px;top:451px;transform-origin:0 0;transform:rotate(-90deg);font:700 89px/1 "Poppins","Inter",sans-serif;color:var(--sky-pale);letter-spacing:.075em;white-space:nowrap}
+.grp{position:absolute;width:300px}
+.grp .num{font:700 108px/1 "Poppins","Inter",sans-serif;color:var(--sky-pale);height:86px;overflow:visible;margin-left:-2px}
+.grp .num span{position:relative;top:-6px;display:block}
+.grp h3{position:relative;font:700 16.6px/25px "Poppins","Inter",sans-serif;color:var(--navy);margin-top:8px;white-space:nowrap}
+.grp h3 i{font:400 9px/1 "Poppins","Inter",sans-serif;font-style:normal;background:var(--sky-pale);color:var(--navy);padding:2px 3px;margin-left:5px;vertical-align:2px;border-radius:1px}
+.grp ul{list-style:none;margin-top:5px;width:296px}
+.grp li{font:400 11.2px/19px "Poppins","Inter",sans-serif;color:#2b2b2b;padding-left:4px}
+.grp li b{font-weight:400;display:inline-block;margin-right:8px}
+.leyes{position:absolute;left:413px;top:885px;width:300px}
+.leyes h4{font:500 14.5px/18px "Poppins","Inter",sans-serif;color:var(--navy);border-left:3px solid var(--sky);padding-left:12px;margin-bottom:8px;height:18px}
+.leyes p{font:400 13.2px/21px "Poppins","Inter",sans-serif;color:#222;padding-left:21px}
+.leyes p b{font-weight:500}
+
+/* ---------- Contenido ---------- */
+.h1{position:absolute;left:79px;top:57px;width:669px;height:48px;background:var(--navy);border-radius:24px 24px 24px 24px}
+.h1 .n{position:absolute;left:0;top:0;width:48px;height:48px;border-radius:50%;background:var(--sky);color:var(--navy);font:700 30px/48px "Poppins","Inter",sans-serif;text-align:center}
+.h1 .t{position:absolute;left:80px;top:0;height:48px;line-height:54px;font:700 21.2px/64px "Poppins","Inter",sans-serif;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+.h2{position:absolute;left:79px;height:19px;white-space:nowrap}
+.h2 .b{position:absolute;left:0;top:0;height:18px;min-width:26px;padding:0 5px 0 6px;background:var(--sky);border-radius:3px 7px 7px 3px;color:var(--navy);font:400 14.5px/18px "Poppins","Inter",sans-serif}
+.h2 .tt{position:absolute;left:36px;top:-3px;font:500 16px/24px "Poppins","Inter",sans-serif;color:var(--navy)}
+.txt{position:absolute;left:79px;width:669px;font:400 13.55px/17.7px "Liberation Sans",Arial,sans-serif;text-align:justify;color:#232323}
+.txt b{font-weight:700;color:#000}
+.txt p+p{margin-top:4px}
+.lst{position:absolute;left:79px;width:669px;list-style:none;font:400 13.55px/17.7px "Liberation Sans",Arial,sans-serif;text-align:justify;color:#232323}
+.lst li{position:relative;padding-left:32px}
+.lst li em{position:absolute;left:5px;top:-1px;font:700 16px/17px "Caladea","Liberation Serif",serif;font-style:normal;color:var(--navy);letter-spacing:-.02em}
+.lst li+li{margin-top:1px}
+.lst b{font-weight:700;color:#000}
+
+.tbl{position:absolute;left:79px;width:670px;border:1px solid var(--sky-pale)}
+.row{display:flex;border-top:1px solid var(--sky-pale)}
+.row:first-child{border-top:0}
+.row .k{width:164px;flex:none;background:var(--sky-pale);padding:6px 6px 5px 10px;font:500 11.5px/17px "Poppins","Inter",sans-serif;color:var(--navy);border-bottom:2px solid #fff}
+.row:last-child .k{border-bottom:0}
+.row .k{white-space:nowrap}
+.row .k em{font:700 17px/16px "Caladea","Liberation Serif",serif;font-style:normal;color:var(--navy);margin-right:5px}
+.row .v{flex:1;padding:4px 4px 3px 0;list-style:none;font:400 11.9px/16.9px "Liberation Sans",Arial,sans-serif;color:#222}
+.row .v li{position:relative;padding-left:40px;margin-bottom:1.6px}
+.row .v li em{position:absolute;left:4px;top:-1px;font:400 15.4px/17px "Caladea","Liberation Serif",serif;font-style:normal;color:var(--navy)}
+.row .v b{font-weight:700;color:#000}
+.nb{white-space:nowrap}
+.ce{display:inline-flex;align-items:center;gap:3px;height:14px;margin:-3px 0 -3px 5px;padding:0 4px;background:var(--sky);border-radius:2px;color:var(--navy);font:700 8.6px/14px "Liberation Sans",Arial,sans-serif;letter-spacing:.14em;vertical-align:-3px}
+.ce svg{width:10px;height:9px}
+</style>
+</head>
+<body>
+
+<!-- =============== PORTADA =============== -->
+<section class="page cover"><div class="stage">
+<svg width="827" height="1170" viewBox="0 0 827 1170" xmlns="http://www.w3.org/2000/svg">
+  <rect width="827" height="1170" fill="#d1edf9"/>
+  <rect width="827" height="22" fill="#9ddfea"/>
+  <rect y="29" width="827" height="7" fill="#9ddfea"/>
+  <g id="cols" fill="#9ddfea"></g>
+  <!-- banda blanca -->
+  <rect y="381" width="827" height="457" fill="#fff"/>
+  <!-- subrayado a mano -->
+  <path d="M296 607 C340 600 420 600 532 599" stroke="#9ddfea" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  <path d="M310 611 C370 607 430 606 485 607" stroke="#9ddfea" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>
+</svg>
+<div class="tema">TEMA 1</div>
+<h1>La Constitución<br>Española de 1978</h1>
+<div class="chips">
+  <span class="chip" style="left:145px;top:637px;width:110px">Antecedentes</span>
+  <span class="chip" style="left:264px;top:637px;width:158px">Proceso constituyente</span>
+  <span class="chip" style="left:430px;top:637px;width:252px">Características generales y estructura</span>
+  <span class="chip" style="left:146px;top:672px;width:123px">Valor normativo</span>
+  <span class="chip" style="left:277px;top:672px;width:164px">Reforma constitucional</span>
+  <span class="chip" style="left:449px;top:672px;width:233px">Defensa jurídica de la Constitución</span>
+</div>
+<img class="logo" src="assets/logo-vjl.png" alt="Virginia Jurado Luna.com · Preparadora">
+</div></section>
+
+<!-- =============== ÍNDICE =============== -->
+<section class="page"><div class="stage">
+  <div class="run">Tema 1 · La Constitución Española de 1978</div>
+  <div class="rule"></div>
+  <div class="toc-title">Qué vas a estudiar en este tema</div>
+  <svg class="squig" style="left:79px;top:104px" width="118" height="12" viewBox="0 0 118 12"><path d="M1 8 C30 3 80 3 115 4" stroke="#9ddfea" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M3 10 C40 7 80 7 100 7" stroke="#bae7f3" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+  <div class="indice">ÍNDICE</div>
+
+  <div class="grp" style="left:79px;top:140px"><div class="num"><span>1</span></div>
+    <h3>La Constitución Española de 1978<i>3</i></h3>
+    <ul><li><b>1.1</b>Nacimiento histórico de las constituciones</li><li><b>1.2</b>Características de una Constitución</li><li><b>1.3</b>Constitución Española de 1978</li><li><b>1.4</b>Tipos de Constitución</li></ul></div>
+  <div class="grp" style="left:79px;top:403px"><div class="num"><span>2</span></div>
+    <h3>Antecedentes<i>4</i></h3></div>
+  <div class="grp" style="left:79px;top:585px"><div class="num"><span>3</span></div>
+    <h3>Proceso constituyente<i>6</i></h3></div>
+  <div class="grp" style="left:79px;top:763px"><div class="num"><span>4</span></div>
+    <h3>Características generales y<br>estructura<i>7</i></h3>
+    <ul><li><b>4.1</b>Características generales de la Constitución española de 1978</li><li><b>4.2</b>Estructura</li></ul></div>
+
+  <div class="grp" style="left:413px;top:140px"><div class="num"><span>5</span></div>
+    <h3>Valor normativo<i>8</i></h3>
+    <ul><li><b>5.1</b>Antecedentes históricos</li><li><b>5.2</b>Autorreconocimiento de valor normativo</li><li><b>5.3</b>Alcance normativo de las previsiones constitucionales</li><li><b>5.4</b>Supuestos de eficacia debilitada</li><li><b>5.5</b>Jurisprudencia del Tribunal Supremo y del Tribunal Constitucional</li><li><b>5.6</b>Mecanismos que garantizan la superioridad de la Constitución</li></ul></div>
+  <div class="grp" style="left:413px;top:492px"><div class="num"><span>6</span></div>
+    <h3>La reforma constitucional<i>9</i></h3></div>
+  <div class="grp" style="left:413px;top:671px"><div class="num"><span>7</span></div>
+    <h3>La defensa jurídica de la<br>Constitución<i>10</i></h3></div>
+
+  <div class="leyes"><h4>Leyes asociadas</h4>
+    <p><b>Constitución Española:</b> Estructura, Preámbulo, Título Preliminar, Título I, Título IX, Título X y artículo 116.</p></div>
+
+  <div class="foot">Muestra de maquetación · Opovisual.es</div>
+  <div class="pnum">2</div>
+</div></section>
+
+<!-- =============== CONTENIDO =============== -->
+<section class="page"><div class="stage">
+  <div class="run">Tema 1 · La Constitución Española de 1978</div>
+  <div class="rule"></div>
+
+  <div class="h1"><div class="n">1</div><div class="t">La Constitución Española de 1978</div></div>
+
+  <div class="h2" style="top:117px"><span class="b">1.1</span><span class="tt">Nacimiento histórico de las constituciones</span></div>
+  <div class="txt" style="top:141px"><p>La Constitución nace con el <b>Estado de Derecho</b>, que a su vez es fruto de las <b>revoluciones liberales</b> que se fueron sucediendo en distintos países a lo largo de los siglos XVIII y XIX. Dichas revoluciones supusieron la derrota del <b>poder absoluto del Rey</b>, que queda limitado mediante un texto jurídico (la Constitución) que nace del <b>poder soberano del pueblo</b>.</p></div>
+
+  <div class="h2" style="top:222px"><span class="b">1.2</span><span class="tt">Características de una Constitución</span></div>
+  <div class="txt" style="top:246px"><p>El concepto de Constitución atiende a un conjunto de <b>normas fundamentales</b> (cúspide del ordenamiento jurídico) que regulan:</p></div>
+  <ol class="lst" style="top:287px">
+    <li><em>1)</em>La estructura de los órganos básicos del Estado, sus competencias y las relaciones entre ellos (<b>parte orgánica</b>), definiendo así la estructura política del Estado y el sistema de distribución del Poder;</li>
+    <li><em>2)</em>Los derechos y deberes fundamentales del individuo, indisponibles para el legislador (<b>parte dogmática</b>);</li>
+    <li><em>3)</em>El <b>sistema de fuentes del Derecho</b>, donde la Constitución se configura como norma jerárquicamente superior al resto del ordenamiento jurídico, de modo que ninguna norma puede contradecir sus disposiciones.</li>
+  </ol>
+
+  <!-- esquema -->
+  <svg class="abs" style="left:0;top:398px" width="827" height="118" viewBox="0 398 827 118" xmlns="http://www.w3.org/2000/svg" font-family="Poppins, Inter, sans-serif">
+    <rect x="317.8" y="405.5" width="191.5" height="25.5" fill="#143548"/>
+    <text x="413.5" y="422.2" text-anchor="middle" font-weight="700" font-size="12.4" fill="#fff">La Constitución</text>
+    <g stroke="#143548" stroke-width="1.4" fill="none">
+      <path d="M413.5 431 V436 M211.4 441.4 V436 H615.5 V441.4"/>
+    </g>
+    <g fill="#fff" stroke="#143548" stroke-width="1.3">
+      <rect x="115.4" y="441.4" width="192" height="66.6"/>
+      <rect x="317.4" y="441.4" width="192" height="66.6"/>
+      <rect x="519.6" y="441.4" width="192" height="66.6"/>
+    </g>
+    <!-- iconos -->
+    <g fill="#143548">
+      <rect x="207.4" y="448" width="7.2" height="5"/><rect x="210.3" y="453" width="1.6" height="3"/>
+      <rect x="202.4" y="455.8" width="17.6" height="1.5"/>
+      <rect x="202.4" y="457" width="1.5" height="2.5"/><rect x="218.5" y="457" width="1.5" height="2.5"/>
+      <rect x="199.6" y="459" width="7" height="4.6"/><rect x="215.2" y="459" width="7" height="4.6"/>
+      <path d="M413.5 447.5 L421 450.4 V456.5 C421 461 417.8 464.3 413.5 466 C409.2 464.3 406 461 406 456.5 V450.4 Z"/>
+      <path d="M615.6 447 L624.8 465.2 L606.4 465.2 Z"/>
+    </g>
+    <path d="M409.6 456.6 L412.4 459.4 L417.6 453.4" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <g stroke="#fff" stroke-width="1.2"><path d="M608.6 461.4 H622.6"/><path d="M611.2 456.6 H620"/><path d="M613.2 452.6 H618"/></g>
+    <g text-anchor="middle" fill="#143548">
+      <text x="211.4" y="483" font-weight="700" font-size="11.9">Parte orgánica</text>
+      <text x="413.4" y="483" font-weight="700" font-size="11.9">Parte dogmática</text>
+      <text x="615.6" y="483" font-weight="700" font-size="11.9">Sistema de fuentes</text>
+    </g>
+    <g text-anchor="middle" fill="#555" font-size="9.1">
+      <text x="211.4" y="498.5">órganos del Estado y reparto del Poder</text>
+      <text x="413.4" y="498.5">derechos y deberes fundamentales</text>
+      <text x="615.6" y="498.5">la Constitución, norma superior</text>
+    </g>
+  </svg>
+
+  <div class="h2" style="top:520px"><span class="b">1.3</span><span class="tt">Constitución Española de 1978</span></div>
+  <div class="txt" style="top:545px"><p>En España, la Constitución Española de 1978 es la <b>norma suprema</b> del ordenamiento jurídico español, a la que están sujetos todos los poderes públicos y ciudadanos de España desde que fue publicada en el BOE el <b>29 de diciembre de 1978</b>.</p><p>Es la <b>primera de las fuentes</b> de nuestro ordenamiento jurídico, goza de una <b>superioridad jerárquica</b> sobre el resto de las normas, y constituye el derecho fundamental de la comunidad política. La estudiaremos a lo largo del presente tema.</p></div>
+
+  <div class="h2" style="top:665px"><span class="b">1.4</span><span class="tt">Tipos de Constitución</span></div>
+  <div class="tbl" style="top:687px">
+    <div class="row"><div class="k"><em>a)</em>Por su origen</div>
+      <ul class="v"><li><em>(i)</em><b>Pactadas</b> entre el rey y el pueblo;</li><li><em>(ii)</em><b>Otorgadas</b>, como concesión del Monarca a la Nación, siendo el rey el titular del poder constituyente;</li><li><em>(iii)</em><b>Impuestas</b> por la sociedad, que impone una serie de determinaciones políticas al rey, que debe aceptar;</li><li><em>(iv)</em><b>Populares</b>, en las que su origen es directamente la sociedad (nuestra <span class="nb">Constitución).<span class="ce"><svg viewBox="0 0 10 9"><path fill="#143548" d="M0 1 C2 .4 4 .5 5 1.4 V9 C4 8.2 2 8.1 0 8.6Z M10 1 C8 .4 6 .5 5 1.4 V9 C6 8.2 8 8.1 10 8.6Z"/></svg>CE</span></span></li></ul></div>
+    <div class="row"><div class="k"><em>b)</em>Por el<br>procedimiento de<br>reforma</div>
+      <ul class="v"><li><em>(i)</em><b>Rígidas</b>, cuando su reforma sólo puede llevarse a efecto mediante procedimientos extraordinarios y con formalidades superiores a las que se requieren para la aprobación de las leyes ordinarias (caso de la Constitución <span class="nb">Española);<span class="ce"><svg viewBox="0 0 10 9"><path fill="#143548" d="M0 1 C2 .4 4 .5 5 1.4 V9 C4 8.2 2 8.1 0 8.6Z M10 1 C8 .4 6 .5 5 1.4 V9 C6 8.2 8 8.1 10 8.6Z"/></svg>CE</span></span></li><li><em>(ii)</em><b>Flexibles</b>, cuando puede ser modificada siguiendo el procedimiento ordinario;</li><li><em>(iii)</em><b>Pétreas</b>, que no se pueden modificar.</li></ul></div>
+    <div class="row"><div class="k"><em>c)</em>Por su forma externa</div>
+      <ul class="v"><li><em>(i)</em><b>Cerradas</b> (su texto es elaborado y aprobado en un único acto constituyente);</li><li><em>(ii)</em><b>Abiertas</b> (se hallan dispersas en varios textos que se han ido añadiendo sucesivamente);</li><li><em>(iii)</em><b>Escritas</b> o</li><li><em>(iv)</em><b>No escritas</b> (como Reino Unido, que cuenta con numerosas costumbres constitucionales no escritas).</li></ul></div>
+    <div class="row"><div class="k"><em>d)</em>Por la forma de<br>gobierno</div>
+      <ul class="v"><li><em>(i)</em><b>Monárquicas</b>, como es el caso de la CE, <span class="nb">o<span class="ce"><svg viewBox="0 0 10 9"><path fill="#143548" d="M0 1 C2 .4 4 .5 5 1.4 V9 C4 8.2 2 8.1 0 8.6Z M10 1 C8 .4 6 .5 5 1.4 V9 C6 8.2 8 8.1 10 8.6Z"/></svg>CE</span></span></li><li><em>(ii)</em><b>Republicanas</b>.</li></ul></div>
+    <div class="row"><div class="k"><em>e)</em>Por la distribución<br>territorial del poder</div>
+      <ul class="v"><li><em>(i)</em><b>Unitarias</b> (el poder se encuentra centralizado); o</li><li><em>(ii)</em><b>Federales</b>: parten de la preexistencia de Estados.</li></ul></div>
+  </div>
+
+  <div class="foot">Muestra de maquetación · Opovisual.es</div>
+  <div class="pnum">3</div>
+</div></section>
+
+<script>
+// Columnas de la portada (7 fustes con capitel y estrías)
+(function(){
+  var g=document.getElementById('cols'),ns='http://www.w3.org/2000/svg',h='';
+  for(var i=0;i<7;i++){
+    var cx=59.6+118.2*i;
+    h+='<rect x="'+(cx-30.5)+'" y="50.5" width="61" height="14.5" rx="3"/>';
+    h+='<rect x="'+(cx-25.5)+'" y="65" width="51" height="12" rx="3"/>';
+    h+='<rect x="'+(cx-21.4)+'" y="77" width="42.8" height="1100" rx="4"/>';
+  }
+  g.innerHTML=h;
+  var gr='';
+  for(var i=0;i<7;i++){
+    var cx=59.6+118.2*i;
+    [-10.9,0,10.9].forEach(function(dx){gr+='<rect x="'+(cx+dx-1.3)+'" y="93" width="2.6" height="1100" fill="#bae7f3"/>';});
+  }
+  g.insertAdjacentHTML('beforeend',gr);
+})();
+</script>
+</body>
+</html>
