@@ -14,6 +14,22 @@
      --navy #143548 títulos · --sky #9ddfea acentos · --sky-pale #d1edf9 fondos · --sky-mid #bae7f3 estrías
    ===================================================================== */
 
+/* Fuentes (OFL) incluidas en assets/fonts */
+@font-face{font-family:"Poppins";font-weight:400;font-style:normal;src:url("assets/fonts/Poppins-Regular.ttf")}
+@font-face{font-family:"Poppins";font-weight:400;font-style:italic;src:url("assets/fonts/Poppins-Italic.ttf")}
+@font-face{font-family:"Poppins";font-weight:500;font-style:normal;src:url("assets/fonts/Poppins-Medium.ttf")}
+@font-face{font-family:"Poppins";font-weight:500;font-style:italic;src:url("assets/fonts/Poppins-MediumItalic.ttf")}
+@font-face{font-family:"Poppins";font-weight:600;font-style:normal;src:url("assets/fonts/Poppins-SemiBold.ttf")}
+@font-face{font-family:"Poppins";font-weight:600;font-style:italic;src:url("assets/fonts/Poppins-SemiBoldItalic.ttf")}
+@font-face{font-family:"Poppins";font-weight:700;font-style:normal;src:url("assets/fonts/Poppins-Bold.ttf")}
+@font-face{font-family:"Poppins";font-weight:700;font-style:italic;src:url("assets/fonts/Poppins-BoldItalic.ttf")}
+@font-face{font-family:"Lora";font-weight:400;font-style:normal;src:url("assets/fonts/Lora-Regular.ttf")}
+@font-face{font-family:"Lora";font-weight:500;font-style:normal;src:url("assets/fonts/Lora-Medium.ttf")}
+@font-face{font-family:"Lora";font-weight:600;font-style:normal;src:url("assets/fonts/Lora-SemiBold.ttf")}
+@font-face{font-family:"Lora";font-weight:700;font-style:normal;src:url("assets/fonts/Lora-Bold.ttf")}
+@font-face{font-family:"Lora";font-weight:400;font-style:italic;src:url("assets/fonts/Lora-Italic.ttf")}
+@font-face{font-family:"Lora";font-weight:700;font-style:italic;src:url("assets/fonts/Lora-BoldItalic.ttf")}
+
 @page{size:210mm 297mm;margin:0}
 :root{
   --navy:#143548;
