@@ -142,7 +142,7 @@ const cover=[
 // ---------------- página 2: estructura ----------------
 const p2=[];
 p2.push(new Paragraph({spacing:{before:0,after:0,line:tw(48),lineRule:LineRuleType.EXACT},children:[behind('decree_bg.png',697,172,53,0),new TextRun({text:'',size:2})]}));
-p2.push(new Paragraph({indent:{left:tw(30),right:tw(34)},spacing:{before:0,after:tw(30),line:tw(24.5),lineRule:LineRuleType.EXACT},children:[
+p2.push(new Paragraph({indent:{left:tw(30),right:tw(34)},spacing:{before:0,after:tw(30),line:240,lineRule:LineRuleType.AUTO},children:[
   new TextRun({text:'Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',bold:true,size:24,color:NAVY})]}));
 p2.push(sp(12));
 p2.push(new Paragraph({indent:{left:tw(22)},spacing:{before:0,after:0,line:tw(33),lineRule:LineRuleType.EXACT},children:[
