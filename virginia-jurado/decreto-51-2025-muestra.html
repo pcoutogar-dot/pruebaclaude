@@ -5,30 +5,25 @@
 <title>Decreto 51/2025 — muestra de maquetación (págs. 1-2)</title>
 <link rel="stylesheet" href="opovisual.css">
 <style>
-/* ---------- Página 1 · Estructura (tabla original de VJL, con estilo Opovisual) ---------- */
+/* ---------- Página 1 · Estructura en línea de tiempo (distinta de la tabla de contenido) ---------- */
 .doc-title{position:absolute;left:79px;top:78px;width:669px;font:700 17.4px/25.5px "Poppins","Inter",sans-serif;color:var(--navy);letter-spacing:-.005em}
-.est{position:absolute;left:79px;top:222px;width:670px;border-collapse:separate;border-spacing:0;table-layout:fixed}
-.est td.d{border-right:1px solid var(--sky-pale)}
-.est tr:last-child td{border-bottom:1px solid var(--sky-pale)}
-.est th{border-radius:12px 12px 0 0;background:var(--navy);color:#fff;text-align:center;padding:7px 12px 6px;text-indent:.25em;font:700 11.5px/16px "Poppins","Inter",sans-serif;letter-spacing:.25em}
-.est td{border-top:1px solid var(--sky-pale);vertical-align:top}
-.est td.t{background:var(--sky-pale);border-top:2px solid #fff;padding:9px 8px;vertical-align:middle;text-align:center;width:118px}
-.est td.t small{display:block;text-indent:.28em;font:700 8.6px/1 "Poppins","Inter",sans-serif;letter-spacing:.28em;color:var(--navy);text-transform:uppercase}
-.est td.t em{display:block;margin-top:5px;font:700 22px/1 "Lora","Caladea","Liberation Serif",serif;font-style:normal;color:var(--navy)}
-.est td.t em.w{font-size:15px;margin-top:6px}
-.est td.d{padding:9px 12px 9px 14px}
-.est h3{font:600 14px/20px "Poppins","Inter",sans-serif;font-weight:600;color:var(--navy)}
-.est ul{list-style:none;margin-top:5px}
-.est li{display:flex;font:400 12px/17.4px "Liberation Sans",Arial,sans-serif;color:#232323}
-.est li b{flex:none;width:76px;font:500 10.6px/17.4px "Poppins","Inter",sans-serif;color:var(--mute)}
 .flow{position:absolute;left:79px;top:222px;width:670px}
-.flow .est{position:static}
-.callout.nota{position:static;margin-top:26px;width:669px;border-left:3px solid var(--sky);padding-left:15px}
+.lab{display:inline-block;background:var(--navy);color:#fff;font:700 11.5px/16px "Poppins","Inter",sans-serif;letter-spacing:.25em;padding:8px 20px 7px 22px;border-radius:12px}
+.rail{margin-top:18px;padding-left:66px}
+.it{position:relative;padding-bottom:15px}
+.it:last-child{padding-bottom:0}
+.it:not(:last-child)::after{content:"";position:absolute;left:-45px;top:22px;bottom:-2px;width:2px;background:var(--sky)}
+.node{position:absolute;left:-66px;top:-1px;width:44px;height:44px;border-radius:50%;background:var(--sky-pale);border:2px solid var(--sky);display:flex;align-items:center;justify-content:center;font:700 17px/1 "Lora","Caladea",serif;color:var(--navy);z-index:1}
+.node.dot{left:-55px;top:10px;width:22px;height:22px;background:var(--sky)}
+.it small{display:block;font:700 8.6px/1 "Poppins","Inter",sans-serif;letter-spacing:.28em;color:var(--mute);text-transform:uppercase;padding-top:3px}
+.it h3{font:600 15px/21px "Poppins","Inter",sans-serif;color:var(--navy);margin-top:5px}
+.pills{display:flex;flex-wrap:wrap;gap:5px 6px;margin-top:7px}
+.pill{border:1px solid #cfe3ec;background:#fff;border-radius:14px;padding:3px 12px 3px 11px;font:400 11px/15px "Poppins","Inter",sans-serif;color:#2b2b2b}
+.pill b{font-weight:600;color:var(--navy);margin-right:6px}
+.callout.nota{position:static;margin-top:24px;width:669px;border-left:3px solid var(--sky);padding-left:15px}
 .callout.nota p{padding-left:0;font-size:14px;line-height:24px;color:var(--navy)}
 .nota .big{font-weight:700;font-size:15.5px;background:linear-gradient(transparent 62%,var(--sky) 62%)}
 
-.est td.d{position:relative}
-.kic{display:block;width:24px;height:24px;margin:0 auto 7px}
 /* ---------- Página 2 · Tabla "Título preliminar" ---------- */
 .tbl{position:absolute;left:79px;top:121px;width:670px;border-collapse:collapse;table-layout:fixed;border:1px solid var(--sky-pale)}
 .tbl td{border:1px solid var(--sky-pale);vertical-align:top;padding:0}
@@ -77,18 +72,16 @@
   <svg class="squig" style="left:79px;top:188px" width="150" height="12" viewBox="0 0 150 12"><path d="M1 8 C40 3 100 3 146 4" stroke="#9ddfea" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M4 10 C50 7 100 7 124 7" stroke="#bae7f3" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
 
   <div class="flow">
-  <table class="est">
-    <colgroup><col style="width:118px"><col></colgroup>
-    <tr><th colspan="2">ESTRUCTURA</th></tr>
-      <tr><td class="t"><small>Título</small><em class="w">Preliminar</em></td><td class="d"><h3>Disposiciones generales</h3></td></tr>
-      <tr><td class="t"><small>Título</small><em>I</em></td><td class="d"><h3>Planificación y ordenación del empleo público</h3><ul><li><b>Capítulo I</b><span>Planificación de recursos humanos</span></li><li><b>Capítulo II</b><span>Planes de ordenación de recursos humanos</span></li><li><b>Capítulo III</b><span>Oferta de empleo público</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>II</em></td><td class="d"><h3>Selección de personal</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Sistema de selección</span></li><li><b>Capítulo III</b><span>Inicio y desarrollo de los procesos selectivos</span></li><li><b>Capítulo IV</b><span>Personal funcionario en prácticas</span></li><li><b>Capítulo V</b><span>Comisiones de selección</span></li><li><b>Capítulo VI</b><span>Selección de personal funcionario interino y personal laboral temporal</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>III</em></td><td class="d"><h3>Promoción interna del personal funcionario de carrera y del personal laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Promoción interna vertical del personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Promoción interna horizontal del personal funcionario de carrera</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>IV</em></td><td class="d"><h3>Provisión de puestos de trabajo y movilidad del personal funcionario y laboral</h3><ul><li><b>Capítulo I</b><span>Normas generales</span></li><li><b>Capítulo II</b><span>Procedimientos ordinarios de provisión de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Procedimientos de provisión de carácter extraordinario</span></li></ul></td></tr>
-      <tr><td class="t"><small>Título</small><em>V</em></td><td class="d"><h3>Adquisición y pérdida de la relación de servicio</h3><ul><li><b>Capítulo I</b><span>Adquisición y pérdida de la condición de personal funcionario de carrera</span></li><li><b>Capítulo II</b><span>Rehabilitación de la condición de personal funcionario de carrera</span></li><li><b>Capítulo III</b><span>Adquisición y pérdida de la condición de personal laboral fijo</span></li></ul></td></tr>
-  </table>
-
-  <div class="callout nota" id="nota"><p>Este decreto desarrolla los Títulos <span class="big">8, 9 y 10</span> de la <b>LFPA</b>.</p></div>
+    <span class="lab">ESTRUCTURA</span>
+    <div class="rail">
+      <div class="it"><span class="node dot"></span><small>Título preliminar</small><h3>Disposiciones generales</h3></div>
+      <div class="it"><span class="node">I</span><small>Título I</small><h3>Planificación y ordenación del empleo público</h3><div class="pills"><span class="pill"><b>Capítulo I</b>Planificación de recursos humanos</span><span class="pill"><b>Capítulo II</b>Planes de ordenación de recursos humanos</span><span class="pill"><b>Capítulo III</b>Oferta de empleo público</span></div></div>
+      <div class="it"><span class="node">II</span><small>Título II</small><h3>Selección de personal</h3><div class="pills"><span class="pill"><b>Capítulo I</b>Normas generales</span><span class="pill"><b>Capítulo II</b>Sistema de selección</span><span class="pill"><b>Capítulo III</b>Inicio y desarrollo de los procesos selectivos</span><span class="pill"><b>Capítulo IV</b>Personal funcionario en prácticas</span><span class="pill"><b>Capítulo V</b>Comisiones de selección</span><span class="pill"><b>Capítulo VI</b>Selección de personal funcionario interino y personal laboral temporal</span></div></div>
+      <div class="it"><span class="node">III</span><small>Título III</small><h3>Promoción interna del personal funcionario de carrera y del personal laboral</h3><div class="pills"><span class="pill"><b>Capítulo I</b>Normas generales</span><span class="pill"><b>Capítulo II</b>Promoción interna vertical del personal funcionario de carrera</span><span class="pill"><b>Capítulo III</b>Promoción interna horizontal del personal funcionario de carrera</span></div></div>
+      <div class="it"><span class="node">IV</span><small>Título IV</small><h3>Provisión de puestos de trabajo y movilidad del personal funcionario y laboral</h3><div class="pills"><span class="pill"><b>Capítulo I</b>Normas generales</span><span class="pill"><b>Capítulo II</b>Procedimientos ordinarios de provisión de personal funcionario de carrera</span><span class="pill"><b>Capítulo III</b>Procedimientos de provisión de carácter extraordinario</span></div></div>
+      <div class="it"><span class="node">V</span><small>Título V</small><h3>Adquisición y pérdida de la relación de servicio</h3><div class="pills"><span class="pill"><b>Capítulo I</b>Adquisición y pérdida de la condición de personal funcionario de carrera</span><span class="pill"><b>Capítulo II</b>Rehabilitación de la condición de personal funcionario de carrera</span><span class="pill"><b>Capítulo III</b>Adquisición y pérdida de la condición de personal laboral fijo</span></div></div>
+    </div>
+    <div class="callout nota" id="nota"><p>Este decreto desarrolla los Títulos <span class="big">8, 9 y 10</span> de la <b>LFPA</b>.</p></div>
   </div>
 
 </div>
