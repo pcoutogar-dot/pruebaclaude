@@ -18,7 +18,7 @@ function buildTable(){
   const B={style:BorderStyle.SINGLE,size:6,color:'D1EDF9'};
   const borders={top:B,bottom:B,left:B,right:B};
   const COLOR={blue:'1A7BB9',green:'1F9D63'};
-  const PX={c:11.5,n:11.2}, LH={c:13.4,n:13.2};
+  const PX={c:11.5,n:11.2}, LHM={c:270,n:266};   // interlineado en múltiplos (Docs ignora el exacto)
   function textRuns(runs,base){
     const out=[];
     runs.forEach(r=>{
@@ -30,7 +30,7 @@ function buildTable(){
     return out;
   }
   function bulletPara(runs,kind,cls){
-    return new Paragraph({numbering:{reference:'vi',level:0},spacing:{line:tw(LH[cls]),lineRule:LineRuleType.EXACT,before:0,after:0},
+    return new Paragraph({numbering:{reference:'vi',level:0},spacing:{line:LHM[cls],lineRule:LineRuleType.AUTO,before:0,after:0},
       children:textRuns(runs,{font:'Arial',px:PX[cls],color:'222222'})});
   }
   function cellK(c){
@@ -42,11 +42,11 @@ function buildTable(){
       else if(r.chip) chip=r.t;
       else if(r.t!=='\n') runs.push(new TextRun({text:r.t,font:'Poppins',bold:true,size:hp(11.2),color:NAVY}));
     });
-    kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{line:tw(15),lineRule:LineRuleType.EXACT,before:0,after:0},children:runs}));
+    kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{line:216,lineRule:LineRuleType.AUTO,before:0,after:0},children:runs}));
     if(chip) kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(6),after:0},children:[
       new TextRun({text:' ♥ '+chip+' ',font:'Arial',bold:true,size:hp(8.6),color:NAVY,characterSpacing:24,shading:{type:ShadingType.CLEAR,color:'auto',fill:'9DDFEA'}})]}));
     return new TableCell({rowSpan:c.rowspan,width:{size:COLS[0],type:WidthType.DXA},borders,verticalAlign:VerticalAlign.CENTER,
-      shading:{type:ShadingType.CLEAR,color:'auto',fill:'D1EDF9'},margins:{top:tw(8),bottom:tw(8),left:tw(5),right:tw(5)},children:kids});
+      shading:{type:ShadingType.CLEAR,color:'auto',fill:'D1EDF9'},margins:{top:0,bottom:0,left:tw(5),right:tw(5)},children:kids});
   }
   function cellS(c){
     const runs=[];
@@ -56,9 +56,11 @@ function buildTable(){
     }));
     return new TableCell({width:{size:COLS[1],type:WidthType.DXA},borders,verticalAlign:VerticalAlign.CENTER,
       shading:{type:ShadingType.CLEAR,color:'auto',fill:'F8F9FA'},margins:{top:tw(4),bottom:tw(3),left:tw(8),right:tw(6)},
-      children:[new Paragraph({alignment:AlignmentType.CENTER,spacing:{line:tw(14.4),lineRule:LineRuleType.EXACT,before:0,after:0},children:runs})]});
+      children:[new Paragraph({alignment:AlignmentType.CENTER,spacing:{line:221,lineRule:LineRuleType.AUTO,before:0,after:0},children:runs})]});
   }
   function cellC(c){
+    const allBlue=c.paras.every(p=>p.runs.every(r=>r.color==='blue'||!r.t.trim()));
+    if(allBlue) c.paras.forEach(p=>p.runs.forEach(r=>{delete r.color;}));
     const w=c.colspan===2?COLS[2]+COLS[3]:COLS[2];
     let kids;
     const items=c.paras.filter(p=>p.runs.length);
@@ -70,15 +72,15 @@ function buildTable(){
       kids=[new Table({width:{size:w-tw(14),type:WidthType.DXA},columnWidths:[iw,iw],borders:{top:NB,bottom:NB,left:NB,right:NB,insideHorizontal:NB,insideVertical:NB},
         rows:[new TableRow({children:[col(items.slice(0,half)),col(items.slice(half))]})]}),new Paragraph({spacing:{line:20,lineRule:LineRuleType.EXACT,before:0,after:0},children:[new TextRun({text:'',size:2})]})];
     } else kids=items.map(p=>bulletPara(p.runs,'li','c'));
-    return new TableCell({columnSpan:c.colspan,width:{size:w,type:WidthType.DXA},borders,margins:{top:tw(2),bottom:tw(2),left:tw(8),right:tw(6)},children:kids});
+    return new TableCell({columnSpan:c.colspan,width:{size:w,type:WidthType.DXA},borders,margins:{top:0,bottom:0,left:tw(8),right:tw(6)},children:kids});
   }
   function cellN(c){
     const items=c.paras.filter(p=>p.runs.length);
     const kids=[];
-    items.forEach((p,i)=>{ kids.push(new Paragraph({numbering:{reference:'vi',level:0},spacing:{line:tw(LH.n),lineRule:LineRuleType.EXACT,before:i?tw(5):0,after:0},
+    items.forEach((p,i)=>{ kids.push(new Paragraph({numbering:{reference:'vi',level:0},spacing:{line:LHM.n,lineRule:LineRuleType.AUTO,before:i?tw(5):0,after:0},
       children:textRuns(p.runs,{font:'Arial',px:PX.n,color:'222222'})})); });
     return new TableCell({width:{size:COLS[3],type:WidthType.DXA},borders,shading:{type:ShadingType.CLEAR,color:'auto',fill:'F6FBFE'},
-      margins:{top:tw(4),bottom:tw(3),left:tw(8),right:tw(6)},children:kids});
+      margins:{top:tw(1),bottom:0,left:tw(8),right:tw(6)},children:kids});
   }
   // los textos con clase "blue" heredan el azul: marcarlo en los runs
   table.forEach(r=>r.forEach(c=>{ if(c.cls==='c'||c.cls==='n') c.paras.forEach(p=>p.runs.forEach(x=>{})); }));
@@ -199,8 +201,9 @@ p2.push(new Paragraph({spacing:{before:0,after:0},children:[behind('bar.png',58.
 
 // ---------------- página 3: barra de título + tabla ----------------
 const p3=[
-  new Paragraph({style:'tight',children:[shape({w:669,h:48,adj:50000,fill:NAVY,ins:[0,10,0,10],paras:[px([rx('Título preliminar: Disposiciones generales',{bold:true,pt:15,color:'FFFFFF'})])]})]}),
-  sp(10), buildTable(), sp(2)];
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(16+(48-LH(15))/2),line:240,lineRule:LineRuleType.AUTO},children:[
+    behind('bar_title.png',669,48,79,-(48-LH(15))/2),new TextRun({text:'Título preliminar: Disposiciones generales',font:'Poppins',bold:true,size:30,color:'FFFFFF'})]}),
+  buildTable(), sp(2)];
 
 const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({children:[PageNumber.CURRENT],font:'Arial',size:21,color:'24262A'})]})]});
 const emptyF=new Footer({children:[new Paragraph({children:[]})]}), emptyH=new Header({children:[new Paragraph({children:[]})]});
@@ -213,7 +216,7 @@ const doc=new Document({creator:'Opovisual',title:'Decreto 51/2025, de 24 de feb
     {properties:{titlePage:true,page:{...page,margin:{top:0,bottom:tw(332),left:0,right:0,header:0,footer:0}}},
      footers:{first:coverFooter,default:emptyF},children:cover},
     {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(90),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},children:p2},
-    {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(40),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},children:p3}
+    {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(57+(48-LH(15))/2),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},children:p3}
   ]});
 const JSZip=require('/opt/node-tools/node_modules/jszip');
 Packer.toBuffer(doc).then(async b=>{
