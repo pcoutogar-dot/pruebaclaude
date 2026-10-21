@@ -1,0 +1,72 @@
+/* =====================================================================
+   OPOVISUAL · hoja de estilo base (extraída de la muestra "VJL Tema 1")
+   Escenario de 827 x 1170 px escalado a A4 (210 x 297 mm).
+   Coordenadas, tamaños y pesos medidos sobre la muestra resuelta.
+
+   TIPOGRAFÍA (px sobre el escenario de 827 px)
+     Poppins Bold 700   portada título 54 · H1 de apartado 21 · títulos de índice 16.6 · cuerpo de "TEMA N" 23 (tracking .3em)
+     Poppins Medium 500 H2 16 · etiquetas de tabla 11.5 · "Leyes asociadas" 14.5
+     Poppins Regular    cabecera corrida 10.5 · subapartados índice 11.2 · chips 11.5
+     Poppins Italic     pie "Muestra de maquetación · Opovisual.es" 9.4
+     Liberation Sans    cuerpo 13.55/17.7 (justificado) · tablas 11.9/16.9 · negrita = concepto clave
+     Lora (Caladea)     numeración a) b) 1) 2) (i) (ii)… en azul marino
+   COLOR
+     --navy #143548 títulos · --sky #9ddfea acentos · --sky-pale #d1edf9 fondos · --sky-mid #bae7f3 estrías
+   ===================================================================== */
+
+@page{size:210mm 297mm;margin:0}
+:root{
+  --navy:#143548;
+  --sky:#9ddfea;
+  --sky-mid:#bae7f3;
+  --sky-pale:#d1edf9;
+  --ink:#1f1f1f;
+  --mute:#6f8290;
+  /* colores con significado propio del documento (azul = colectivos, verde = principios) */
+  --c-blue:#1a7bb9;
+  --c-green:#1f9d63;
+  --c-red:#d6453d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff}
+body{font-family:"Liberation Sans",Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pop,.run,.foot{font-family:"Poppins","Inter",sans-serif}
+
+.page{width:210mm;height:297mm;overflow:hidden;position:relative;break-after:page;page-break-after:always;background:#fff}
+.page:last-child{break-after:auto;page-break-after:auto}
+.stage{width:827px;height:1170px;position:absolute;left:0;top:0;transform-origin:0 0;transform:scale(.95976)}
+.abs{position:absolute}
+
+/* cabecera corrida, filete y pie */
+.run{position:absolute;right:79px;top:31px;font:400 10.5px/1 "Poppins","Inter",sans-serif;color:var(--mute)}
+.rule{position:absolute;left:79px;right:79px;top:50px;height:1px;background:var(--sky-pale)}
+.foot{position:absolute;left:79px;top:1144px;font:italic 400 9.4px/1 "Poppins","Inter",sans-serif;color:#9aa6ae}
+.pnum{position:absolute;right:79px;top:1140px;font:400 15px/1 "Liberation Sans",Arial,sans-serif;color:#222}
+
+/* titular de apartado: píldora azul marino con círculo numerado */
+.h1{position:absolute;left:79px;top:57px;width:669px;height:48px;background:var(--navy);border-radius:24px}
+.h1 .n{position:absolute;left:0;top:0;width:48px;height:48px;border-radius:50%;background:var(--sky);color:var(--navy);font:700 30px/48px "Poppins","Inter",sans-serif;text-align:center}
+.h1 .t{position:absolute;left:80px;top:0;height:48px;font:700 21.2px/54px "Poppins","Inter",sans-serif;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+
+/* subtitular: pestaña azul + texto Poppins Medium */
+.h2{position:absolute;left:79px;height:19px;white-space:nowrap}
+.h2 .b{position:absolute;left:0;top:0;height:18px;min-width:26px;padding:0 5px 0 6px;background:var(--sky);border-radius:3px 7px 7px 3px;color:var(--navy);font:400 14.5px/18px "Poppins","Inter",sans-serif}
+.h2 .tt{position:absolute;left:36px;top:-3px;font:500 16px/24px "Poppins","Inter",sans-serif;color:var(--navy)}
+
+/* texto corrido */
+.txt{position:absolute;left:79px;width:669px;font:400 13.55px/17.7px "Liberation Sans",Arial,sans-serif;text-align:justify;color:#232323}
+.txt b{font-weight:700;color:#000}
+
+/* subrayado a mano (bajo títulos) */
+.squig{position:absolute}
+
+/* etiqueta (chip) tipo "CE" / "¡TEST!" */
+.nb{white-space:nowrap}
+.ce{display:inline-flex;align-items:center;gap:3px;height:14px;margin:-3px 0 -3px 5px;padding:0 4px;background:var(--sky);border-radius:2px;color:var(--navy);font:700 8.6px/14px "Liberation Sans",Arial,sans-serif;letter-spacing:.14em;vertical-align:-3px}
+.ce svg{width:10px;height:9px}
+
+/* bloque lateral "Leyes asociadas" / notas */
+.callout{position:absolute}
+.callout h4{font:500 14.5px/18px "Poppins","Inter",sans-serif;color:var(--navy);border-left:3px solid var(--sky);padding-left:12px;margin-bottom:8px;height:18px}
+.callout p{font:400 13.2px/21px "Poppins","Inter",sans-serif;color:#222;padding-left:21px}
+.callout p b{font-weight:500}
