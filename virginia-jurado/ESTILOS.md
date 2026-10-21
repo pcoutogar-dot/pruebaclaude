@@ -23,3 +23,16 @@ Archivo de referencia: `decreto-51-2025-muestra-E.html` (página 1), CSS en el b
 - Nada de sombras difuminadas ni degradados (se ven mal en su ordenador); si hace falta
   profundidad, sombra sólida desplazada.
 - Tracking por defecto en los textos pequeños en mayúsculas.
+
+## Portada · aprobada (Decreto 51/2025)
+
+Archivo: `decreto-51-2025-muestra.html`, sección «PORTADA».
+
+- Misma estructura que la muestra resuelta: banda ilustrada arriba (0–381 px), franja blanca
+  central (381–838 px) y banda ilustrada abajo, sobre fondo `#d1edf9`.
+- La ilustración se razona a partir del contenido (Constitución → columnas; empleo público →
+  filas de figuras de personas en `#9ddfea` / `#bae7f3`, con una destacada en azul marino).
+- Franja blanca: antetítulo en mayúsculas espaciadas Poppins Bold 15 px · título Poppins Bold
+  46/52 px en dos líneas · subrayado a mano · resto del título en Poppins 14/22 px · chips con
+  los bloques del contenido · logo VJL centrado.
+- El texto sale literal del documento, solo repartido en niveles tipográficos.
