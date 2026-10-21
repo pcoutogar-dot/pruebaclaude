@@ -140,25 +140,25 @@ const chip=(t,w)=>shape({w:w+34,h:29,adj:50000,fill:'FFFFFF',line:'8A8F94',ins:[
 
 // ---------------- portada: bandas en cabecera/pie, texto editable en el centro ----------------
 const band=(f,h)=>new Paragraph({spacing:{before:0,after:0,line:240,lineRule:LineRuleType.AUTO},children:[img(f,827,h)]});
-const coverFooter=new Footer({children:[new Paragraph({style:'tight',children:[img('band_bot2.png',827,300)]})]});
+const coverFooter=new Footer({children:[new Paragraph({style:'tight',children:[img('band_bot.png',827,332)]})]});
 const cover=[
-  new Paragraph({style:'tight',children:[img('band_top2.png',827,330)]}),
-  sp(30),
+  new Paragraph({style:'tight',children:[img('band_top.png',827,381)]}),
+  sp(20),
   new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0,line:200,lineRule:LineRuleType.AUTO},children:[
     new TextRun({text:'DECRETO 51/2025,',font:'Poppins',bold:true,size:63,color:NAVY}),new TextRun({break:1}),
     new TextRun({text:'DE 24 DE FEBRERO',font:'Poppins',bold:true,size:63,color:NAVY})]}),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(4)},children:[img('squig.png',244,24)]}),
-  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(20),line:240,lineRule:LineRuleType.AUTO},children:[
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[img('squig.png',244,24)]}),
+  new Paragraph({alignment:AlignmentType.CENTER,indent:{left:tw(113),right:tw(113)},spacing:{before:0,after:tw(37),line:240,lineRule:LineRuleType.AUTO},children:[
     new TextRun({text:'Por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',size:21,color:'3A4A55'})]}),
-  ...LY.chips.map((row,ri)=>new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(ri?0:10),line:240,lineRule:LineRuleType.AUTO},
+  ...LY.chips.map((row,ri)=>new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:tw(ri?0:18),line:240,lineRule:LineRuleType.AUTO},
     children:[...row.items.map(c=>behind(c.img,c.tw+34,29,c.x-17,-(29-LH(8.5))/2)),
       new TextRun({text:row.items.map(c=>c.t.replace(/ /g,'\u00a0')).join(' '.repeat(row.n)),font:'Poppins',size:17,color:'4B4F53'})]})),
-  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(22),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(58),height:P96(55)}})]})];
+  new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:tw(34),after:0},children:[new ImageRun({type:'png',data:fs.readFileSync('/home/user/pruebaclaude/virginia-jurado/assets/logo-vjl.png'),transformation:{width:P96(58),height:P96(55)}})]})];
 
 // ---------------- página 2: estructura ----------------
 const p2=[];
 // bloque del decreto: fondo anclado al propio párrafo (offset negativo hacia arriba)
-p2.push(new Paragraph({indent:{left:tw(30),right:tw(34)},spacing:{before:0,after:tw(30),line:240,lineRule:LineRuleType.AUTO},children:[
+p2.push(new Paragraph({indent:{left:tw(30),right:tw(34)},spacing:{before:0,after:tw(55),line:240,lineRule:LineRuleType.AUTO},children:[
   behind('decree_bg.png',697,172,53,-52),
   new TextRun({text:'Decreto 51/2025, de 24 de febrero, por el que se regula la planificación y ordenación del empleo público, y el ingreso, promoción interna y provisión de puestos de trabajo del personal de la Administración General de la Junta de Andalucía.',font:'Poppins',bold:true,size:24,color:NAVY})]}));
 p2.push(new Paragraph({indent:{left:tw(22)},spacing:{before:0,after:tw(22),line:240,lineRule:LineRuleType.AUTO},children:[
@@ -172,16 +172,16 @@ titulos.forEach(([kick,name,node,[nw,nh],ny],i)=>{
   const last=i===titulos.length-1, rows=LY.rows[i];
   const seg=(h)=>last?[]:[behind('vline.png',2,h,100,0,HorizontalPositionRelativeFrom.PAGE,1)];
   // antetítulo (lleva la bolita)
-  p2.push(new Paragraph({indent:{left:IND},spacing:{before:0,after:tw(2),line:240,lineRule:LineRuleType.AUTO},children:[
+  p2.push(new Paragraph({indent:{left:IND},spacing:{before:0,after:0,line:240,lineRule:LineRuleType.AUTO},children:[
     behind(node,nw,nh,79,ny,HorizontalPositionRelativeFrom.PAGE,5),...seg(LH(6)+6),
     new TextRun({text:kick.toUpperCase(),font:'Poppins',bold:true,size:12,color:'6F8290'})]}));
   // nombre del Título
-  const nameAfter=rows.length?5:(last?0:12);
+  const nameAfter=rows.length?9:0;
   p2.push(new Paragraph({indent:{left:IND},spacing:{before:0,after:tw(nameAfter),line:240,lineRule:LineRuleType.AUTO},children:[
     ...seg(LH(10.5)*(name.length>70?2:1)+nameAfter+4),new TextRun({text:name,font:'Poppins',bold:true,size:21,color:NAVY})]}));
   // filas de pastillas
   rows.forEach((r,ri)=>{
-    const after=ri<rows.length-1?(19+4-LH(7.5)):(last?16:12);
+    const after=ri<rows.length-1?12.4:21;
     const runs=[];
     r.forEach((p,j)=>{
       if(j) runs.push(new TextRun({text:' '.repeat(p.nsp),font:'Poppins',size:15}));
@@ -210,7 +210,7 @@ const doc=new Document({creator:'Opovisual',title:'Decreto 51/2025, de 24 de feb
   numbering:{config:[{reference:'vi',levels:[{level:0,format:LevelFormat.BULLET,text:'●',alignment:AlignmentType.LEFT,
     style:{paragraph:{indent:{left:tw(12),hanging:tw(11)}},run:{color:'6FD0E0',size:12,font:'Arial'}}}]}]},
   sections:[
-    {properties:{titlePage:true,page:{...page,margin:{top:0,bottom:tw(300),left:0,right:0,header:0,footer:0}}},
+    {properties:{titlePage:true,page:{...page,margin:{top:0,bottom:tw(332),left:0,right:0,header:0,footer:0}}},
      footers:{first:coverFooter,default:emptyF},children:cover},
     {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(90),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},children:p2},
     {properties:{type:SectionType.NEXT_PAGE,page:{...page,margin:{top:tw(40),bottom:tw(56),left:tw(79),right:tw(79),header:0,footer:165}}},headers:{default:emptyH},footers:{default:footer},children:p3}
