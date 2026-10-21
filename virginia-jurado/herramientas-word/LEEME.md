@@ -14,3 +14,8 @@ va todo en flujo: portada como imagen a página completa (sección con márgenes
 título como tablas con fondo, línea de tiempo como tabla (bolitas = imágenes en línea; la línea es el
 borde entre dos columnas) y capítulos como texto resaltado. Deja holgura al final de cada página porque
 Docs maqueta algo distinto que Word/LibreOffice.
+
+### v2 (`build_gdocs2.js`)
+- Portada editable: bandas de personas en la cabecera/pie de la primera página (sección con márgenes 0) y texto real en el centro.
+- Formas redondeadas (titular, píldoras, chips, «ESTRUCTURA», barra de título) como formas DrawingML en línea:
+  Google Docs las convierte en dibujos con texto editable (doble clic). `gd_sizes.json` = anchos medidos con Poppins.

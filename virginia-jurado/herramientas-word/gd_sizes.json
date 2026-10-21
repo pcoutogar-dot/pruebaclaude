@@ -1,0 +1,136 @@
+{
+ "pills": [
+  [],
+  [
+   {
+    "lab": "Capítulo I",
+    "t": "Planificación de recursos humanos",
+    "w": 236.9
+   },
+   {
+    "lab": "Capítulo II",
+    "t": "Planes de ordenación de recursos humanos",
+    "w": 286.8
+   },
+   {
+    "lab": "Capítulo III",
+    "t": "Oferta de empleo público",
+    "w": 193.5
+   }
+  ],
+  [
+   {
+    "lab": "Capítulo I",
+    "t": "Normas generales",
+    "w": 149.8
+   },
+   {
+    "lab": "Capítulo II",
+    "t": "Sistema de selección",
+    "w": 167.7
+   },
+   {
+    "lab": "Capítulo III",
+    "t": "Inicio y desarrollo de los procesos selectivos",
+    "w": 289.9
+   },
+   {
+    "lab": "Capítulo IV",
+    "t": "Personal funcionario en prácticas",
+    "w": 236.4
+   },
+   {
+    "lab": "Capítulo V",
+    "t": "Comisiones de selección",
+    "w": 188.2
+   },
+   {
+    "lab": "Capítulo VI",
+    "t": "Selección de personal funcionario interino y personal laboral temporal",
+    "w": 428.3
+   }
+  ],
+  [
+   {
+    "lab": "Capítulo I",
+    "t": "Normas generales",
+    "w": 149.8
+   },
+   {
+    "lab": "Capítulo II",
+    "t": "Promoción interna vertical del personal funcionario de carrera",
+    "w": 381.3
+   },
+   {
+    "lab": "Capítulo III",
+    "t": "Promoción interna horizontal del personal funcionario de carrera",
+    "w": 397.1
+   }
+  ],
+  [
+   {
+    "lab": "Capítulo I",
+    "t": "Normas generales",
+    "w": 149.8
+   },
+   {
+    "lab": "Capítulo II",
+    "t": "Procedimientos ordinarios de provisión de personal funcionario de carrera",
+    "w": 444.3
+   },
+   {
+    "lab": "Capítulo III",
+    "t": "Procedimientos de provisión de carácter extraordinario",
+    "w": 347.6
+   }
+  ],
+  [
+   {
+    "lab": "Capítulo I",
+    "t": "Adquisición y pérdida de la condición de personal funcionario de carrera",
+    "w": 434.3
+   },
+   {
+    "lab": "Capítulo II",
+    "t": "Rehabilitación de la condición de personal funcionario de carrera",
+    "w": 398.6
+   },
+   {
+    "lab": "Capítulo III",
+    "t": "Adquisición y pérdida de la condición de personal laboral fijo",
+    "w": 378.6
+   }
+  ]
+ ],
+ "chips": [
+  [
+   {
+    "t": "Planificación",
+    "w": 75.3
+   },
+   {
+    "t": "Selección de personal",
+    "w": 130.3
+   },
+   {
+    "t": "Promoción interna",
+    "w": 108.9
+   }
+  ],
+  [
+   {
+    "t": "Provisión de puestos de trabajo",
+    "w": 185.9
+   },
+   {
+    "t": "Movilidad",
+    "w": 57.0
+   },
+   {
+    "t": "Adquisición y pérdida de la relación de servicio",
+    "w": 278.3
+   }
+  ]
+ ],
+ "label_w": 103.61744362890624
+}
