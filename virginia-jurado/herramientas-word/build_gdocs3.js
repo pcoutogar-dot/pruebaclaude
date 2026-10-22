@@ -14,7 +14,9 @@ const NB={style:BorderStyle.NONE,size:0,color:'FFFFFF'}, NOB={top:NB,bottom:NB,l
 const sp=(px)=>new Paragraph({spacing:{before:0,after:0,line:tw(px),lineRule:LineRuleType.EXACT},children:[new TextRun({text:'',size:2})]});
 // ---------------- tabla del Título preliminar ----------------
 function buildTable(){
-  const COLS=[108,112,301,149].map(tw); COLS[3]=tw(670)-COLS[0]-COLS[1]-COLS[2];
+  // 5 columnas de rejilla: la 3.ª columna se divide para que la fila 1 tenga sus dos listas en celdas propias (sin tabla anidada)
+  const G=[108,112,216,85,0].map(tw); G[4]=tw(670)-G[0]-G[1]-G[2]-G[3];
+  const COLS=[G[0],G[1],G[2]+G[3],G[4]];
   const B={style:BorderStyle.SINGLE,size:6,color:'D1EDF9'};
   const borders={top:B,bottom:B,left:B,right:B};
   const COLOR={blue:'1A7BB9',green:'1F9D63'};
@@ -66,13 +68,12 @@ function buildTable(){
     const items=c.paras.filter(p=>p.runs.length);
     const blueAll=c.paras.length && false;
     if(c.two){
-      const half=Math.ceil(items.length/2), iw=Math.round((w-tw(14))/2);
-      const NB={style:BorderStyle.NONE,size:0,color:'FFFFFF'}; const nb={top:NB,bottom:NB,left:NB,right:NB};
-      const col=list=>new TableCell({width:{size:iw,type:WidthType.DXA},borders:nb,margins:{top:0,bottom:0,left:0,right:tw(7)},children:list.map(p=>bulletPara(p.runs,'li','c'))});
-      kids=[new Table({width:{size:w-tw(14),type:WidthType.DXA},columnWidths:[iw,iw],borders:{top:NB,bottom:NB,left:NB,right:NB,insideHorizontal:NB,insideVertical:NB},
-        rows:[new TableRow({children:[col(items.slice(0,half)),col(items.slice(half))]})]}),new Paragraph({spacing:{line:20,lineRule:LineRuleType.EXACT,before:0,after:0},children:[new TextRun({text:'',size:2})]})];
+      const half=Math.ceil(items.length/2);
+      const NB={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
+      return [new TableCell({columnSpan:1,width:{size:G[2],type:WidthType.DXA},borders:{...borders,right:NB},margins:{top:0,bottom:0,left:tw(8),right:tw(4)},children:items.slice(0,half).map(p=>bulletPara(p.runs,'li','c'))}),
+              new TableCell({columnSpan:2,width:{size:G[3]+G[4],type:WidthType.DXA},borders:{...borders,left:NB},margins:{top:0,bottom:0,left:tw(4),right:tw(6)},children:items.slice(half).map(p=>bulletPara(p.runs,'li','c'))})];
     } else kids=items.map(p=>bulletPara(p.runs,'li','c'));
-    return new TableCell({columnSpan:c.colspan,width:{size:w,type:WidthType.DXA},borders,margins:{top:0,bottom:0,left:tw(8),right:tw(6)},children:kids});
+    return new TableCell({columnSpan:c.colspan+1,width:{size:w,type:WidthType.DXA},borders,margins:{top:0,bottom:0,left:tw(8),right:tw(6)},children:kids});
   }
   function cellN(c){
     const items=c.paras.filter(p=>p.runs.length);
@@ -84,8 +85,8 @@ function buildTable(){
   }
   // los textos con clase "blue" heredan el azul: marcarlo en los runs
   table.forEach(r=>r.forEach(c=>{ if(c.cls==='c'||c.cls==='n') c.paras.forEach(p=>p.runs.forEach(x=>{})); }));
-  const rows=table.map(r=>new TableRow({children:r.map(c=>({k:cellK,s:cellS,c:cellC,n:cellN})[c.cls](c))}));
-  return new Table({width:{size:COLS.reduce((a,b)=>a+b),type:WidthType.DXA},columnWidths:COLS,layout:TableLayoutType.FIXED,rows});
+  const rows=table.map(r=>new TableRow({children:r.flatMap(c=>[].concat(({k:cellK,s:cellS,c:cellC,n:cellN})[c.cls](c)))}));
+  return new Table({width:{size:COLS.reduce((a,b)=>a+b),type:WidthType.DXA},layout:TableLayoutType.FIXED,rows,columnWidths:G});
 }
 
 
