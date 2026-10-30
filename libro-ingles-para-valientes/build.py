@@ -15,6 +15,10 @@ from pathlib import Path
 import qrcode
 import qrcode.image.svg
 
+# Mientras sea True, las anécdotas personales llevan en la vista previa la etiqueta «Borrador».
+# Ponlo a False cuando las hayas revisado y adaptado a tu experiencia real.
+BORRADOR = True
+
 # Cambia esto por tu dominio real antes de imprimir: los QR apuntan a DOMINIO/audio/<pista>.
 DOMINIO = "TU-DOMINIO.com"
 
@@ -108,7 +112,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .toc li.extra .n { color: var(--hibiscus); -webkit-text-stroke: 0; }
 
 /* apertura de capítulo */
-.opener .band { margin: -7cqw -8cqw 0; background: var(--mint); padding: 7cqw 8cqw 5cqw; display: grid; grid-template-columns: 1fr 34cqw; gap: 3cqw; align-items: end; }
+.opener .band { margin: -7cqw -8cqw 0; background: var(--mint); padding: 6cqw 8cqw 4cqw; display: grid; grid-template-columns: 1fr 34cqw; gap: 3cqw; align-items: end; }
 .opener .band .num { font: 800 16cqw/.8 var(--display); color: var(--mango); -webkit-text-stroke: .35cqw var(--jade); }
 .opener .band h3 { font-size: 8.4cqw; margin-top: 2cqw; }
 .opener .band .en { display: block; font: italic 400 3.4cqw/1.3 var(--body); color: var(--ink-soft); margin-top: 1.4cqw; }
@@ -118,6 +122,19 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .learn ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.3cqw; }
 .learn li { font-size: 3.45cqw; line-height: 1.3; padding-left: 5cqw; position: relative; }
 .learn li::before { content: ""; position: absolute; left: .4cqw; top: 1.1cqw; width: 2.2cqw; height: 2.2cqw; border-radius: 50%; background: var(--mango); }
+
+/* anécdota personal */
+.story { position: relative; background: var(--mango-soft); border-radius: 2.4cqw; padding: 2.8cqw 3.6cqw 3cqw; display: grid; gap: 1cqw; }
+.story .who { font: 600 6cqw/1 var(--hand); color: var(--hibiscus); }
+.story p { font-size: 3.3cqw; line-height: 1.42; }
+.story .draft { position: absolute; top: -2.2cqw; right: 3cqw; font: 700 2.2cqw/1 var(--body); letter-spacing: .06em; text-transform: uppercase; background: var(--ink); color: #fff; padding: 1cqw 1.6cqw; border-radius: 1cqw; }
+@media print { .story .draft { display: none; } }
+
+/* no eres la única */
+.feel { display: grid; gap: 1.6cqw; }
+.feel div { display: grid; gap: .6cqw; padding-bottom: 1.6cqw; border-bottom: .2cqw solid var(--mint); }
+.feel q { font: 700 3.9cqw/1.25 var(--display); color: var(--hibiscus); quotes: "«" "»"; }
+.feel span { font-size: 3.2cqw; line-height: 1.38; }
 
 /* cabecera de sección dentro del capítulo */
 .sec { display: flex; align-items: center; gap: 3cqw; }
@@ -358,10 +375,15 @@ def qr_svg(pista):
 # ---------------------------------------------------------------- bloques
 def chap_opener(n, titulo, en, ilus, aprenderas, escena=None):
     li = "".join(f"<li>{e(x)}</li>" for x in aprenderas)
-    esc = f'<p>{e(escena)}</p>' if escena else ""
-    aud = audio(n, "Todas las frases de este capítulo, grabadas. Escúchalas y repítelas en voz alta, sin prisa.")
+    esc = historia(escena) if escena else ""
+    aud = audio(n, "Todas las frases del capítulo, grabadas.")
     return ("opener", f'''<div class="band"><div><div class="num">{n}</div><h3>{e(titulo)}</h3><span class="en">{e(en)}</span></div>{spot(ilus)}</div>
       <div class="learn"><span class="k">En este capítulo</span><ul>{li}</ul></div>{esc}{aud}''')
+
+
+def historia(texto, titulo="Me pasó a mí"):
+    tag = '<span class="draft">Borrador: adáptalo a tu experiencia real</span>' if BORRADOR else ""
+    return f'<div class="story">{tag}<span class="who">{e(titulo)}</span><p>{e(texto)}</p></div>'
 
 
 def sec(titulo, sub=None, ilus=None):

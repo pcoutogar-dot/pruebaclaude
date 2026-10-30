@@ -102,6 +102,20 @@ def carta():
     return [pg("page", a, LIBRO, cls="letter", lbl="Carta al lector"), pg("page", b, LIBRO, cls="letter", lbl="Carta al lector")]
 
 
+# ======================================================================= no eres la única
+def no_eres_la_unica():
+    items = [("Me encantaría, pero el idioma me frena.", "Es la frase que más se repite. Este libro existe precisamente por ella."),
+             ("A mi edad ya no se aprende.", "Se aprende de otra manera: con frases hechas, escuchando y repitiendo. Así está pensado este libro."),
+             ("Me da vergüenza equivocarme.", "Allí el inglés tampoco es la lengua de casi nadie. Equivocarse es lo normal, y nadie se va a reír de ti."),
+             ("¿Y si me pongo enferma y no sé explicarme?", "Tienes un capítulo entero, el 5, y una tarjeta médica para llevar en la cartera."),
+             ("Me da miedo sentirme sola.", "El capítulo 9 es para eso: presentarte, charlar y quedar para un café.")]
+    cuerpo = "".join(f"<div><q>{e(a)}</q><span>{e(b)}</span></div>" for a, b in items)
+    body = bloque('<h3>No eres la única</h3>',
+                  p('Antes de escribir este libro leí cientos de mensajes de personas como tú. Estas frases aparecían una y otra vez. Si alguna es tuya, estás en buena compañía.'),
+                  f'<div class="feel">{cuerpo}</div>')
+    return [pg("page", body, LIBRO, lbl="No eres la única")]
+
+
 # ======================================================================= cómo usar
 def como_usar():
     a = bloque('<h3>Cómo usar este libro</h3>',
@@ -150,8 +164,8 @@ def pronunciacion():
 def cap1():
     run = "Capítulo 1 | Lo básico"
     a = chap_opener(1, "Lo básico que salva el día", "The basics | De béisiks", "hola",
-                    ["Saludar y despedirte con educación", "Las frases que te sacan de cualquier apuro", "Los números y los precios sin confusiones"],
-                    "Con lo que hay en este capítulo puedes pasar un día entero fuera de casa. Si solo te da tiempo a aprender un capítulo antes de viajar, que sea este.")
+                    ["Saludar y despedirte con educación", "Las frases que te sacan de apuros", "Los números y los precios sin confusiones"],
+                    "En mi primer mercado entendí «fifty» y saqué cincuenta. Eran quince. La señora se rio, me devolvió el dinero y me escribió el número en la mano. Aprendí que el 15 y el 50 se parecen muchísimo, y que equivocarse allí no es ningún drama. Ríete, pide que te lo escriban y sigue.")
     b = bloque(sec("Saludar y despedirte", "Greetings | Gríitings"),
                frases([("Hello! / Hi!", "Jelóu! / Jái!", "¡Hola!"),
                        ("Good morning.", "Gud mórning", "Buenos días (hasta las 12)."),
@@ -218,8 +232,8 @@ def cap1():
 def cap2():
     run = "Capítulo 2 | Aeropuerto e inmigración"
     a = chap_opener(2, "Aeropuerto e inmigración", "Airport and immigration | Érport and imigréishon", "avion",
-                    ["Facturar, pasar controles y encontrar tu puerta", "Responder a lo que te preguntan en el control de pasaportes", "Ir a la oficina de inmigración sin miedo"],
-                    "Llevas muchas horas de vuelo, estás cansada y el policía de la ventanilla te pregunta algo muy rápido. Tranquila: siempre son las mismas cinco preguntas, y aquí las tienes.")
+                    ["Facturar y encontrar tu puerta", "Responder en el control de pasaportes", "Ir a la oficina de inmigración sin miedo"],
+                    "En mi primer control de pasaportes en Asia, de los nervios, contesté «yes» a todo. El policía sonrió y lo repitió despacio: «How long you stay?». Le enseñé el billete de vuelta y listo. Nadie espera que hables perfecto: basta una respuesta corta o un papel.")
     b = bloque(sec("En el aeropuerto", "At the airport | At di érport"),
                frases([("I have one suitcase.", "Ái jav uán sútkeis", "Llevo una maleta."),
                        ("Where is gate twelve?", "Uér is géit tuélv?", "¿Dónde está la puerta 12?"),
@@ -262,7 +276,7 @@ def cap3():
     run = "Capítulo 3 | Tu casa"
     a = chap_opener(3, "Tu casa", "Your home | Iór jóum", "casa",
                     ["Preguntar lo importante antes de alquilar", "Entender la fianza, el contrato y las facturas", "Explicar que algo se ha roto"],
-                    "Has encontrado un apartamento precioso, con piscina y a diez minutos del mar. Antes de firmar, hay seis preguntas que te pueden ahorrar mucho dinero.")
+                    "Mi primer piso allí me pareció baratísimo… hasta la primera factura de la luz. El propietario la cobraba casi al doble que la compañía, y yo no había preguntado. No era un engaño: estaba en un contrato que firmé sin entender del todo. Por eso este capítulo empieza por las preguntas que me habría gustado hacer a mí.")
     b = bloque(sec("Buscar piso", "Looking for a place | Lúking for a pléis"),
                frases([("I'm looking for an apartment for six months.", "Áim lúking for an apártment for siks manz", "Busco un apartamento para seis meses."),
                        ("How much per month?", "Jáu mach per manz?", "¿Cuánto al mes?"),
@@ -309,7 +323,7 @@ def cap4():
     run = "Capítulo 4 | Dinero"
     a = chap_opener(4, "Dinero", "Money | Máni", "dinero",
                     ["Sacar dinero sin pagar comisiones de más", "Pagar, pedir el cambio y no confundir billetes", "Regatear en el mercado con una sonrisa"],
-                    "El cajero te habla en inglés, la pantalla te ofrece cosas raras y detrás hay cola. Respira: solo hay un botón que de verdad importa, y está en la página siguiente.")
+                    "Durante semanas, cada vez que sacaba dinero, el cajero me ofrecía cobrarme en euros y yo aceptaba, porque me parecía lo más seguro. Estaba pagando de más solo por no entender una pantalla. Cuando lo descubrí me dio rabia, y luego risa. A ti no te va a pasar: el botón bueno está en la página siguiente.")
     b = bloque(sec("En el cajero", "At the ATM | At di ei-ti-ém"),
                vocab([("ATM", "ei-ti-ém", "cajero automático"), ("withdraw", "uizdró", "sacar dinero"), ("insert card", "insért kard", "introduzca la tarjeta"),
                       ("enter PIN", "énter pin", "teclee el PIN"), ("fee", "fii", "comisión"), ("cancel", "kánsel", "cancelar")]),
@@ -340,8 +354,8 @@ def cap4():
 def cap5():
     run = "Capítulo 5 | Salud"
     a = chap_opener(5, "En el hospital y la farmacia", "Health | Jelz", "clinica",
-                    ["Explicar lo que te pasa y dónde te duele", "Entender al médico y cómo tomar la medicación", "Hablar con el seguro y saber qué hacer en una urgencia"],
-                    "Es el capítulo que más miedo da y el que más te va a servir. Los hospitales privados suelen atender en inglés, pero con mascarilla, prisa y acento. Aquí tienes justo lo que necesitas.")
+                    ["Explicar lo que te pasa y dónde te duele", "Entender al médico y la medicación", "El seguro y las urgencias"],
+                    "Una noche me subió la fiebre y tuve que ir a una clínica. Recuerdo más el miedo que la fiebre: no sabía cómo explicar lo que me pasaba. Al final señalé, dije «fever, three days» y la doctora lo entendió todo. Este capítulo lo escribí pensando en mi madre.")
     b = bloque(sec("Explicar lo que te pasa", "At the doctor | At de dóktor", "clinica"),
                frases([("It hurts here.", "It jerts jíer", "Me duele aquí."),
                        ("I have a fever.", "Ái jav a fíiver", "Tengo fiebre."),
@@ -398,7 +412,7 @@ def cap6():
     run = "Capítulo 6 | Moverte"
     a = chap_opener(6, "Moverte", "Getting around | Gueting aráund", "tuktuk",
                     ["Pedir un coche con una app y escribir al conductor", "Tomar un taxi o una moto sin sorpresas en el precio", "Pedir y entender direcciones"],
-                    "Las aplicaciones de transporte son tu mejor amiga: ves el precio antes de subir y no tienes que explicar adónde vas. Solo te falta saber qué escribirle al conductor.")
+                    "Me he perdido en más ciudades de Asia de las que me gustaría admitir. Una vez, un mototaxi me llevó a la otra punta de la ciudad porque mi dirección estaba en inglés y él la leyó a su manera. Desde entonces llevo siempre la dirección escrita en el idioma del país. Es la tarjeta más barata y más útil del mundo.")
     b = bloque(sec("Con Grab y otras apps", "Ride apps | Ráid aps", "movil"),
                p('Para mensajes al conductor. Cópialos tal cual en el chat de la aplicación.', 'soft'),
                frases([("I'm here.", "Áim jíer", "Ya estoy aquí."),
@@ -435,7 +449,7 @@ def cap7():
     run = "Capítulo 7 | Comer y comprar"
     a = chap_opener(7, "Comer y comprar", "Food and shopping | Fud and shóping", "comida",
                     ["Pedir en un restaurante a tu gusto: sin picante y con poco azúcar", "Explicar una alergia sin riesgos", "Comprar en el súper, en el 7-Eleven y llevar la ropa a lavar"],
-                    "La comida es uno de los grandes placeres de Asia. Picante, dulce, con cacahuete escondido… Con las frases de este capítulo comes lo que quieres y como lo quieres.")
+                    "En mi primer restaurante tailandés pedí «a little spicy». Lo que para ellos es un poco, para mí fue un incendio. Lloraba y me reía a la vez, y la camarera me trajo arroz blanco sin pedírselo. Ahora digo «not spicy» y el chile me lo pongo yo.")
     b = bloque(sec("En el restaurante", "At the restaurant | At de réstorant", "comida"),
                frases([("A table for one, please.", "A téibel for uán, pliis", "Una mesa para una persona."),
                        ("The menu, please.", "De ményu, pliis", "La carta, por favor."),
@@ -471,7 +485,7 @@ def cap8():
     run = "Capítulo 8 | Sola y segura"
     a = chap_opener(8, "Sola y segura", "Safe and sound | Séif and sáund", "segura",
                     ["Pedir ayuda cuando la necesitas", "Decir que no con firmeza y sin miedo", "Reconocer los engaños más típicos y qué hacer si te pasa algo"],
-                    "El Sudeste Asiático es, en general, un sitio seguro y amable. Pero sabes cuidarte, y en este capítulo tienes las palabras para hacerlo también en inglés.")
+                    "Un señor muy amable me paró en la calle para decirme que el templo estaba cerrado y que él conocía un sitio mejor. Me pareció un detalle… hasta que acabé en una tienda de joyas. No me pasó nada, pero me sentí tonto. Si te ocurre a ti, sonríe, di «No, thank you» y sigue tu camino.")
     b = bloque(sec("Pedir ayuda", "Asking for help | Ásking for jelp"),
                frases([("Can you help me, please?", "Can iú jelp mi, pliis?", "¿Me puede ayudar, por favor?"),
                        ("I'm lost.", "Áim lost", "Me he perdido."),
@@ -509,7 +523,7 @@ def cap9():
     run = "Capítulo 9 | Hacer amigos"
     a = chap_opener(9, "Hacer amigos", "Making friends | Méiking frends", "amigos",
                     ["Presentarte y hablar de ti", "Preguntar a los demás y seguir la conversación", "Quedar para un café y pedir el contacto"],
-                    "La soledad es lo que más preocupa a quien se va sola. Y la mejor forma de combatirla es hablar: con otros extranjeros, en la clase de yoga, en el café de abajo.")
+                    "Las primeras semanas fuera pueden ser muy solitarias. A mí me salvó un café: me senté al lado de una pareja de jubilados ingleses, les pregunté «Where are you from?» y acabamos quedando cada jueves. No hacía falta hablar bien. Hacía falta atreverse a decir hola.")
     b = bloque(sec("Presentarte", "About you | Abáut iú"),
                frases([("My name is Carmen.", "Mái néim is Carmen", "Me llamo Carmen."),
                        ("I'm from Spain.", "Áim from s-péin", "Soy de España."),
@@ -545,7 +559,7 @@ def cap10():
     run = "Capítulo 10 | Tu inglés y tu móvil"
     a = chap_opener(10, "Tu inglés y tu móvil", "Your phone | Iór fóun", "movil",
                     ["Usar el traductor para que te entiendan de verdad", "Saber cuándo el traductor no basta", "Las aplicaciones que te harán la vida fácil"],
-                    "El móvil es un gran aliado. Pero en una urgencia, sin batería o con prisa, lo que llevas en la cabeza es lo que te salva. Lo mejor es usar las dos cosas a la vez.")
+                    "Una tarde me quedé sin batería en mitad de un mercado, sin saber volver a mi alojamiento. Me salvó un papel arrugado con la dirección y tres palabras en inglés. El móvil ayuda muchísimo, pero no siempre está. Lo que llevas en la cabeza, sí. Por eso este libro va con frases y no solo con aplicaciones.")
     b = bloque(sec("El traductor, bien usado", "Translator | Transléitor", "movil"),
                lista(["<b>Frases cortas y sencillas.</b> «Me duele la rodilla desde ayer» se traduce bien. Una frase larga con refranes, no.",
                       "<b>Enseña la pantalla</b> en lugar de leer la traducción en voz alta.",
@@ -681,7 +695,7 @@ def indice(caps):
 
 def paginas():
     portada = {"kind": "raw", "body": PORTADA, "lbl": "Portada", "id": "portada"}
-    cuerpo = carta() + [None] + como_usar() + pronunciacion() + cap1() + cap2() + cap3() + cap4() + cap5() + cap6() + cap7() + cap8() + cap9() + cap10() + paises() + tarjetas() + diccionario() + final()
+    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + cap1() + cap2() + cap3() + cap4() + cap5() + cap6() + cap7() + cap8() + cap9() + cap10() + paises() + tarjetas() + diccionario() + final()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)
