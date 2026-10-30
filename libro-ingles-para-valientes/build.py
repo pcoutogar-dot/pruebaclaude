@@ -99,8 +99,8 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .sign .ph { justify-self: start; font: 600 8cqw/1 var(--hand); color: var(--jade); background: none; padding: 0; }
 
 /* índice */
-.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6cqw; }
-.toc li { display: grid; grid-template-columns: 7cqw 1fr auto; align-items: baseline; gap: 2cqw; font-size: 3.6cqw; line-height: 1.2; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.15cqw; }
+.toc li { display: grid; grid-template-columns: 7cqw 1fr auto; align-items: baseline; gap: 2cqw; font-size: 3.45cqw; line-height: 1.15; }
 .toc li .n { font: 800 3.6cqw/1 var(--display); color: var(--mango); -webkit-text-stroke: .15cqw var(--jade); }
 .toc li .t { min-width: 0; }
 .toc li .t small { display: block; font-size: 2.7cqw; color: var(--ink-soft); margin-top: .4cqw; }
@@ -144,6 +144,9 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .voc b { font: 700 3.5cqw/1.15 var(--body); }
 .voc i { font: normal 700 2.75cqw/1.15 var(--body); color: var(--jade-deep); background: var(--mango-soft); justify-self: start; padding: .3cqw 1cqw; border-radius: .8cqw; }
 .voc span { font-size: 2.85cqw; color: var(--ink-soft); line-height: 1.2; }
+.voc.num3 { grid-template-columns: 1fr 1fr 1fr; gap: 0 3cqw; }
+.voc.num3 div { padding: .9cqw 0; }
+.voc.num3 b { font-size: 3.3cqw; }
 
 /* así lo oirás */
 .hear .top { display: grid; grid-template-columns: 1fr 20cqw; gap: 3cqw; align-items: center; }
@@ -214,11 +217,11 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 
 /* diccionario */
 .dict { columns: 2; column-gap: 5cqw; font-size: 2.75cqw; line-height: 1.22; }
-.dict div { break-inside: avoid; padding: .55cqw 0; border-bottom: .15cqw solid var(--mint); }
+.dict div { break-inside: avoid; padding: .3cqw 0; border-bottom: .15cqw solid var(--mint); }
 .dict b { font-size: 3cqw; }
 .dict i { font-style: normal; color: var(--jade-deep); background: var(--mango-soft); padding: 0 .6cqw; border-radius: .5cqw; margin-left: .6cqw; }
 .dict span { display: block; color: var(--ink-soft); }
-.dict .letter-h { font: 800 4cqw/1 var(--display); color: var(--hibiscus); border: 0; padding: 1cqw 0 .3cqw; }
+.dict .letter-h { font: 800 3.6cqw/1 var(--display); color: var(--hibiscus); border: 0; padding: .8cqw 0 .2cqw; }
 
 /* comprobación */
 .check { display: grid; gap: 1.2cqw; margin: 0; padding: 0; list-style: none; }
@@ -259,6 +262,11 @@ def e(t):
     t = html.escape(t, quote=False)
     return re.sub(r"&lt;(/?(?:b|em|strong|br|i|small)|span class=&quot;ph&quot;|span class=\"ph\"|/span)&gt;",
                   lambda m: "<" + html.unescape(m.group(1)) + ">", t)
+
+
+def nb(t):
+    """La pronunciación no se parte por «s-» ni por guiones: usa un guion que no rompe línea."""
+    return t.replace("-", "\u2011")
 
 
 # ---------------------------------------------------------------- ilustraciones (viewBox 0 0 34 28)
@@ -351,8 +359,9 @@ def qr_svg(pista):
 def chap_opener(n, titulo, en, ilus, aprenderas, escena=None):
     li = "".join(f"<li>{e(x)}</li>" for x in aprenderas)
     esc = f'<p>{e(escena)}</p>' if escena else ""
+    aud = audio(n, "Todas las frases de este capítulo, grabadas. Escúchalas y repítelas en voz alta, sin prisa.")
     return ("opener", f'''<div class="band"><div><div class="num">{n}</div><h3>{e(titulo)}</h3><span class="en">{e(en)}</span></div>{spot(ilus)}</div>
-      <div class="learn"><span class="k">En este capítulo</span><ul>{li}</ul></div>{esc}''')
+      <div class="learn"><span class="k">En este capítulo</span><ul>{li}</ul></div>{esc}{aud}''')
 
 
 def sec(titulo, sub=None, ilus=None):
@@ -365,14 +374,18 @@ def p(t, cls=""):
 
 
 def frases(filas, small=False, legend=False):
-    rows = "".join(f'<div class="row"><span class="en">{e(en)}</span><span class="say">{e(say)}</span><span class="es">{e(es)}</span></div>'
+    rows = "".join(f'<div class="row"><span class="en">{e(en)}</span><span class="say">{e(nb(say))}</span><span class="es">{e(es)}</span></div>'
                    for en, say, es in filas)
     lg = '<div class="legend"><span>Inglés y traducción</span><span>Se dice</span></div>' if legend else ""
     return f'{lg}<div class="phr{" small" if small else ""}">{rows}</div>'
 
 
 def vocab(items):
-    return '<div class="voc">' + "".join(f"<div><b>{e(en)}</b><i>{e(say)}</i><span>{e(es)}</span></div>" for en, say, es in items) + "</div>"
+    return '<div class="voc">' + "".join(f"<div><b>{e(en)}</b><i>{e(nb(say))}</i><span>{e(es)}</span></div>" for en, say, es in items) + "</div>"
+
+
+def vocab3(items):
+    return '<div class="voc num3">' + "".join(f"<div><b>{e(en)}</b><i>{e(say)}</i></div>" for en, say, es in items) + "</div>"
 
 
 def oiras(titulo, intro, pares, ilus=None):
