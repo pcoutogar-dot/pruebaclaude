@@ -10,6 +10,7 @@ import { Toast } from './toast.js';
 import { Sfx } from './audio.js';
 import { PourSurface, cremaBase, bowlBase, makeSurfaceMesh } from './pour.js';
 import { makePlaced } from './ingredients.js';
+import { Shop } from './shop.js';
 import * as P from './props.js';
 
 // ---------- Render ----------
@@ -35,6 +36,8 @@ composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight),
 composer.addPass(new OutputPass());
 
 const room = buildRoom(scene);
+let uiReady = false;
+const shop = new Shop({ renderer, env: scene.environment, onChange: () => uiReady && renderUI() });
 
 // ---------- Los dos desayunos ----------
 const sets = {};
@@ -257,8 +260,9 @@ function renderUI() {
   tools.innerHTML = '';
   for (const t of station.tools) {
     const b = document.createElement('button');
-    b.className = 'chip' + (t === tool ? ' on' : '');
-    b.innerHTML = `<span>${t.icon}</span>${t.label}`;
+    const q = shop.qty(t);
+    b.className = 'chip' + (t === tool ? ' on' : '') + (q === 0 ? ' empty' : '');
+    b.innerHTML = `<span>${t.icon}</span>${t.label}${q === null ? '' : `<b class="qty">${q}</b>`}`;
     b.onclick = () => {
       tool = t;
       renderUI();
@@ -266,6 +270,9 @@ function renderUI() {
     tools.appendChild(b);
   }
   tools.style.display = station.tools.length ? '' : 'none';
+  const table = station.id === 'table';
+  $('work').style.display = table ? '' : 'none';
+  $('reset').style.display = table ? 'none' : '';
   hint.textContent = tool ? tool.hint : station.hint;
 }
 
@@ -319,8 +326,41 @@ $('reset').addEventListener('click', () => {
     s.bowlPlaced.clear();
   } else if (station.id === 'coffee' && s.latte) s.latte.reset();
   else return;
+  shop.newDish(station.id);
   undo.length = 0;
 });
+
+// ---------- Ir a trabajar: cobra según la hora y empieza un nuevo día ----------
+let day = 1;
+const usedToday = new Set();
+$('work').addEventListener('click', () => {
+  const onTime = minutes <= 8 * 60 + 15;
+  const base = onTime ? 30 : 15;
+  const mimo = Math.min(20, usedToday.size * 2);
+  shop.earn(base + mimo);
+  say(`Día ${day} · +${base + mimo} 🪙`, `${onTime ? 'Llegaste a tiempo ☀️' : 'Llegaste tarde… 🏃'} (+${base}) · mimo +${mimo}`);
+  fade.classList.add('on');
+  setTimeout(() => {
+    for (const s of Object.values(sets)) {
+      s.toast.reset();
+      s.toast.placed.clear();
+      if (s.yogurt) {
+        s.yogurt.reset();
+        s.bowlPlaced.clear();
+        s.latte.reset();
+      }
+    }
+    shop.newDish();
+    undo.length = 0;
+    usedToday.clear();
+    day++;
+    minutes = 7 * 60 + 30;
+    tick();
+    selectStation(STATIONS[mood][0]);
+    fade.classList.remove('on');
+  }, 900);
+});
+$('fridgeBtn').addEventListener('click', () => shop.open('fridge'));
 const soundBtn = $('sound');
 soundBtn.addEventListener('click', () => {
   sfx.on = !sfx.on;
@@ -329,11 +369,16 @@ soundBtn.addEventListener('click', () => {
 });
 
 const timeEl = $('time');
-let minutes = 7 * 60 + 32;
-setInterval(() => {
-  if (minutes < 8 * 60 + 15) minutes++;
+let minutes = 7 * 60 + 30;
+function tick() {
   timeEl.textContent = `${String((minutes / 60) | 0).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+  document.body.classList.toggle('late', minutes > 8 * 60 + 15);
+}
+setInterval(() => {
+  if (minutes < 9 * 60 + 30) minutes++;
+  tick();
 }, 2500);
+tick();
 
 // ---------- Input ----------
 const ray = new THREE.Raycaster();
@@ -389,6 +434,12 @@ el.addEventListener('pointerdown', (e) => {
   const info = surfaceInfo();
   if (tool && info) {
     const s = sets[mood];
+    // gasta ingrediente al empezar (si toca). Sin existencias → abre la nevera.
+    const pay = () => {
+      const r = shop.use(tool, station.id);
+      if (r) usedToday.add(tool.id);
+      return r;
+    };
     if (tool.type === 'heat') {
       const h = hitSurface(e, info);
       if (h) {
@@ -399,6 +450,7 @@ el.addEventListener('pointerdown', (e) => {
     } else if (tool.type === 'spread') {
       const h = hitSurface(e, info);
       if (h) {
+        if (!pay()) return;
         undo.push(s.toast.snapshot());
         drag = { kind: 'spread', uv: h.uv.clone() };
         return;
@@ -406,8 +458,13 @@ el.addEventListener('pointerdown', (e) => {
     } else if (tool.type === 'place') {
       const h = hitSurface(e, info, { withPlaced: true });
       if (h) {
+        const refund = pay();
+        if (!refund) return;
         const o = placeAt(info.holder, h, tool.id);
-        undo.push(() => o.removeFromParent());
+        undo.push(() => {
+          o.removeFromParent();
+          refund();
+        });
         sfx.plop();
         drag = { kind: tool.orient ? 'orient' : 'move', obj: o, info, start: h.point.clone() };
         return;
@@ -415,8 +472,13 @@ el.addEventListener('pointerdown', (e) => {
     } else if (tool.type === 'sprinkle') {
       const h = hitSurface(e, info, { withPlaced: true });
       if (h) {
+        const refund = pay();
+        if (!refund) return;
         const items = [];
-        undo.push(() => items.forEach((o) => o.removeFromParent()));
+        undo.push(() => {
+          items.forEach((o) => o.removeFromParent());
+          refund();
+        });
         drag = { kind: 'sprinkle', items, info, acc: 1 };
         sprinkleAt(drag, h);
         return;
@@ -425,6 +487,7 @@ el.addEventListener('pointerdown', (e) => {
       const surf = info.kind === 'coffee' ? s.latte : s.yogurt;
       const h = hitSurface(e, info);
       if (h && surf) {
+        if (!pay()) return;
         undo.push(surf.snapshot());
         drag = { kind: tool.type, surf, uv: h.uv.clone(), info };
         return;
@@ -583,6 +646,8 @@ resize();
 const clock = new THREE.Clock();
 const easeOutBack = (t) => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
 applyMood('golden');
+uiReady = true;
+renderUI();
 computeView();
 cur.target.copy(want.target);
 cur.dir.copy(want.dir);
@@ -652,7 +717,7 @@ function loop() {
 loop();
 
 window.__bs = {
-  scene, camera, sets, applyMood, selectStation, STATIONS,
+  scene, camera, sets, applyMood, selectStation, STATIONS, shop,
   get station() { return station; },
   settled: () => cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
 };

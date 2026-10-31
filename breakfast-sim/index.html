@@ -12,6 +12,7 @@
 
   <header id="hud">
     <div class="pill clock"><span class="sun">☀︎</span><span id="time">07:32</span><span class="muted">· salida 08:15</span></div>
+    <button class="pill fridge" id="fridgeBtn">🧊 <span class="coin">🪙 <span data-coins>30</span></span></button>
     <div class="seg" id="mood">
       <button data-mood="cutre">Piso compartido</button>
       <button data-mood="golden" class="on">Mañana dorada</button>
@@ -28,10 +29,19 @@
       <div class="row actions">
         <button id="undo">↶ Deshacer</button>
         <button id="reset">Empezar de nuevo</button>
+        <button id="work" class="primary">💼 Ir a trabajar</button>
         <button id="sound" aria-label="Sonido">♪</button>
       </div>
     </div>
   </footer>
+
+  <div id="shop" class="sheet">
+    <div class="sheet-card">
+      <header><b>Tu nevera</b><span class="pill coin">🪙 <span data-coins>30</span></span><button id="shopClose" aria-label="Cerrar">✕</button></header>
+      <nav class="tabs" id="shopTabs"></nav>
+      <div class="grid" id="shopGrid"></div>
+    </div>
+  </div>
 
   <div id="fade"></div>
   <script type="module" src="/src/main.js"></script>
