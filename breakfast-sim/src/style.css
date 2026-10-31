@@ -202,3 +202,20 @@ body.late #time { color: #c0563a; }
 }
 .item button:disabled { background: #d8d2c8; color: #fff; cursor: default; }
 .note { grid-column: 1 / -1; font-size: 12px; color: var(--ink-soft); text-align: center; margin: 4px 0 0; }
+
+/* ---------- Pasos de un proceso ---------- */
+.steps { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 0 8px; }
+.steps::-webkit-scrollbar { display: none; }
+.step {
+  flex: none; border: 0; background: transparent; color: var(--ink-soft); cursor: pointer;
+  font: 750 12px var(--font); display: flex; align-items: center; gap: 5px; padding: 4px 8px 4px 4px; border-radius: 99px;
+}
+.step i {
+  font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--line); font-size: 11px;
+}
+.step.on { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(110, 75, 40, 0.12); }
+.step.on i { background: var(--accent); color: #fff; }
+.step.done i { background: var(--accent-2); color: #fff; }
+.step.locked { opacity: 0.45; cursor: default; }
+.chip.locked { opacity: 0.6; }

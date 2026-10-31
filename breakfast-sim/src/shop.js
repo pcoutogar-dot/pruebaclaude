@@ -24,15 +24,17 @@ export const ITEMS = {
   mint: { name: 'Menta', pack: 12, price: 2, thumb: () => cluster('mint', 3) },
   milk: { name: 'Leche fresca', pack: 6, price: 4, scope: true, thumb: () => bottle() },
   cinnamon: { name: 'Canela', pack: 20, price: 2, thumb: () => jar('#9a5a2c', '#7a4a24') },
+  beans: { name: 'Café de especialidad', pack: 6, price: 6, scope: true, thumb: () => jar('#4a2c1a', '#b98a5c') },
+  instant: { name: 'Café soluble', pack: 20, price: 1, scope: true, thumb: () => P.makeInstantJar() },
   butter: { name: 'Margarina', pack: 20, price: 1, scope: true, thumb: () => P.makeButterTub() },
 };
 
 // qué ingrediente gasta cada herramienta
 export const TOOL_ITEM = {
-  avocado: 'avocado', avoSlice: 'avocado', ricotta: 'ricotta', honey: 'honey', drizzle: 'honey',
+  avoCut: 'avocado', grind: 'beans', foamMilk: 'milk', instant: 'instant', ricotta: 'ricotta', honey: 'honey', drizzle: 'honey',
   egg: 'egg', radish: 'radish', tomato: 'tomato', sprouts: 'sprouts', chili: 'chili', sesame: 'sesame',
   yogurt: 'yogurt', blueberry: 'blueberry', raspberry: 'raspberry', strawberry: 'strawberry',
-  banana: 'banana', granola: 'granola', mint: 'mint', milk: 'milk', cinnamon: 'cinnamon', butter: 'butter',
+  banana: 'banana', granola: 'granola', mint: 'mint', cinnamon: 'cinnamon', butter: 'butter',
 };
 
 // Cocina y vajilla (permanentes) y premium (dinero real, vía StoreKit en iOS)

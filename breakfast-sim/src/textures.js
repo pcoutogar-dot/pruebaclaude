@@ -267,7 +267,7 @@ export function blackCoffeeTexture() {
 }
 
 // ---------- Corte del aguacate ----------
-export function avocadoFleshTexture() {
+export function avocadoFleshTexture(hollow = false) {
   const S = 512, c = canvas(S), x = c.getContext('2d');
   const cx = S / 2, cy = S * 0.62;
   const g = x.createRadialGradient(cx, cy, 10, cx, cy, S * 0.62);
@@ -279,6 +279,18 @@ export function avocadoFleshTexture() {
   g.addColorStop(1, '#3f5f25');
   x.fillStyle = g;
   x.fillRect(0, 0, S, S);
+  if (hollow) {
+    // hueco del hueso: cuenco amarillo pálido con sombra
+    const h = x.createRadialGradient(cx + 6, cy - 6, 4, cx, cy, 78);
+    h.addColorStop(0, '#c9c06a');
+    h.addColorStop(0.6, '#e9e4a0');
+    h.addColorStop(0.9, '#f3efb8');
+    h.addColorStop(1, 'rgba(241,236,170,0)');
+    x.fillStyle = h;
+    x.beginPath();
+    x.arc(cx, cy, 80, 0, 7);
+    x.fill();
+  }
   return tex(c);
 }
 

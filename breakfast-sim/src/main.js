@@ -11,6 +11,8 @@ import { Sfx } from './audio.js';
 import { PourSurface, cremaBase, bowlBase, makeSurfaceMesh } from './pour.js';
 import { makePlaced } from './ingredients.js';
 import { Shop } from './shop.js';
+import { AvocadoPrep } from './avocado.js';
+import { CoffeeProc, setMugLevel } from './coffee.js';
 import * as P from './props.js';
 
 // ---------- Render ----------
@@ -132,6 +134,22 @@ for (const s of Object.values(sets)) {
   scene.add(s.group);
 }
 
+// ---------- Zona de preparación (a la derecha de la encimera) ----------
+// Aquí se hacen los procesos (pelar, colar...) sin amontonar la mesa del desayuno.
+const AVO_ZONE = new THREE.Vector3(3.55, 0.065, 0.15);
+const COFFEE_ZONE = new THREE.Vector3(5.7, 0.02, -0.3);
+const prepBoard = P.makeBoard();
+prepBoard.scale.setScalar(0.8);
+prepBoard.position.set(4.0, 0, 0.55);
+prepBoard.rotation.y = Math.PI / 2;
+const avoPrep = new AvocadoPrep();
+avoPrep.group.position.copy(AVO_ZONE);
+const zoneLight = new THREE.PointLight('#ffd9ad', 7, 7, 1.6);
+zoneLight.position.set(4.8, 2.3, 0.8);
+sets.golden.group.add(prepBoard, avoPrep.group, zoneLight);
+const coffeeProc = new CoffeeProc({ mug: sets.golden.mug, latte: sets.golden.latte, parent: sets.golden.group });
+setMugLevel(sets.cutre.mug, 0);
+
 // ---------- Composición horizontal (3/4) y vertical (casi cenital) ----------
 // Cada objeto tiene su sitio y aire alrededor: nada encima de la tabla salvo
 // lo que se prepara en ella. [x, z, giro]
@@ -147,11 +165,16 @@ const PORTRAIT = {
   },
 };
 const layout = [];
+const homes = new Map();
 for (const m of ['golden', 'cutre']) {
   for (const [k, o] of Object.entries(sets[m].items)) {
     const land = [o.position.x, o.position.z, o.rotation.y, o.position.y];
     const port = PORTRAIT[m][k];
-    if (port) layout.push({ o, land, port: [port[0], port[1], port[2] ?? land[2], port[3] ?? land[3]] });
+    if (port) {
+      const e = { o, land, port: [port[0], port[1], port[2] ?? land[2], port[3] ?? land[3]] };
+      layout.push(e);
+      homes.set(o, e);
+    }
   }
 }
 let portrait = null;
@@ -179,15 +202,30 @@ const H = {
   orient: 'Toca para colocar y arrastra para girarla. ¿Abanico, espiral, en fila?',
   sprinkle: 'Desliza para espolvorear donde quieras.',
 };
+const P_ = (id, icon, label, hint, extra) => T(id, icon, label, 'proc', hint, extra);
 const STATIONS = {
   golden: [
     {
+      id: 'avocado', label: 'Aguacate', icon: '🥑', width: 2.3, steps: [
+        { id: 'cut', label: 'Cortar', done: () => avoPrep.cut, tools: [P_('avoCut', '🔪', 'Cuchillo', 'Desliza el dedo a lo largo del aguacate para abrirlo con el cuchillo.')] },
+        { id: 'open', label: 'Abrir', done: () => avoPrep.open, tools: [P_('avoOpen', '🔄', 'Girar', 'Arrastra para girar y separar las dos mitades.')] },
+        { id: 'pit', label: 'Hueso', done: () => avoPrep.pitless, tools: [P_('avoPit', '🟤', 'Hueso', 'Coge el hueso con el dedo y sácalo arrastrando.')] },
+        { id: 'peel', label: 'Pelar', done: () => avoPrep.peeled, tools: [P_('avoPeel', '🫳', 'Pelar', 'Pasa el dedo por la piel para pelarla tira a tira.')] },
+        { id: 'slice', label: 'Laminar', done: () => false, tools: [P_('avoSliceCut', '🔪', 'Laminar', 'Desliza de lado a lado para cortar láminas. O déjalo así para machacarlo en la tostada.')] },
+      ],
+    },
+    {
       id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 1.9, tools: [
         T('heat', '🔥', 'Tostar', 'heat', H.heat),
-        T('avocado', '🥑', 'Aguacate', 'spread', H.spread),
+        T('avocado', '🥑', 'Aguacate', 'spread', 'Machaca y unta el aguacate a tu manera: despacio deja tropezones, rápido queda cremoso.',
+          { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
         T('ricotta', '🤍', 'Ricotta', 'spread', H.spread),
         T('honey', '🍯', 'Miel', 'spread', H.honey),
-        T('avoSlice', '🥑', 'Láminas', 'place', H.orient, { orient: true }),
+        T('avoSlice', '🥑', 'Láminas', 'place', H.orient, {
+          orient: true,
+          qty: () => avoPrep.slices,
+          lock: () => (avoPrep.slices > 0 ? null : 'Lamina el aguacate primero (pestaña 🥑, paso Laminar)'),
+        }),
         T('egg', '🥚', 'Huevo', 'place', H.place),
         T('radish', '🌸', 'Rabanito', 'place', H.place),
         T('tomato', '🍅', 'Cherry', 'place', H.place),
@@ -209,10 +247,17 @@ const STATIONS = {
       ],
     },
     {
-      id: 'coffee', label: 'Café', icon: '☕', surface: 'coffee', width: 1.15, tools: [
-        T('milk', '🥛', 'Leche', 'pour', 'Mantén pulsado para verter la leche. Balancea el dedo para hacer capas.'),
-        T('etch', '✏️', 'Dibujar', 'smear', 'Arrastra por la espuma: el corte de un corazón, una hoja… o lo que quieras.'),
-        T('cinnamon', '🟤', 'Canela', 'dust', 'Desliza para espolvorear canela.'),
+      id: 'coffee', label: 'Café', icon: '☕', surface: 'coffee', width: 1.7, steps: [
+        { id: 'grind', label: 'Moler', done: () => coffeeProc.ground, tools: [P_('grind', '⚙️', 'Manivela', 'Gira el dedo en círculos para moler el café. Más vueltas, molienda más fina.')] },
+        { id: 'brew', label: 'Colar', done: () => coffeeProc.brewed, tools: [P_('brew', '🫖', 'Hervidor', 'Mantén pulsado y vierte el agua en espiral sobre el filtro. ¡Si apuntas fuera, encharcas!')] },
+        { id: 'foam', label: 'Espumar', done: () => coffeeProc.foamed, tools: [P_('foamMilk', '🥛', 'Espumar', 'Mantén pulsado para espumar la leche. Más tiempo, más espuma.')] },
+        {
+          id: 'art', label: 'Latte art', done: () => false, tools: [
+            P_('pourMilk', '🥛', 'Verter', 'Mantén pulsado para verter. Primero se mezcla; el dibujo sale cuando la taza está casi llena. Mueve rápido para cortar… y cuidado, que se desborda.'),
+            T('etch', '✏️', 'Dibujar', 'smear', 'Arrastra por la espuma para dibujar lo que quieras.'),
+            T('cinnamon', '🟤', 'Canela', 'dust', 'Desliza para espolvorear canela.'),
+          ],
+        },
       ],
     },
     { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Tu desayuno. Arrastra para mirarlo desde otro ángulo.' },
@@ -225,21 +270,31 @@ const STATIONS = {
       ],
     },
     {
-      id: 'coffee', label: 'Café', icon: '☕', width: 1.15, tools: [],
-      hint: 'Con café soluble no hay mucho arte posible. Ahorra para una cafetera y leche de verdad ☕',
+      id: 'coffee', label: 'Café', icon: '☕', width: 1.15, tools: [
+        T('instant', '🥄', 'Soluble', 'instant', 'Toca la taza: agua del grifo caliente y una cucharada de soluble. Ya está. Sin ritual.'),
+      ],
     },
     { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Tu desayuno. Arrastra para mirarlo desde otro ángulo.' },
   ],
 };
+for (const list of Object.values(STATIONS)) for (const st of list) st.stepIdx = 0;
+const curStep = () => (station.steps ? station.steps[station.stepIdx] : null);
+const curTools = () => (station.steps ? curStep().tools : station.tools);
+function firstOpenStep(st) {
+  const i = st.steps.findIndex((x) => !x.done());
+  return i < 0 ? st.steps.length - 1 : i;
+}
 
 let mood = 'golden';
 let station = STATIONS.golden[0];
-let tool = station.tools[0];
+let tool = null;
 const undo = [];
 const anims = [];
 
 function focusObject() {
   const s = sets[mood];
+  if (station.id === 'avocado') return avoPrep.group;
+  if (station.id === 'coffee' && mood === 'golden' && curStep()?.id === 'grind') return coffeeProc.grinder;
   return { toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[station.id];
 }
 
@@ -257,19 +312,45 @@ function renderUI() {
     b.onclick = () => selectStation(st);
     tabs.appendChild(b);
   }
+  // pasos del proceso (1 Cortar · 2 Abrir · ...)
+  const steps = $('steps');
+  steps.innerHTML = '';
+  steps.style.display = station.steps ? '' : 'none';
+  if (station.steps) {
+    const open = firstOpenStep(station);
+    station.steps.forEach((st, i) => {
+      const b = document.createElement('button');
+      const done = st.done();
+      b.className = 'step' + (i === station.stepIdx ? ' on' : '') + (done ? ' done' : '') + (i > open ? ' locked' : '');
+      b.innerHTML = `<i>${done ? '✓' : i + 1}</i>${st.label}`;
+      b.onclick = () => {
+        if (i > open) return;
+        station.stepIdx = i;
+        tool = st.tools[0];
+        renderUI();
+      };
+      steps.appendChild(b);
+    });
+  }
   tools.innerHTML = '';
-  for (const t of station.tools) {
+  const list = curTools();
+  for (const t of list) {
     const b = document.createElement('button');
-    const q = shop.qty(t);
-    b.className = 'chip' + (t === tool ? ' on' : '') + (q === 0 ? ' empty' : '');
-    b.innerHTML = `<span>${t.icon}</span>${t.label}${q === null ? '' : `<b class="qty">${q}</b>`}`;
+    const q = t.qty ? t.qty() : shop.qty(t);
+    const locked = t.lock?.();
+    b.className = 'chip' + (t === tool ? ' on' : '') + (q === 0 ? ' empty' : '') + (locked ? ' locked' : '');
+    b.innerHTML = `<span>${locked ? '🔒' : t.icon}</span>${t.label}${q === null || q === undefined ? '' : `<b class="qty">${q}</b>`}`;
     b.onclick = () => {
+      if (locked) {
+        say('Aún no', locked);
+        return;
+      }
       tool = t;
       renderUI();
     };
     tools.appendChild(b);
   }
-  tools.style.display = station.tools.length ? '' : 'none';
+  tools.style.display = list.length > 1 || (list.length && !station.steps) ? '' : 'none';
   const table = station.id === 'table';
   $('work').style.display = table ? '' : 'none';
   $('reset').style.display = table ? 'none' : '';
@@ -278,7 +359,9 @@ function renderUI() {
 
 function selectStation(st) {
   station = st;
-  tool = st.tools[0] || null;
+  if (st.steps) st.stepIdx = firstOpenStep(st);
+  const list = curTools();
+  tool = list.find((t) => !t.lock?.()) || null;
   renderUI();
 }
 
@@ -324,8 +407,15 @@ $('reset').addEventListener('click', () => {
   } else if (station.id === 'bowl') {
     s.yogurt.reset();
     s.bowlPlaced.clear();
-  } else if (station.id === 'coffee' && s.latte) s.latte.reset();
+  } else if (station.id === 'coffee' && mood === 'golden') coffeeProc.reset();
+  else if (station.id === 'coffee') setMugLevel(sets.cutre.mug, 0);
+  else if (station.id === 'avocado') avoPrep.reset();
   else return;
+  if (station.steps) {
+    station.stepIdx = 0;
+    station.steps.forEach((x) => (x.adv = false));
+    selectStation(station);
+  }
   shop.newDish(station.id);
   undo.length = 0;
 });
@@ -350,6 +440,11 @@ $('work').addEventListener('click', () => {
         s.latte.reset();
       }
     }
+    avoPrep.reset();
+    coffeeProc.reset();
+    setMugLevel(sets.cutre.mug, 0);
+    for (const list of Object.values(STATIONS))
+      for (const st of list) if (st.steps) st.steps.forEach((x) => (x.adv = false));
     shop.newDish();
     undo.length = 0;
     usedToday.clear();
@@ -433,6 +528,31 @@ el.addEventListener('pointerdown', (e) => {
   el.setPointerCapture(e.pointerId);
   lastX = e.clientX;
   lastY = e.clientY;
+  // procesos (aguacate, café) y café soluble
+  if (tool && tool.type === 'proc') {
+    const proc = station.id === 'avocado' ? avoPrep : coffeeProc;
+    const step = curStep().id;
+    if (step === 'art') undo.push(coffeeProc.snapshot());
+    if (proc.down(step, e, procCtx)) {
+      if (!shop.use(tool, station.id)) return;
+      usedToday.add(tool.id);
+      drag = { kind: 'proc', proc, step };
+      return;
+    }
+  }
+  if (tool && tool.type === 'instant') {
+    const h = cast(e, [sets.cutre.mug]);
+    if (h && !instantAnim) {
+      if (!shop.use(tool, station.id)) return;
+      instantAnim = { t: 0 };
+      sfx.plop();
+      return;
+    }
+  }
+  if (tool?.lock?.()) {
+    say('Aún no', tool.lock());
+    return;
+  }
   const info = surfaceInfo();
   if (tool && info) {
     const s = sets[mood];
@@ -461,7 +581,12 @@ el.addEventListener('pointerdown', (e) => {
       // lo redondo rueda: no se apila, se apoya en la superficie
       const h = hitSurface(e, info, { withPlaced: !ROUND.has(tool.id) });
       if (h) {
-        const refund = pay();
+        let refund;
+        if (tool.id === 'avoSlice') {
+          avoPrep.slices--;
+          refund = () => avoPrep.slices++;
+          renderUI();
+        } else refund = pay();
         if (!refund) return;
         const o = placeAt(info.holder, h, tool.id);
         undo.push(() => {
@@ -518,6 +643,9 @@ el.addEventListener('pointermove', (e) => {
   if (!drag) return;
   const s = sets[mood];
   switch (drag.kind) {
+    case 'proc':
+      drag.proc.move(drag.step, e, procCtx);
+      break;
     case 'spread': {
       const h = hitSurface(e, surfaceInfo());
       if (!h) {
@@ -579,9 +707,28 @@ el.addEventListener('pointermove', (e) => {
       break;
   }
 });
-const up = () => {
+const up = (e) => {
+  if (drag?.kind === 'proc') drag.proc.up(drag.step, e, procCtx);
   drag = null;
   sfx.stop();
+};
+let instantAnim = null;
+const planeHit = new THREE.Vector3();
+const procCtx = {
+  sfx,
+  time: 0,
+  cast: (e, objs) => cast(e, objs),
+  chime: () => sfx.chime(),
+  say: (a, b) => say(a, b),
+  planePoint: (e, y) => {
+    ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -y), planeHit) ? planeHit.clone() : null;
+  },
+  screenOf: (v) => {
+    const p = v.clone().project(camera);
+    return { x: ((p.x + 1) / 2) * innerWidth, y: ((1 - p.y) / 2) * innerHeight };
+  },
 };
 el.addEventListener('pointerup', up);
 el.addEventListener('pointercancel', up);
@@ -658,7 +805,7 @@ cur.dist = want.dist;
 cur.fov = want.fov;
 
 function loop() {
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const dt = Math.min(clock.getDelta(), 0.05) * (window.__timeScale || 1);
   const time = clock.elapsedTime;
   const s = sets[mood];
 
@@ -676,6 +823,46 @@ function loop() {
     if (drag.surf.full && !drag.warned) {
       drag.warned = true;
       say(station.id === 'coffee' ? 'La taza está llena ☕' : 'El bol está lleno 🥣', 'Ahora decora a tu gusto');
+    }
+  }
+  procCtx.time = time;
+  if (mood === 'golden') {
+    const inCoffee = station.id === 'coffee';
+    // la taza viaja a la zona de preparación mientras haces el café
+    const e = homes.get(s.mug);
+    const home = e ? (portrait ? e.port : e.land) : [s.mug.position.x, s.mug.position.z];
+    const tx = inCoffee ? COFFEE_ZONE.x : home[0], tz = inCoffee ? COFFEE_ZONE.z : home[1];
+    s.mug.position.x += (tx - s.mug.position.x) * Math.min(1, dt * 4);
+    s.mug.position.z += (tz - s.mug.position.z) * Math.min(1, dt * 4);
+    s.steam.position.set(s.mug.position.x, 0.62, s.mug.position.z);
+    avoPrep.update(dt, station.id === 'avocado' ? curStep().id : null);
+    coffeeProc.update(dt, inCoffee ? curStep().id : null, procCtx);
+    s.items.avo.visible = avoPrep.open;
+  }
+  if (instantAnim) {
+    instantAnim.t += dt;
+    setMugLevel(sets.cutre.mug, Math.min(0.85, instantAnim.t * 1.4));
+    if (instantAnim.t > 0.62) {
+      instantAnim = null;
+      say('Café listo ☕', 'Instantáneo… y un poco triste. Con una cafetera esto sería otra cosa');
+    }
+  }
+  // al terminar un paso, pasa solo al siguiente
+  if (station.steps) {
+    const st = curStep();
+    if (st.done() && !st.adv && station.stepIdx < station.steps.length - 1) {
+      st.adv = true;
+      st.advAt = clock.elapsedTime + 0.9;
+      sfx.chime();
+      renderUI();
+    } else if (st.advAt && clock.elapsedTime > st.advAt && !drag) {
+      st.advAt = 0;
+      const next = firstOpenStep(station);
+      if (next !== station.stepIdx) {
+        station.stepIdx = next;
+        tool = curTools()[0];
+        renderUI();
+      }
     }
   }
   if (s.latte) {
@@ -720,7 +907,7 @@ function loop() {
 loop();
 
 window.__bs = {
-  scene, camera, sets, applyMood, selectStation, STATIONS, shop,
+  scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc,
   get station() { return station; },
   settled: () => cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
 };

@@ -29,6 +29,12 @@ export class PourSurface {
     this.reset();
   }
 
+  setBase(fn) {
+    this.drawBase = fn;
+    fn(this.base.getContext('2d'), S);
+    this.dirty = true;
+  }
+
   reset() {
     this.p = [];
     this.decor.getContext('2d').clearRect(0, 0, S, S);

@@ -111,7 +111,7 @@ export function makeBoard() {
 }
 
 // ---------- Aguacate (medio, con hueso) ----------
-const AVO = [[0, 0], [0.22, 0.02], [0.38, 0.12], [0.44, 0.3], [0.42, 0.48], [0.34, 0.66],
+export const AVO = [[0, 0], [0.22, 0.02], [0.38, 0.12], [0.44, 0.3], [0.42, 0.48], [0.34, 0.66],
   [0.24, 0.84], [0.13, 0.97], [0, 1.02]];
 
 export function makeAvocadoHalf() {

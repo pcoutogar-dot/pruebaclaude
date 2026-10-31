@@ -76,6 +76,27 @@ Hay menos margen, así que la creatividad va en la **presentación**:
 - Elegir el mantel o la superficie: mármol, madera, lino.
 - **Modo foto**: encuadre, luz (mañana, *golden hour*, nublado suave), filtro y desenfoque. → Se guarda en tu **álbum de desayunos**.
 
+## 3 bis. Procesos desde cero: el ritual se gana
+
+> Idea central de la progresión: **en el piso cutre todo es instantáneo y sin gracia;
+> al progresar desbloqueas los *procesos*, y hacerlos a mano es el placer.**
+> Pagar (con monedas del juego o dinero real) = acceso a rituales más bonitos.
+
+| Ingrediente | Piso cutre (instantáneo) | Con progreso (proceso manual, "cozy") |
+|---|---|---|
+| Café | Soluble: un toque y listo | **Moler** a manivela (gesto circular) → **Colar** en V60 con hervidor de cuello de cisne (verter en espiral; si apuntas fuera, encharcas) → **Espumar** la leche → **Latte art** |
+| Aguacate | No hay | **Cortar** a lo largo → **Abrir** girando → **Sacar el hueso** → **Pelar** la piel a tiras → **Laminar** (opcional; cada lámina cortada es una que puedes colocar) |
+| Pan | Molde, se tuesta tal cual | (Futuro) **Cortar la hogaza** de masa madre: el grosor de la rebanada lo decides tú |
+| Zumo | Brick | (Futuro) **Partir y exprimir** naranjas a mano |
+| Fruta | — | (Futuro) **Pelar** el plátano, **quitar el rabito** a las fresas |
+| Huevo | — | Ya viene hecho: cocerlo no aporta (decisión de diseño) |
+
+Reglas de los procesos:
+- **Cada paso es un gesto corto y satisfactorio** (ASMR): nunca un examen ni un temporizador estricto.
+- **Las consecuencias son físicas, no notas**: desbordar la taza mancha la servilleta y gotea por fuera; verter fuera del filtro encharca la encimera; más vueltas de molinillo = molienda más fina. Siempre se puede deshacer o dejarlo así.
+- **Los procesos ocurren en la zona de preparación** (a la derecha de la encimera) para no amontonar la mesa del desayuno. Lo terminado "viaja" a la mesa.
+- **Latte art realista**: al principio la leche se hunde y aclara el café; el dibujo solo aparece cuando la taza va casi llena (como en la vida real). Balancear = capas; mover rápido mientras viertes = el "corte" del corazón/tulipán; pasarse = se desborda.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:
@@ -126,12 +147,15 @@ Soluble            Italiana     V60 + molinillo   Espresso + latte art
 | Colocar, mover, girar y apilar ingredientes | ✅ |
 | Espolvorear (chile, sésamo, granola) | ✅ |
 | Verter yogur en el bol (fluido simulado) | ✅ |
-| Latte art: verter leche + dibujar + canela | ✅ |
+| Latte art: mezcla → dibujo → corte rápido → desbordamiento | ✅ |
+| Proceso del aguacate (cortar, abrir, hueso, pelar, laminar) | ✅ |
+| Proceso del café (moler, colar en V60, espumar) | ✅ |
+| Café soluble instantáneo en el piso cutre | ✅ |
+| Nevera: inventario + tienda con fotitos generadas del 3D | ✅ |
+| Ir a trabajar: sueldo por puntualidad + bonus de mimo | ✅ |
 | Deshacer / Empezar de nuevo | ✅ |
 | Progresión cutre → bonito (limita herramientas) | ✅ (dos niveles fijos) |
 | Elegir pan / bol / taza | ⏳ |
-| Moler café, V60, texturizar leche | ⏳ |
 | Zumo / bebidas en capas | ⏳ |
 | Mover platos en la mesa + modo foto + álbum | ⏳ |
-| Reloj con consecuencias, sueldo, tienda | ⏳ |
 | Sonido por gesto y vibración háptica | ⏳ (solo esbozo) |
