@@ -235,7 +235,7 @@ export class Toast {
   // Pinta un trazo entre dos coordenadas uv. La dirección y la velocidad del
   // dedo cambian el resultado: vetas del cuchillo, capa fina si vas rápido,
   // grumos si vas despacio. No hay "untado perfecto".
-  paint(u0, v0, u1, v1, spread) {
+  paint(u0, v0, u1, v1, spread, amount = 1) {
     const x0 = u0 * CW, y0 = (1 - v0) * CW, x1 = u1 * CW, y1 = (1 - v1) * CW;
     const d = Math.hypot(x1 - x0, y1 - y0);
     if (spread === 'honey') {
@@ -244,7 +244,8 @@ export class Toast {
       return;
     }
     const ang = Math.atan2(y1 - y0, x1 - x0);
-    const thick = Math.max(0.62, Math.min(1.15, 1.25 - d / 80));
+    // la carga del cuchillo: al principio capa generosa, luego cada vez más fina
+    const thick = Math.max(0.62, Math.min(1.15, 1.25 - d / 80)) * Math.max(0.12, amount);
     const step = 9;
     const n = Math.max(1, Math.ceil(d / step));
     for (let i = 1; i <= n; i++) {

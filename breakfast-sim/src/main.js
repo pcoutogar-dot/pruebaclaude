@@ -14,6 +14,9 @@ import { Shop } from './shop.js';
 import { AvocadoPrep } from './avocado.js';
 import { CoffeeProc, setMugLevel } from './coffee.js';
 import * as P from './props.js';
+import { Physics, CANNON } from './physics.js';
+import { Droplets } from './fx.js';
+import { noiseBump } from './textures.js';
 
 // ---------- Render ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
@@ -38,6 +41,8 @@ composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight),
 composer.addPass(new OutputPass());
 
 const room = buildRoom(scene);
+const physics = new Physics();
+const droplets = new Droplets(scene);
 let uiReady = false;
 const shop = new Shop({ renderer, env: scene.environment, onChange: () => uiReady && renderUI() });
 
@@ -56,6 +61,7 @@ const sets = {};
   const avo = P.makeAvocadoHalf();
   avo.position.set(0.68, board.userData.top, 0.68);
   avo.rotation.y = -0.5;
+  avo.scale.setScalar(0.8);
   const knife = P.makeKnife({ fancy: true });
   knife.position.set(0.45, board.userData.top, 0.0);
   knife.rotation.y = 0.5;
@@ -69,6 +75,18 @@ const sets = {};
   steam.position.set(1.85, 0.62, -0.35);
   const bowl = P.makeBowl();
   bowl.position.set(-1.8, 0, 0.85);
+  // tarrito de ricotta: de aquí se carga el cuchillo
+  const ricottaPot = new THREE.Group();
+  {
+    const pot = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.17, 0], [0.2, 0.03], [0.22, 0.2], [0.2, 0.2], [0.18, 0.05], [0, 0.05]].map(([x, y]) => new THREE.Vector2(x, y)), 40),
+      new THREE.MeshStandardMaterial({ color: '#e9d2c4', roughness: 0.4 }));
+    const cheese = new THREE.Mesh(new THREE.SphereGeometry(0.19, 28, 12), new THREE.MeshStandardMaterial({ color: '#fbf7ee', roughness: 0.75 }));
+    cheese.scale.y = 0.35;
+    cheese.position.y = 0.15;
+    pot.castShadow = cheese.castShadow = true;
+    ricottaPot.add(pot, cheese);
+    ricottaPot.position.set(-0.95, 0, 1.15);
+  }
   const juice = P.makeJuice();
   juice.position.set(-1.65, 0, -0.45);
   const daisies = P.makeDaisies();
@@ -81,7 +99,7 @@ const sets = {};
   beans.position.set(0.5, 2.39, -1.38);
   const hang = P.makePlant(0.7, true);
   hang.position.set(1.5, 2.39, -1.38);
-  g.add(board, toast.group, avo, knife, napkin, mug, steam, bowl, juice, daisies, plant, oats, beans, hang);
+  g.add(board, toast.group, avo, knife, napkin, mug, steam, bowl, juice, daisies, plant, oats, beans, hang, ricottaPot);
 
   // superficies "manuales"
   const latte = new PourSurface({ drawBase: cremaBase, milk: '#f8eedf', halo: '#d6ad84', push: 1, size: [5, 9], capacity: 2400 });
@@ -90,8 +108,18 @@ const sets = {};
   coffee.material.roughness = 0.5;
   coffee.rotation.z = 0;
   coffee.material.needsUpdate = true;
-  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#d8d0c2', push: 0.55, size: [10, 15], capacity: 1500 });
-  const ysurf = makeSurfaceMesh(yogurt, bowl.userData.surfaceR, 0.4);
+  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e2dccf', push: 0.55, size: [10, 15], capacity: 1500, height: true });
+  // superficie con relieve: el yogur a cucharadas tiene volumen
+  const ysurf = new THREE.Mesh(
+    new THREE.RingGeometry(0.0001, bowl.userData.surfaceR, 72, 24),
+    new THREE.MeshStandardMaterial({
+      map: yogurt.texture, roughness: 0.35, displacementMap: yogurt.heightTexture, displacementScale: 0.085,
+      bumpMap: yogurt.heightTexture, bumpScale: 3,
+    }),
+  );
+  ysurf.rotation.x = -Math.PI / 2;
+  ysurf.receiveShadow = true;
+  ysurf.castShadow = true;
   ysurf.position.y = bowl.userData.surfaceY;
   bowl.add(ysurf);
   const bowlPlaced = new THREE.Group();
@@ -100,7 +128,7 @@ const sets = {};
 
   sets.golden = {
     group: g, toast, steam, latte, yogurt, ysurf, coffee, mug, bowl, bowlPlaced,
-    items: { board, toast: toast.group, avo, knife, napkin, mug, steam, bowl, juice, daisies, plant },
+    items: { board, toast: toast.group, avo, knife, napkin, mug, steam, bowl, juice, daisies, plant, ricottaPot },
   };
 }
 {
@@ -142,12 +170,104 @@ const prepBoard = P.makeBoard();
 prepBoard.scale.setScalar(0.8);
 prepBoard.position.set(4.0, 0, 0.55);
 prepBoard.rotation.y = Math.PI / 2;
-const avoPrep = new AvocadoPrep();
-avoPrep.group.position.copy(AVO_ZONE);
+const avoPrep = new AvocadoPrep({ physics, debris: sets.golden.group, home: AVO_ZONE });
 const zoneLight = new THREE.PointLight('#ffd9ad', 7, 7, 1.6);
 zoneLight.position.set(4.8, 2.3, 0.8);
-sets.golden.group.add(prepBoard, avoPrep.group, zoneLight);
-const coffeeProc = new CoffeeProc({ mug: sets.golden.mug, latte: sets.golden.latte, parent: sets.golden.group });
+sets.golden.group.add(prepBoard, avoPrep.holder, zoneLight);
+const coffeeProc = new CoffeeProc({ mug: sets.golden.mug, latte: sets.golden.latte, parent: sets.golden.group, droplets });
+
+// obstáculos físicos: tablas, taza, bol, vaso… (siguen a su objeto)
+physics.static(new CANNON.Box(new CANNON.Vec3(0.55, 0.035, 0.85)), 4.0, 0.032, 0.55);
+{
+  const it = sets.golden.items;
+  physics.follow(it.board, new CANNON.Box(new CANNON.Vec3(0.92, 0.04, 0.6)), new THREE.Vector3(0, 0.035, 0));
+  physics.follow(it.mug, new CANNON.Cylinder(0.38, 0.36, 0.76, 16), new THREE.Vector3(0, 0.38, 0));
+  physics.follow(it.bowl, new CANNON.Cylinder(0.56, 0.3, 0.4, 16), new THREE.Vector3(0, 0.2, 0));
+  physics.follow(it.juice, new CANNON.Cylinder(0.26, 0.22, 0.85, 12), new THREE.Vector3(0, 0.42, 0));
+  physics.follow(it.ricottaPot, new CANNON.Cylinder(0.22, 0.2, 0.2, 12), new THREE.Vector3(0, 0.1, 0));
+}
+
+// naranjas y limón en la zona de preparación: para jugar (y, más adelante, exprimir)
+function citrus(color, r, sy = 1) {
+  const g = new THREE.Group();
+  const peel = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 24), new THREE.MeshStandardMaterial({
+    color, roughness: 0.55, bumpMap: noiseBump(4, 7000, [1, 2]), bumpScale: 2,
+  }));
+  peel.scale.y = sy;
+  peel.castShadow = peel.receiveShadow = true;
+  g.add(peel);
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.04, 8), new THREE.MeshStandardMaterial({ color: '#6b5a2a' }));
+  stem.position.y = r * sy;
+  g.add(stem);
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), new THREE.MeshStandardMaterial({ color: '#4f7a3a', roughness: 0.5 }));
+  leaf.scale.set(1, 0.15, 0.45);
+  leaf.position.set(0.06, r * sy + 0.01, 0);
+  leaf.rotation.z = 0.3;
+  g.add(leaf);
+  return g;
+}
+for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 5.0, -1.05], ['#f6a33a', 0.33, 0.95, 5.65, -1.2], ['#f2d64a', 0.27, 1.25, 4.4, -1.15]]) {
+  const o = citrus(color, r, sy);
+  o.position.set(x, r * sy + 0.02, z);
+  o.rotation.z = (Math.random() - 0.5) * 0.4;
+  sets.golden.group.add(o);
+  physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone() });
+}
+physics.onImpact = (v) => sfx.plop(Math.min(1.4, v / 14), 0.55 + Math.random() * 0.2);
+
+// ---------- Cuchillo que se carga y cuchara de yogur ----------
+// Para untar: primero cargas el cuchillo en la fuente (tarrina, tarro, aguacate)
+// y luego lo pasas por la tostada; la capa se va gastando.
+const knifeLoad = { kind: null, amount: 0 };
+const SPREAD_SRC = {
+  avocado: () => sets.golden.items.avo,
+  ricotta: () => sets.golden.items.ricottaPot,
+  butter: () => sets.cutre.items.tub,
+};
+const SPREAD_COLOR = { avocado: '#9cc456', ricotta: '#fbf7ee', butter: '#f6e08f' };
+const SPREAD_NAME = { avocado: 'el aguacate', ricotta: 'el tarro de ricotta', butter: 'la tarrina de margarina' };
+for (const m of ['golden', 'cutre']) {
+  const k = sets[m].items.knife;
+  const blob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 10), new THREE.MeshStandardMaterial({ color: '#fff', roughness: 0.45 }));
+  blob.scale.set(1.3, 0.3, 0.7);
+  blob.position.set(0.58, 0.04, 0);
+  blob.visible = false;
+  k.add(blob);
+  k.userData.blob = blob;
+}
+function updateKnifeBlob() {
+  const blob = sets[mood].items.knife.userData.blob;
+  blob.visible = knifeLoad.amount > 0.02;
+  if (!blob.visible) return;
+  blob.material.color.set(SPREAD_COLOR[knifeLoad.kind] || '#fff');
+  const a = Math.sqrt(knifeLoad.amount);
+  blob.scale.set(1.3 * a + 0.2, 0.3 * a + 0.05, 0.7 * a + 0.1);
+}
+// el cuchillo sigue al dedo: la punta de la hoja queda bajo el dedo
+function moveKnife(point, dir) {
+  const k = sets[mood].items.knife;
+  if (dir && dir.lengthSq() > 1e-5) k.rotation.y = -Math.atan2(dir.z, dir.x);
+  const fwd = new THREE.Vector3(Math.cos(k.rotation.y), 0, -Math.sin(k.rotation.y));
+  k.position.set(point.x - fwd.x * 0.6, point.y + 0.01, point.z - fwd.z * 0.6);
+}
+
+const spoon = new THREE.Group();
+{
+  const wood = new THREE.MeshStandardMaterial({ color: '#c9a27a', roughness: 0.55 });
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 12), wood);
+  head.scale.set(1, 0.35, 1.4);
+  const handle = new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.6, 4, 10), wood);
+  handle.rotation.x = Math.PI / 2 - 0.35;
+  handle.position.set(0, 0.12, 0.42);
+  const load = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 10), new THREE.MeshStandardMaterial({ color: '#fbf8f1', roughness: 0.4 }));
+  load.scale.set(1, 0.6, 1.2);
+  load.position.y = 0.04;
+  spoon.add(head, handle, load);
+  spoon.userData.load = load;
+  spoon.traverse((c) => c.isMesh && (c.castShadow = true));
+  spoon.visible = false;
+  scene.add(spoon);
+}
 setMugLevel(sets.cutre.mug, 0);
 
 // ---------- Composición horizontal (3/4) y vertical (casi cenital) ----------
@@ -155,9 +275,9 @@ setMugLevel(sets.cutre.mug, 0);
 // lo que se prepara en ella. [x, z, giro]
 const PORTRAIT = {
   golden: {
-    board: [-0.15, 0.05, 0.04], toast: [-0.3, 0.02, 0.12], knife: [0.42, 0.3, 1.25], avo: [1.38, 0.02, -1.2, 0],
+    board: [-0.15, 0.05, 0.04], toast: [-0.45, 0.06, 0.12], knife: [-0.1, -0.44, 0.04], avo: [0.5, -0.38, -Math.PI / 2, 0.072],
     napkin: [1.2, -0.95, 0.3], mug: [1.2, -0.95, -0.6], steam: [1.2, -0.95],
-    juice: [-1.15, -1.0], daisies: [0.15, -1.32], bowl: [1.0, 1.18], plant: [-1.9, -1.25],
+    juice: [-1.15, -1.0], daisies: [0.15, -1.32], bowl: [1.0, 1.18], plant: [-1.9, -1.25], ricottaPot: [-0.95, 1.0],
   },
   cutre: {
     towel: [-0.15, 0.05], toast: [-0.2, 0.05], knife: [0.8, 0.35, 1.2],
@@ -215,11 +335,11 @@ const STATIONS = {
       ],
     },
     {
-      id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 1.9, tools: [
+      id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 2.6, tools: [
         T('heat', '🔥', 'Tostar', 'heat', H.heat),
-        T('avocado', '🥑', 'Aguacate', 'spread', 'Machaca y unta el aguacate a tu manera: despacio deja tropezones, rápido queda cremoso.',
+        T('avocado', '🥑', 'Aguacate', 'spread', 'Carga el cuchillo en el medio aguacate y úntalo: despacio deja tropezones, rápido queda cremoso.',
           { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
-        T('ricotta', '🤍', 'Ricotta', 'spread', H.spread),
+        T('ricotta', '🤍', 'Ricotta', 'spread', 'Carga el cuchillo en el tarro de ricotta y úntala a tu manera.'),
         T('honey', '🍯', 'Miel', 'spread', H.honey),
         T('avoSlice', '🥑', 'Láminas', 'place', H.orient, {
           orient: true,
@@ -236,7 +356,7 @@ const STATIONS = {
     },
     {
       id: 'bowl', label: 'Bol', icon: '🥣', surface: 'bowl', width: 1.7, tools: [
-        T('yogurt', '🥛', 'Yogur', 'pour', 'Mantén pulsado para verter. Muévete para repartirlo… o no.'),
+        T('yogurt', '🥄', 'Yogur', 'spoon', 'Toca para echar una cucharada de yogur. Arrastra para extenderlo con el dorso de la cuchara.'),
         T('blueberry', '🫐', 'Arándanos', 'place', H.place),
         T('raspberry', '🍓', 'Frambuesa', 'place', H.place),
         T('strawberry', '🍓', 'Fresa', 'place', H.orient, { orient: true }),
@@ -266,7 +386,7 @@ const STATIONS = {
     {
       id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 1.6, tools: [
         T('heat', '🔥', 'Tostar', 'heat', H.heat),
-        T('butter', '🧈', 'Margarina', 'spread', 'Unta la margarina… es lo que hay.'),
+        T('butter', '🧈', 'Margarina', 'spread', 'Carga el cuchillo en la tarrina y unta la margarina… es lo que hay.'),
       ],
     },
     {
@@ -293,7 +413,7 @@ const anims = [];
 
 function focusObject() {
   const s = sets[mood];
-  if (station.id === 'avocado') return avoPrep.group;
+  if (station.id === 'avocado') return prepBoard; // cámara fija aunque lances el aguacate
   if (station.id === 'coffee' && mood === 'golden' && curStep()?.id === 'grind') return coffeeProc.grinder;
   return { toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[station.id];
 }
@@ -523,11 +643,40 @@ function placeAt(holder, h, kind, sprinkle = false) {
   return o;
 }
 
+// ---------- Coger y lanzar (mantén el dedo sobre un objeto suelto) ----------
+let pendingGrab = null;
+function physItemAt(e) {
+  const h = cast(e, physics.meshes());
+  let o = h?.object;
+  while (o && !o.userData.phys) o = o.parent;
+  return o ? o.userData.phys : null;
+}
+function startGrab(it) {
+  if (drag?.kind === 'proc') drag.proc.up(drag.step, null, procCtx);
+  physics.grab(it);
+  drag = { kind: 'grab', it };
+  sfx.plop(0.8, 1.3);
+}
+
 el.addEventListener('pointerdown', (e) => {
   sfx.ensure();
   el.setPointerCapture(e.pointerId);
   lastX = e.clientX;
   lastY = e.clientY;
+  pendingGrab = null;
+  const grabbable = mood === 'golden' ? physItemAt(e) : null;
+  if (grabbable) pendingGrab = { it: grabbable, t: clock.elapsedTime, x: e.clientX, y: e.clientY, e };
+  handleDown(e);
+  // si ningún gesto usa este toque, se coge el objeto al instante
+  if (grabbable && drag?.kind === 'orbit') {
+    pendingGrab = null;
+    startGrab(grabbable);
+    physics.holdTo(grabbable, procCtx.planePoint(e, grabY(grabbable)), clock.elapsedTime);
+  }
+});
+const grabY = (it) => Math.max(it.body.position.y, 0.9);
+
+function handleDown(e) {
   // procesos (aguacate, café) y café soluble
   if (tool && tool.type === 'proc') {
     const proc = station.id === 'avocado' ? avoPrep : coffeeProc;
@@ -570,11 +719,38 @@ el.addEventListener('pointerdown', (e) => {
         return;
       }
     } else if (tool.type === 'spread') {
+      // ¿estás cargando el cuchillo en la fuente o untando en la tostada?
+      const src = SPREAD_SRC[tool.id]?.();
+      const hs = src ? cast(e, [src]) : null;
+      if (hs) {
+        if (knifeLoad.kind !== tool.id) {
+          if (!pay()) return;
+          knifeLoad.kind = tool.id;
+          knifeLoad.amount = 0;
+        }
+        drag = { kind: 'load', src };
+        moveKnife(hs.point);
+        return;
+      }
+      const h = hitSurface(e, info);
+      if (h) {
+        if (knifeLoad.kind !== tool.id || knifeLoad.amount < 0.03) {
+          say('Carga el cuchillo', `Pásalo primero por ${SPREAD_NAME[tool.id]}`);
+          return;
+        }
+        undo.push(s.toast.snapshot());
+        drag = { kind: 'spread', uv: h.uv.clone(), point: h.point.clone() };
+        moveKnife(h.point);
+        return;
+      }
+    } else if (tool.type === 'spoon') {
       const h = hitSurface(e, info);
       if (h) {
         if (!pay()) return;
-        undo.push(s.toast.snapshot());
-        drag = { kind: 'spread', uv: h.uv.clone() };
+        undo.push(s.yogurt.snapshot());
+        drag = { kind: 'spoon', uv: h.uv.clone(), x: e.clientX, y: e.clientY, spread: false, info };
+        spoon.visible = true;
+        spoon.position.copy(h.point).add(new THREE.Vector3(0, 0.25, 0));
         return;
       }
     } else if (tool.type === 'place') {
@@ -623,7 +799,7 @@ el.addEventListener('pointerdown', (e) => {
     }
   }
   drag = { kind: 'orbit' };
-});
+}
 
 function sprinkleAt(d, h) {
   const n = 2 + ((Math.random() * 3) | 0);
@@ -640,9 +816,39 @@ el.addEventListener('pointermove', (e) => {
   const dx = e.clientX - lastX, dy = e.clientY - lastY;
   lastX = e.clientX;
   lastY = e.clientY;
+  if (pendingGrab && Math.hypot(e.clientX - pendingGrab.x, e.clientY - pendingGrab.y) > 12) pendingGrab = null;
   if (!drag) return;
   const s = sets[mood];
   switch (drag.kind) {
+    case 'grab': {
+      const p = procCtx.planePoint(e, grabY(drag.it));
+      if (p) physics.holdTo(drag.it, p, clock.elapsedTime);
+      break;
+    }
+    case 'load': {
+      const h = cast(e, [drag.src]);
+      if (h) {
+        const d = Math.hypot(dx, dy);
+        knifeLoad.amount = Math.min(1, knifeLoad.amount + d * 0.006);
+        moveKnife(h.point, new THREE.Vector3(dx, 0, dy));
+        sfx.scrape(d * 0.0012);
+        updateKnifeBlob();
+      }
+      break;
+    }
+    case 'spoon': {
+      const h = hitSurface(e, drag.info);
+      if (!h) break;
+      if (!drag.spread && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) drag.spread = true;
+      if (drag.spread) {
+        s.yogurt.smear(drag.uv, h.uv);
+        sfx.scrape(drag.uv.distanceTo(h.uv) * 0.4);
+        spoon.rotation.z = 0.5;
+      }
+      spoon.position.copy(h.point).add(new THREE.Vector3(0, drag.spread ? 0.06 : 0.25, 0));
+      drag.uv = h.uv.clone();
+      break;
+    }
     case 'proc':
       drag.proc.move(drag.step, e, procCtx);
       break;
@@ -653,10 +859,18 @@ el.addEventListener('pointermove', (e) => {
         sfx.stop();
         break;
       }
-      if (drag.uv) {
-        s.toast.paint(drag.uv.x, drag.uv.y, h.uv.x, h.uv.y, tool.id);
+      if (drag.uv && knifeLoad.amount > 0.01) {
+        s.toast.paint(drag.uv.x, drag.uv.y, h.uv.x, h.uv.y, tool.id, knifeLoad.amount);
+        knifeLoad.amount = Math.max(0, knifeLoad.amount - drag.uv.distanceTo(h.uv) * 0.3);
         sfx.scrape(drag.uv.distanceTo(h.uv));
+        updateKnifeBlob();
+        if (knifeLoad.amount <= 0.01 && !drag.warned) {
+          drag.warned = true;
+          say('Se acabó la carga', `Vuelve a pasar el cuchillo por ${SPREAD_NAME[tool.id]}`);
+        }
       }
+      moveKnife(h.point, drag.point ? h.point.clone().sub(drag.point) : null);
+      drag.point = h.point.clone();
       drag.uv = h.uv.clone();
       break;
     }
@@ -708,7 +922,21 @@ el.addEventListener('pointermove', (e) => {
   }
 });
 const up = (e) => {
+  pendingGrab = null;
   if (drag?.kind === 'proc') drag.proc.up(drag.step, e, procCtx);
+  if (drag?.kind === 'grab') physics.release(drag.it);
+  if (drag?.kind === 'spoon') {
+    if (!drag.spread) {
+      // cucharada: el pegote cae y se asienta
+      const s = sets[mood], uv = drag.uv;
+      spoon.userData.dip = 1;
+      setTimeout(() => {
+        s.yogurt.dollop(uv);
+        sfx.plop(0.9, 0.7);
+      }, 120);
+    }
+    spoon.rotation.z = 0;
+  }
   drag = null;
   sfx.stop();
 };
@@ -826,6 +1054,27 @@ function loop() {
     }
   }
   procCtx.time = time;
+  // coger: tras mantener el dedo un instante sobre un objeto suelto
+  if (pendingGrab && time - pendingGrab.t > 0.3) {
+    const g = pendingGrab;
+    pendingGrab = null;
+    startGrab(g.it);
+    const p = procCtx.planePoint(g.e, grabY(g.it));
+    if (p) physics.holdTo(g.it, p, time);
+  }
+  physics.step(dt);
+  droplets.update(dt);
+  if (s.yogurt) s.yogurt.relax(dt);
+  // cuchara: visible con la herramienta de yogur; hace "dip" al soltar la cucharada
+  const spoonOn = station.id === 'bowl' && tool?.id === 'yogurt';
+  if (!spoonOn) spoon.visible = false;
+  else if (!spoon.visible) {
+    spoon.visible = true;
+    spoon.position.copy(s.bowl.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0.25, 0.6, 0.2));
+  }
+  spoon.userData.dip = (spoon.userData.dip || 0) * Math.exp(-dt * 6);
+  spoon.rotation.x = spoon.userData.dip * 0.9;
+  spoon.userData.load.visible = spoon.userData.dip < 0.3;
   if (mood === 'golden') {
     const inCoffee = station.id === 'coffee';
     // la taza viaja a la zona de preparación mientras haces el café
@@ -835,9 +1084,15 @@ function loop() {
     s.mug.position.x += (tx - s.mug.position.x) * Math.min(1, dt * 4);
     s.mug.position.z += (tz - s.mug.position.z) * Math.min(1, dt * 4);
     s.steam.position.set(s.mug.position.x, 0.62, s.mug.position.z);
-    avoPrep.update(dt, station.id === 'avocado' ? curStep().id : null);
+    avoPrep.update(dt, station.id === 'avocado' ? curStep().id : null, procCtx);
     coffeeProc.update(dt, inCoffee ? curStep().id : null, procCtx);
     s.items.avo.visible = avoPrep.open;
+    // el medio aguacate de la mesa refleja lo que has hecho (sin hueso, pelado)
+    const inner = s.items.avo.children[0];
+    if (inner) {
+      inner.children[2].visible = !avoPrep.pitless;
+      inner.children[0].material.color.set(avoPrep.peeled ? '#93bd4e' : '#344a20');
+    }
   }
   if (instantAnim) {
     instantAnim.t += dt;
@@ -907,7 +1162,7 @@ function loop() {
 loop();
 
 window.__bs = {
-  scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc,
+  scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad,
   get station() { return station; },
   settled: () => cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
 };

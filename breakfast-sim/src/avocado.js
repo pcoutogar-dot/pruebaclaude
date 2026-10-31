@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { AVO } from './props.js';
 import { avocadoFleshTexture, noiseBump } from './textures.js';
+import { CANNON } from './physics.js';
 
 const K = 6;
 // radio del aguacate a lo largo de su eje (interpolando el perfil)
@@ -33,6 +34,8 @@ function half(withPit) {
     const m = new THREE.Mesh(lathe(AVO, 6, (i * Math.PI) / K, Math.PI / K), skinMat.clone());
     m.castShadow = m.receiveShadow = true;
     m.userData.skin = true;
+    m.userData.phi0 = (i * Math.PI) / K;
+    m.userData.orig = m.geometry.attributes.position.array.slice();
     skins.push(m);
     inner.add(m);
   }
@@ -67,13 +70,23 @@ function half(withPit) {
 }
 
 export class AvocadoPrep {
-  constructor() {
+  constructor({ physics, debris, home }) {
+    this.physics = physics;
+    this.debris = debris; // contenedor en coordenadas de mundo para lo que cae
+    this.home = home.clone();
     this.group = new THREE.Group();
     this.group.scale.setScalar(0.85);
+    // "holder": su origen es el centro del aguacate (centro de masa equilibrado)
+    this.holder = new THREE.Group();
+    this.CENTER = new THREE.Vector3(0.38, 0.33, 0);
+    this.holder.add(this.group);
+    this.group.position.copy(this.CENTER).negate();
     this.A = half(true);
     this.B = half(false);
     this.group.add(this.A.wrap, this.B.wrap);
-    this.falling = [];
+    this.bending = new Map(); // tiras de piel que se están doblando (maleables)
+    this.loose = []; // trozos sueltos con física (piel, hueso)
+    this.queue = []; // tiras que se sueltan solas con un pequeño retraso
     this.reset();
   }
 
@@ -84,24 +97,42 @@ export class AvocadoPrep {
     this.flipT = 0;
     this.slices = 0;
     this.pitDrag = null;
+    this.peelDrag = null;
+    this.bending.clear();
+    this.queue.length = 0;
+    for (const it of this.loose) {
+      this.physics.remove(it);
+      it.mesh.removeFromParent();
+    }
+    this.loose.length = 0;
     for (const h of [this.A, this.B]) {
       h.peeled = 0;
       h.skins.forEach((s) => {
         s.visible = true;
-        s.position.set(0, 0, 0);
-        s.rotation.set(0, 0, 0);
-        s.material.opacity = 1;
-        s.material.transparent = false;
         s.userData.gone = false;
+        s.geometry.attributes.position.array.set(s.userData.orig);
+        s.geometry.attributes.position.needsUpdate = true;
+        s.geometry.computeVertexNormals();
       });
       h.faceMat.map = fleshTex;
       h.faceMat.needsUpdate = true;
       h.slices.clear();
     }
-    this.A.pit.visible = true;
-    this.A.pit.position.set(0, 0.36, 0);
-    this.A.pit.scale.set(0.75, 1.05, 1);
-    this.falling.length = 0;
+    const pit = this.A.pit;
+    this.A.inner.add(pit);
+    pit.visible = true;
+    pit.position.set(0, 0.36, 0);
+    pit.quaternion.identity();
+    pit.scale.set(0.75, 1.05, 1);
+    // el aguacate entero es un objeto físico: se puede coger y lanzar
+    if (this.item) this.physics.remove(this.item);
+    this.holder.position.copy(this.homeC());
+    this.holder.quaternion.identity();
+    this.holder.scale.setScalar(1);
+    this.item = this.physics.add(this.holder, [
+      [new CANNON.Sphere(0.3), new THREE.Vector3(-0.07, 0, 0)],
+      [new CANNON.Sphere(0.22), new THREE.Vector3(0.24, -0.04, 0)],
+    ], { mass: 1.2, home: this.homeC(), angularDamping: 0.6 });
     this.pose();
   }
 
@@ -110,14 +141,43 @@ export class AvocadoPrep {
   get pitless() { return ['pitless', 'peeled'].includes(this.state); }
   get peeled() { return this.state === 'peeled'; }
 
+  homeC() {
+    return this.home.clone().add(this.CENTER);
+  }
+
+  // basta con que esté sobre la tabla (aunque haya rodado un poco)
+  atHome() {
+    if (!this.item) return true;
+    const p = this.holder.position, h = this.homeC();
+    return Math.hypot(p.x - h.x, p.z - h.z) < 0.25 && Math.abs(p.y - h.y) < 0.15;
+  }
+
+  // vuelve suavemente a la tabla (para poder cortarlo)
+  bringHome(dt) {
+    const b = this.item.body;
+    b.type = CANNON.Body.KINEMATIC;
+    b.velocity.set(0, 0, 0);
+    b.angularVelocity.set(0, 0, 0);
+    const k = Math.min(1, dt * 7);
+    const p = new THREE.Vector3().copy(b.position).lerp(this.homeC(), k);
+    p.y += Math.sin(Math.min(1, p.distanceTo(this.homeC())) * Math.PI) * 0.05;
+    const q = new THREE.Quaternion().copy(b.quaternion).slerp(new THREE.Quaternion(), k);
+    b.position.set(p.x, p.y, p.z);
+    b.quaternion.set(q.x, q.y, q.z, q.w);
+    if (p.distanceTo(this.homeC()) < 0.01) {
+      b.position.set(...this.homeC().toArray());
+      b.quaternion.set(0, 0, 0, 1);
+      b.type = CANNON.Body.DYNAMIC;
+      this.homing = false;
+    }
+  }
+
   // coloca las mitades según el progreso (abrir y dar la vuelta para pelar)
   pose() {
     const t = this.openT, f = this.flipT;
     const y0 = 0.42;
-    // A: boca arriba; al pelar se da la vuelta (cúpula arriba)
     this.A.wrap.position.set(0, y0 * (1 - f), 0);
     this.A.wrap.rotation.x = Math.PI * f;
-    // B: empieza encima (boca abajo), se abre hacia delante
     const sep = this.state === 'whole' ? 0 : 0.012;
     this.B.wrap.position.set(0, y0 + sep + Math.sin(t * Math.PI) * 0.5 - y0 * f, t * 1.05);
     this.B.wrap.rotation.x = Math.PI * (1 - t) + Math.PI * f;
@@ -132,12 +192,27 @@ export class AvocadoPrep {
     const h = ctx.cast(e, this.targets());
     this.last = [e.clientX, e.clientY];
     this.acc = 0;
-    // el corte puede empezar fuera del aguacate (como un cuchillo de verdad)
-    if (step === 'cut') return true;
+    if (step === 'cut') {
+      if (this.state === 'whole' && this.item && (!this.atHome() || Math.abs(this.holder.quaternion.w) < 0.9)) this.homing = true;
+      return true; // el corte puede empezar fuera del aguacate, como un cuchillo de verdad
+    }
     if (!h) return false;
     if (step === 'pit') {
       if (!h.object.userData.pit || this.state !== 'open') return true;
-      this.pitDrag = { start: h.point.clone() };
+      this.pitDrag = { hist: [] };
+      ctx.sfx.plop();
+    }
+    if (step === 'peel' && h.object.userData.skin && !h.object.userData.gone && this.flipT >= 1) {
+      // coges una tira: el borde que tocas es el que se levanta
+      const s = h.object;
+      const local = s.parent.worldToLocal(h.point.clone());
+      const phi = Math.atan2(local.x, local.z);
+      const mid = s.userData.phi0 + Math.PI / K / 2;
+      const b = this.bending.get(s) || { th: 0, v: 0 };
+      b.fromStart = phi < mid; // tocando cerca del inicio → la bisagra está al final
+      b.target = 0;
+      this.bending.set(s, b);
+      this.peelDrag = { s, b, x: e.clientX, y: e.clientY };
       ctx.sfx.plop();
     }
     if (step === 'slice' && this.peeled) this.sliceStart = { e: [e.clientX, e.clientY], h };
@@ -149,10 +224,16 @@ export class AvocadoPrep {
     this.last = [e.clientX, e.clientY];
     const d = Math.hypot(dx, dy);
     if (step === 'cut' && this.state === 'whole') {
-      if (!ctx.cast(e, this.targets())) return;
+      if (this.homing || !this.atHome() || !ctx.cast(e, this.targets())) return;
       this.cutLen += d;
       ctx.sfx.scrape(d * 0.0015);
       if (this.cutLen > 110) {
+        // al cortarlo deja de ser un objeto suelto
+        this.physics.remove(this.item);
+        this.item = null;
+        this.holder.position.copy(this.homeC());
+        this.holder.quaternion.identity();
+        this.holder.scale.setScalar(1);
         this.state = 'cut';
         ctx.sfx.stop();
         ctx.sfx.plop();
@@ -166,38 +247,19 @@ export class AvocadoPrep {
         ctx.sfx.plop();
       }
     } else if (step === 'pit' && this.pitDrag) {
-      const p = ctx.planePoint(e, this.group.getWorldPosition(new THREE.Vector3()).y + 0.7);
+      const p = ctx.planePoint(e, this.home.y + 0.7);
       if (p) {
-        const local = this.A.inner.worldToLocal(p.clone());
-        this.A.pit.position.lerp(local, 0.5);
+        this.A.pit.position.lerp(this.A.inner.worldToLocal(p.clone()), 0.5);
+        this.pitDrag.hist.push({ p: p.clone(), t: performance.now() / 1000 });
+        if (this.pitDrag.hist.length > 6) this.pitDrag.hist.shift();
       }
-    } else if (step === 'peel' && this.state === 'pitless' && this.flipT >= 1) {
-      // cada tira que tocas se despega
-      const h = ctx.cast(e, this.targets());
-      if (h && h.object.userData.skin && !h.object.userData.gone) {
-        const s = h.object;
-        s.userData.gone = true;
-        s.material.transparent = true;
-        const half = this.A.skins.includes(s) ? this.A : this.B;
-        half.peeled++;
-        this.falling.push({ s, t: 0, dir: Math.random() > 0.5 ? 1 : -1 });
-        // las últimas tiras (pegadas a la tabla) se sueltan solas
-        if (half.peeled >= K - 2) {
-          for (const r of half.skins) {
-            if (r.userData.gone) continue;
-            r.userData.gone = true;
-            r.material.transparent = true;
-            half.peeled++;
-            this.falling.push({ s: r, t: -0.25, dir: Math.random() > 0.5 ? 1 : -1 });
-          }
-        }
-        ctx.sfx.scrape(0.02);
-        setTimeout(() => ctx.sfx.stop(), 90);
-        if (this.A.peeled + this.B.peeled >= K * 2) {
-          this.state = 'peeled';
-          ctx.chime();
-        }
-      }
+    } else if (step === 'peel' && this.peelDrag) {
+      // cuanto más tiras, más se dobla la piel desde el borde (blandita)
+      const pd = this.peelDrag;
+      const pull = Math.hypot(e.clientX - pd.x, e.clientY - pd.y);
+      pd.b.target = Math.min(2.3, pull / 85);
+      ctx.sfx.scrape(Math.min(0.01, d * 0.0004));
+      if (pull > 190) this.detach(pd.s, ctx, dx, dy);
     } else if (step === 'slice' && this.sliceStart) {
       this.acc += d;
     }
@@ -207,18 +269,22 @@ export class AvocadoPrep {
     ctx.sfx.stop();
     if (step === 'pit' && this.pitDrag) {
       const moved = this.A.pit.position.distanceTo(new THREE.Vector3(0, 0.36, 0));
-      if (moved > 0.18) {
-        this.pitFly = 0;
-        this.state = 'pitless';
-        this.A.faceMat.map = hollowTex;
-        this.A.faceMat.needsUpdate = true;
-        ctx.chime();
-      } else this.A.pit.position.set(0, 0.36, 0);
+      if (moved > 0.18) this.releasePit(ctx);
+      else this.A.pit.position.set(0, 0.36, 0);
       this.pitDrag = null;
+    }
+    if (step === 'peel' && this.peelDrag) {
+      // si sueltas antes de tiempo, la piel vuelve a su sitio con un pequeño rebote
+      this.peelDrag.b.target = 0;
+      this.peelDrag = null;
     }
     if (step === 'slice' && this.sliceStart && this.acc > 40) {
       const h = this.sliceStart.h;
-      const half = h.object.parent?.parent === this.B.wrap || h.object.parent === this.B.wrap ? this.B : this.A;
+      let o = h.object, half = this.A;
+      while (o) {
+        if (o === this.B.wrap) half = this.B;
+        o = o.parent;
+      }
       const local = half.wrap.worldToLocal(h.point.clone());
       if (half.slices.children.length < 9) {
         // corte: un aro fino que sigue la curva del aguacate en ese punto
@@ -238,31 +304,114 @@ export class AvocadoPrep {
     this.sliceStart = null;
   }
 
-  update(dt, step) {
-    // al llegar a "pelar", las mitades se dan la vuelta solas
+  // el hueso sale disparado con la fuerza del gesto (y luego es un objeto suelto)
+  releasePit(ctx) {
+    const pit = this.A.pit;
+    const wp = pit.getWorldPosition(new THREE.Vector3());
+    const ws = pit.getWorldScale(new THREE.Vector3());
+    this.debris.attach(pit);
+    pit.position.copy(wp);
+    pit.scale.copy(ws);
+    const it = this.physics.add(pit, [[new CANNON.Sphere(0.13)]], { mass: 0.35, home: this.home.clone().add(new THREE.Vector3(0.5, 0.2, -0.6)) });
+    const h = this.pitDrag.hist;
+    if (h.length > 1) {
+      const a = h[0], b = h[h.length - 1], dt = Math.max(0.03, b.t - a.t);
+      const v = b.p.clone().sub(a.p).divideScalar(dt).clampLength(0, 30);
+      it.body.velocity.set(v.x, 6 + v.length() * 0.2, v.z);
+    } else it.body.velocity.set(1, 8, 0.5);
+    it.body.angularVelocity.set(4, 2, 3);
+    this.loose.push(it);
+    this.state = 'pitless';
+    this.A.faceMat.map = hollowTex;
+    this.A.faceMat.needsUpdate = true;
+    ctx.chime();
+  }
+
+  // la tira se despega: deja de estar unida y cae con física real
+  detach(s, ctx, dx = 0, dy = 0) {
+    if (s.userData.gone) return;
+    s.userData.gone = true;
+    this.bending.delete(s);
+    if (this.peelDrag?.s === s) this.peelDrag = null;
+    s.updateWorldMatrix(true, false);
+    const geo = s.geometry.clone().applyMatrix4(s.matrixWorld);
+    geo.computeBoundingBox();
+    const c = geo.boundingBox.getCenter(new THREE.Vector3());
+    const size = geo.boundingBox.getSize(new THREE.Vector3());
+    geo.translate(-c.x, -c.y, -c.z);
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, skinMat);
+    m.castShadow = m.receiveShadow = true;
+    m.position.copy(c);
+    this.debris.add(m);
+    s.visible = false;
+    const he = new CANNON.Vec3(Math.max(0.02, size.x / 2), Math.max(0.02, size.y / 2), Math.max(0.02, size.z / 2));
+    const it = this.physics.add(m, [[new CANNON.Box(he)]], { mass: 0.06, linearDamping: 0.35, angularDamping: 0.5, home: null });
+    it.body.velocity.set(dx * 0.02, 3 + Math.random() * 2, -dy * 0.02);
+    it.body.angularVelocity.set((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 5);
+    this.loose.push(it);
+    const half = this.A.skins.includes(s) ? this.A : this.B;
+    half.peeled++;
+    ctx.sfx.plop();
+    // las últimas tiras, pegadas a la tabla, se sueltan solas
+    if (half.peeled >= K - 3) {
+      half.skins.forEach((r, i) => {
+        if (!r.userData.gone && !this.queue.some((q) => q.s === r)) this.queue.push({ s: r, t: 0.25 + i * 0.12 });
+      });
+    }
+    if (this.A.peeled + this.B.peeled >= K * 2) {
+      this.state = 'peeled';
+      ctx.chime();
+    }
+  }
+
+  // dobla una tira alrededor de su borde (bisagra) según el ángulo th
+  bend(s, b) {
+    const pos = s.geometry.attributes.position, o = s.userData.orig, a = pos.array;
+    const P = AVO.length, phi0 = s.userData.phi0, dphi = Math.PI / K;
+    const hingePhi = b.fromStart ? phi0 + dphi : phi0;
+    const sh = Math.sin(hingePhi), ch = Math.cos(hingePhi);
+    for (let i = 0; i < pos.count; i++) {
+      const seg = Math.floor(i / P), j = i % P;
+      let f = seg / 6;
+      if (b.fromStart) f = 1 - f;
+      const r = AVO[j][0];
+      const hx = r * sh, hz = r * ch;
+      const vx = o[i * 3] - hx, vz = o[i * 3 + 2] - hz;
+      const beta = (b.fromStart ? -1 : 1) * b.th * Math.pow(f, 1.3);
+      const cb = Math.cos(beta), sb = Math.sin(beta);
+      a[i * 3] = hx + vx * cb - vz * sb;
+      a[i * 3 + 2] = hz + vx * sb + vz * cb;
+      a[i * 3 + 1] = o[i * 3 + 1];
+    }
+    pos.needsUpdate = true;
+    s.geometry.computeVertexNormals();
+  }
+
+  update(dt, step, ctx) {
+    if (this.item && this.homing) this.bringHome(dt);
+    // si se cae al suelo, vuelve solo a la tabla
     if (step === 'peel' && this.state === 'pitless' && this.flipT < 1) {
       this.flipT = Math.min(1, this.flipT + dt * 1.6);
       this.pose();
     }
-    if (this.pitFly !== undefined && this.pitFly < 1) {
-      this.pitFly += dt * 1.8;
-      const p = this.A.pit;
-      p.position.y += dt * 2.2;
-      p.position.z += dt * 1.5;
-      p.scale.multiplyScalar(1 - dt * 2.5);
-      if (this.pitFly >= 1) p.visible = false;
+    // piel maleable: muelle amortiguado (se dobla con retraso y rebota un poco)
+    for (const [s, b] of this.bending) {
+      const k = 90, c = 9;
+      b.v += ((b.target - b.th) * k - b.v * c) * dt;
+      b.th += b.v * dt;
+      if (b.target === 0 && Math.abs(b.th) < 0.002 && Math.abs(b.v) < 0.01) {
+        b.th = 0;
+        this.bending.delete(s);
+      }
+      this.bend(s, b);
     }
-    for (let i = this.falling.length - 1; i >= 0; i--) {
-      const f = this.falling[i];
-      f.t += dt;
-      if (f.t < 0) continue;
-      f.s.rotation.z += dt * 2.2 * f.dir;
-      f.s.position.y -= dt * 0.9;
-      f.s.position.x += dt * 0.6 * f.dir;
-      f.s.material.opacity = Math.max(0, 1 - f.t * 1.6);
-      if (f.t > 0.7) {
-        f.s.visible = false;
-        this.falling.splice(i, 1);
+    for (let i = this.queue.length - 1; i >= 0; i--) {
+      const q = this.queue[i];
+      q.t -= dt;
+      if (q.t <= 0) {
+        this.queue.splice(i, 1);
+        if (ctx) this.detach(q.s, ctx);
       }
     }
   }

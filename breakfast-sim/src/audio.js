@@ -73,13 +73,13 @@ export class Sfx {
     });
   }
 
-  plop() {
+  plop(vol = 1, pitch = 1) {
     if (!this.ctx || !this.on) return;
     const ctx = this.ctx, t = ctx.currentTime;
     const o = ctx.createOscillator(), g = ctx.createGain();
-    o.frequency.setValueAtTime(420, t);
-    o.frequency.exponentialRampToValueAtTime(140, t + 0.12);
-    g.gain.setValueAtTime(0.12, t);
+    o.frequency.setValueAtTime(420 * pitch, t);
+    o.frequency.exponentialRampToValueAtTime(140 * pitch, t + 0.12);
+    g.gain.setValueAtTime(0.12 * vol, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
     o.connect(g).connect(ctx.destination);
     o.start(t);

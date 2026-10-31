@@ -97,6 +97,15 @@ Reglas de los procesos:
 - **Los procesos ocurren en la zona de preparación** (a la derecha de la encimera) para no amontonar la mesa del desayuno. Lo terminado "viaja" a la mesa.
 - **Latte art realista**: al principio la leche se hunde y aclara el café; el dibujo solo aparece cuando la taza va casi llena (como en la vida real). Balancear = capas; mover rápido mientras viertes = el "corte" del corazón/tulipán; pasarse = se desborda.
 
+## 3 ter. Físicas y tacto
+
+- **Coger y lanzar**: mantén el dedo sobre un objeto suelto (aguacate entero, hueso, pieles, naranjas, limón), levántalo y suéltalo con un gesto: sale con esa velocidad. Rebota con un pequeño aplastamiento y suena el golpe. Si cae al suelo, vuelve solo a su sitio.
+- **Pelado maleable**: coges una tira de piel y, al tirar, se dobla desde el borde con retraso de muelle (si sueltas antes, vuelve con un rebote). Al tirar lo suficiente se despega y cae arrugada con física real.
+- **El hueso** sale disparado en la dirección y fuerza de tu gesto.
+- **Cuchillo que se carga**: primero lo pasas por la fuente (tarrina, tarro de ricotta, medio aguacate) y luego untas; la capa se va adelgazando a medida que se gasta la carga. Al soltar, el cuchillo se queda donde lo dejes.
+- **Yogur a cucharadas**: cada toque deja un pegote espeso con volumen que se asienta despacio; arrastrar lo extiende con el dorso de la cuchara.
+- **Agua**: ondas en la superficie del café donde cae el chorro y gotitas que salpican (también al verter fuera).
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

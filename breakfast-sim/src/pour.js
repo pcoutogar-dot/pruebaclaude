@@ -12,7 +12,7 @@ import { canvas, tex } from './textures.js';
 const S = 512;
 
 export class PourSurface {
-  constructor({ drawBase, milk, halo, push = 1, size = [6, 10], capacity = 2600 }) {
+  constructor({ drawBase, milk, halo, push = 1, size = [6, 10], capacity = 2600, height = false }) {
     this.drawBase = drawBase;
     this.milk = milk;
     this.halo = halo;
@@ -24,6 +24,11 @@ export class PourSurface {
     this.decor = canvas(S);
     drawBase(this.base.getContext('2d'), S);
     this.texture = tex(this.c);
+    if (height) {
+      // relieve: lo espeso (yogur) tiene volumen de verdad
+      this.h = canvas(256);
+      this.heightTexture = tex(this.h, { srgb: false });
+    }
     this.p = [];
     this.R = S * 0.47;
     this.reset();
@@ -87,6 +92,39 @@ export class PourSurface {
     }
     this.contain();
     this.dirty = true;
+  }
+
+  // una cucharada: un pegote espeso que luego se asienta despacio
+  dollop(uv) {
+    const [x, y] = this.px(uv);
+    const n = 55;
+    for (let i = 0; i < n && !this.full; i++) {
+      const a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * 26;
+      this.p.push({
+        x: x + Math.cos(a) * d, y: y + Math.sin(a) * d,
+        r: 11 + Math.random() * 6, age: 0, cx: x, cy: y,
+      });
+    }
+    this.contain();
+    this.dirty = true;
+  }
+
+  // el pegote se asienta: se expande un poco y se aplana
+  relax(dt) {
+    let moved = false;
+    for (const q of this.p) {
+      if (q.age === undefined || q.age > 1.6) continue;
+      q.age += dt;
+      const dx = q.x - q.cx, dy = q.y - q.cy, d = Math.hypot(dx, dy) + 0.5;
+      const v = 22 * Math.exp(-q.age * 2.5) * dt;
+      q.x += (dx / d) * v;
+      q.y += (dy / d) * v;
+      moved = true;
+    }
+    if (moved) {
+      this.contain();
+      this.dirty = true;
+    }
   }
 
   smear(uv0, uv1) {
@@ -167,6 +205,24 @@ export class PourSurface {
     }
     c.drawImage(this.decor, 0, 0);
     this.texture.needsUpdate = true;
+    if (this.h) {
+      const x = this.h.getContext('2d'), k = 256 / S;
+      x.fillStyle = '#000';
+      x.fillRect(0, 0, 256, 256);
+      if (!this.blob) {
+        this.blob = canvas(64);
+        const b = this.blob.getContext('2d'), g = b.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0, 'rgba(255,255,255,0.32)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        b.fillStyle = g;
+        b.fillRect(0, 0, 64, 64);
+      }
+      for (const q of this.p) {
+        const r = q.r * 1.7 * k;
+        x.drawImage(this.blob, q.x * k - r, q.y * k - r, r * 2, r * 2);
+      }
+      this.heightTexture.needsUpdate = true;
+    }
   }
 }
 

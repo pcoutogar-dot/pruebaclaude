@@ -6,6 +6,7 @@
 // mientras viertes "corta" la espuma (el gesto del corazón/tulipán).
 import * as THREE from 'three';
 import { canvas, tex } from './textures.js';
+import { Ripples } from './fx.js';
 
 const M = (color, roughness = 0.5, o = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...o });
 const lathe = (pts, segs = 40) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), segs);
@@ -171,10 +172,13 @@ export function coffeeBase(mix) {
 }
 
 export class CoffeeProc {
-  constructor({ mug, latte, parent }) {
+  constructor({ mug, latte, parent, droplets }) {
     this.mug = mug;
+    this.droplets = droplets;
     this.latte = latte;
     this.coffee = mug.userData.coffee;
+    this.ripples = new Ripples(this.coffee, 0.318);
+    this.rippleT = 0;
     this.grinder = makeGrinder();
     this.dripper = makeDripper();
     this.kettle = makeKettle();
@@ -335,6 +339,7 @@ export class CoffeeProc {
 
   update(dt, step, ctx) {
     const p = this.mug.position;
+    this.ripples.update(dt);
     if (this.brewed && this.dripLift < 1) this.dripLift = Math.min(1, this.dripLift + dt * 0.8);
     this.layout(step);
     this.water.visible = this.milkStream.visible = false;
@@ -347,6 +352,13 @@ export class CoffeeProc {
       this.showStream(this.water, tip, floor);
       if (onDripper) {
         this.brew += dt * 0.05;
+        this.rippleT -= dt;
+        if (this.rippleT <= 0) {
+          this.rippleT = 0.28;
+          // el café gotea del filtro a la taza: ondas en el centro
+          this.ripples.drop((Math.random() - 0.5) * 0.04, (Math.random() - 0.5) * 0.04, 0.008);
+          this.droplets.splash(new THREE.Vector3(tip.x, MUG_TOP + 0.2, tip.z), '#cfe0e6', 2, 1.1);
+        }
         const bed = this.dripper.userData.bed;
         bed.material.color.lerp(new THREE.Color('#2f1a0c'), dt * 0.6);
         bed.position.y = 0.17 + Math.sin(ctx.time * 3) * 0.006 + Math.min(0.06, this.brew * 0.2);
@@ -358,6 +370,7 @@ export class CoffeeProc {
         }
       } else {
         // agua fuera del filtro: charquito en la encimera
+        if (Math.random() < dt * 14) this.droplets.splash(new THREE.Vector3(tip.x, 0.02, tip.z), '#cfe0e6', 3, 1.4, 0.01);
         if (Math.random() < dt * 8) {
           const q = new THREE.Mesh(new THREE.CircleGeometry(0.05 + Math.random() * 0.06, 16), new THREE.MeshStandardMaterial({ color: '#c9d6db', roughness: 0.05, transparent: true, opacity: 0.45 }));
           q.rotation.x = -Math.PI / 2;
@@ -397,6 +410,14 @@ export class CoffeeProc {
         if (this.prevUV && this.prevUV.distanceTo(uv) > 0.02) this.latte.smear(this.prevUV, uv);
       }
       this.prevUV = uv;
+      this.rippleT -= dt;
+      if (this.rippleT <= 0) {
+        this.rippleT = 0.1;
+        if (inCup) {
+          this.ripples.drop(local.x, local.y, this.level < 0.62 ? 0.014 : 0.006);
+          this.droplets.splash(new THREE.Vector3(tip.x, surfaceY + 0.01, tip.z), this.level < 0.62 ? '#e8d6c0' : '#fbf6ee', 2, 1.0);
+        } else this.droplets.splash(new THREE.Vector3(tip.x, 0.02, tip.z), '#fbf6ee', 3, 1.3, 0.01);
+      }
       if (this.level > 1) {
         this.spilled += dt;
         if (!this.warned) {
