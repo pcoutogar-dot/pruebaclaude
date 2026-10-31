@@ -61,7 +61,7 @@ export class PourSurface {
 
   pour(uv, dt) {
     const [x, y] = this.px(uv);
-    const n = Math.round(dt * 160);
+    const n = Math.round(dt * 300);
     for (let i = 0; i < n && !this.full; i++) {
       const a = Math.random() * 6.283, d = Math.random() * 4;
       this.p.push({
@@ -183,9 +183,9 @@ export function cremaBase(x, S) {
 
 export function bowlBase(x, S) {
   const g = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-  g.addColorStop(0, '#d9e6ec');
-  g.addColorStop(0.75, '#bfd3dc');
-  g.addColorStop(1, '#93aab6');
+  g.addColorStop(0, '#a9bfcb');
+  g.addColorStop(0.75, '#93acba');
+  g.addColorStop(1, '#6f8896');
   x.fillStyle = g;
   x.fillRect(0, 0, S, S);
   for (let i = 0; i < 700; i++) {

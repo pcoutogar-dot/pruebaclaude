@@ -43,6 +43,14 @@ export class Sfx {
     this.filter.frequency.setTargetAtTime(900 + Math.min(speed, 0.1) * 30000, now, 0.06);
   }
 
+  // chisporroteo al tostar
+  sizzle(on) {
+    if (!this.ctx || !this.on) return;
+    const now = this.ctx.currentTime;
+    this.gain.gain.setTargetAtTime(on ? 0.05 + Math.random() * 0.05 : 0, now, 0.02);
+    this.filter.frequency.setTargetAtTime(4200, now, 0.05);
+  }
+
   stop() {
     if (!this.ctx) return;
     this.gain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.06);

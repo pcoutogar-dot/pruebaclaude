@@ -80,10 +80,12 @@ export class Toast {
       roughnessMap: this.tRough,
       roughness: 1,
     });
-    const crust = new THREE.MeshStandardMaterial({
-      color: kind === 'sourdough' ? '#9a5a26' : '#c98a4b',
+    const crust = (this.crustMat = new THREE.MeshStandardMaterial({
+      color: kind === 'sourdough' ? '#b07a45' : '#d4a26a',
       roughness: 0.85,
-    });
+    }));
+    this.crustRaw = new THREE.Color(crust.color);
+    this.crustBurnt = new THREE.Color('#3a2210');
     this.mesh = new THREE.Mesh(geo, [top, crust]);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
@@ -134,18 +136,19 @@ export class Toast {
     // miga tostada: centro claro, bordes dorados
     const g = c.createRadialGradient(CW / 2, CW / 2, 40, CW / 2, CW / 2, CW * 0.6);
     if (sour) {
-      g.addColorStop(0, '#ecc685');
-      g.addColorStop(0.55, '#dca660');
-      g.addColorStop(1, '#b8743a');
+      // miga cruda: el jugador la tuesta a su gusto
+      g.addColorStop(0, '#f1e0bf');
+      g.addColorStop(0.6, '#ead3a6');
+      g.addColorStop(1, '#dcbd88');
     } else {
-      g.addColorStop(0, '#f6ead0');
-      g.addColorStop(0.7, '#f0dcb4');
-      g.addColorStop(1, '#e2c391');
+      g.addColorStop(0, '#fbf3e3');
+      g.addColorStop(0.7, '#f6ead2');
+      g.addColorStop(1, '#efdcbc');
     }
     c.fillStyle = g;
     c.fillRect(0, 0, CW, CW);
     // tostado hacia el borde
-    for (const [lw, a] of [[90, 0.08], [55, 0.1], [26, 0.16]]) {
+    for (const [lw, a] of [[60, 0.04], [26, 0.08]]) {
       this.pathOn(c, CW);
       c.lineWidth = lw;
       c.strokeStyle = sour ? `rgba(150,85,30,${a})` : `rgba(170,120,60,${a})`;
@@ -160,7 +163,7 @@ export class Toast {
       const big = sour && r() < 0.18;
       const rad = big ? 9 + r() * 20 : sour ? 2 + r() * 6 : 1 + r() * 2.2;
       const px = r() * CW, py = r() * CW, rot = r() * 3, ex = 0.5 + r() * 0.6;
-      c.fillStyle = sour ? 'rgba(128,72,28,0.62)' : 'rgba(190,160,110,0.45)';
+      c.fillStyle = sour ? 'rgba(170,120,60,0.5)' : 'rgba(200,175,130,0.4)';
       c.beginPath();
       c.ellipse(px, py, rad, rad * ex, rot, 0, 7);
       c.fill();
@@ -178,8 +181,40 @@ export class Toast {
 
     this.cPaint.getContext('2d').clearRect(0, 0, MW, MW);
     this.covered = 0;
+    this.heatTotal = 0;
+    this.crustMat.color.copy(this.crustRaw);
     this.dirty = true;
     this.flush();
+  }
+
+  // Tostar: el calor se acumula donde mantienes el dedo. Puedes dorarlo parejo,
+  // dejar el centro claro... o quemarlo. Nada impide el resultado "imperfecto".
+  heat(u, v, dt) {
+    const x = u * CW, y = (1 - v) * CW, r = Math.random;
+    const c = this.cColor.getContext('2d');
+    c.save();
+    this.pathOn(c, CW);
+    c.clip();
+    c.globalCompositeOperation = 'multiply';
+    const R = 90 + r() * 20;
+    const g = c.createRadialGradient(x, y, 0, x, y, R);
+    const a = Math.min(0.5, dt * 1.6);
+    g.addColorStop(0, `rgba(196,128,62,${a})`);
+    g.addColorStop(0.6, `rgba(205,145,80,${a * 0.6})`);
+    g.addColorStop(1, 'rgba(220,170,110,0)');
+    c.fillStyle = g;
+    c.fillRect(x - R, y - R, R * 2, R * 2);
+    // tostado irregular: motitas más oscuras
+    for (let i = 0; i < 6; i++) {
+      c.fillStyle = `rgba(150,90,40,${a * 0.8})`;
+      c.beginPath();
+      c.arc(x + (r() - 0.5) * R * 1.4, y + (r() - 0.5) * R * 1.4, 3 + r() * 10, 0, 7);
+      c.fill();
+    }
+    c.restore();
+    this.heatTotal += dt;
+    this.crustMat.color.copy(this.crustRaw).lerp(this.crustBurnt, Math.min(0.85, this.heatTotal / 14));
+    this.dirty = true;
   }
 
   // Guarda el estado antes de un trazo (para "Deshacer")
@@ -188,8 +223,11 @@ export class Toast {
       const x = c.getContext('2d');
       return [x, x.getImageData(0, 0, c.width, c.height)];
     });
+    const heat = this.heatTotal, crust = this.crustMat.color.clone();
     return () => {
       for (const [x, d] of cs) x.putImageData(d, 0, 0);
+      this.heatTotal = heat;
+      this.crustMat.color.copy(crust);
       this.dirty = true;
     };
   }
@@ -206,7 +244,7 @@ export class Toast {
       return;
     }
     const ang = Math.atan2(y1 - y0, x1 - x0);
-    const thick = Math.max(0.45, Math.min(1.15, 1.2 - d / 70));
+    const thick = Math.max(0.62, Math.min(1.15, 1.25 - d / 80));
     const step = 9;
     const n = Math.max(1, Math.ceil(d / step));
     for (let i = 1; i <= n; i++) {

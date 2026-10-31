@@ -44,6 +44,7 @@ const sets = {};
   const board = P.makeBoard();
   board.position.set(0.0, 0, 0.35);
   board.rotation.y = 0.06;
+  board.scale.setScalar(0.9);
   const toast = new Toast('sourdough');
   toast.group.position.set(-0.15, board.userData.top, 0.32);
   toast.group.rotation.y = 0.12;
@@ -62,7 +63,7 @@ const sets = {};
   const steam = P.makeSteam();
   steam.position.set(1.85, 0.62, -0.35);
   const bowl = P.makeBowl();
-  bowl.position.set(-1.55, 0, 0.75);
+  bowl.position.set(-1.8, 0, 0.85);
   const juice = P.makeJuice();
   juice.position.set(-1.65, 0, -0.45);
   const daisies = P.makeDaisies();
@@ -84,7 +85,7 @@ const sets = {};
   coffee.material.roughness = 0.5;
   coffee.rotation.z = 0;
   coffee.material.needsUpdate = true;
-  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e4dfd4', push: 0.55, size: [10, 15], capacity: 1500 });
+  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#d8d0c2', push: 0.55, size: [10, 15], capacity: 1500 });
   const ysurf = makeSurfaceMesh(yogurt, bowl.userData.surfaceR, 0.4);
   ysurf.position.y = bowl.userData.surfaceY;
   bowl.add(ysurf);
@@ -129,21 +130,25 @@ for (const s of Object.values(sets)) {
 }
 
 // ---------- Composición horizontal (3/4) y vertical (casi cenital) ----------
+// Cada objeto tiene su sitio y aire alrededor: nada encima de la tabla salvo
+// lo que se prepara en ella. [x, z, giro]
 const PORTRAIT = {
   golden: {
-    napkin: [0.85, -0.85, 0.3], mug: [0.85, -0.85, -0.6], steam: [0.85, -0.85],
-    juice: [-0.8, -0.95], daisies: [-0.05, -1.3], bowl: [-0.75, 1.3], plant: [-1.7, -1.2],
+    board: [-0.15, 0.05, 0.04], toast: [-0.3, 0.02, 0.12], knife: [0.42, 0.3, 1.25], avo: [1.32, 0.2, -1.2, 0],
+    napkin: [1.2, -0.95, 0.3], mug: [1.2, -0.95, -0.6], steam: [1.2, -0.95],
+    juice: [-1.15, -1.0], daisies: [0.15, -1.32], bowl: [1.0, 1.18], plant: [-1.9, -1.25],
   },
-  cutre: { mug: [0.8, -0.85], steam: [0.8, -0.85], jar: [-0.8, -0.95, 0.5], tub: [0.9, 1.25, -0.3] },
+  cutre: {
+    towel: [-0.15, 0.05], toast: [-0.2, 0.05], knife: [0.8, 0.35, 1.2],
+    mug: [1.0, -0.95], steam: [1.0, -0.95], jar: [-1.0, -1.0, 0.5], tub: [0.9, 1.2, -0.3],
+  },
 };
-const SHIFT = ['board', 'toast', 'avo', 'knife', 'towel'];
 const layout = [];
 for (const m of ['golden', 'cutre']) {
   for (const [k, o] of Object.entries(sets[m].items)) {
-    const land = [o.position.x, o.position.z, o.rotation.y];
-    let port = PORTRAIT[m][k];
-    if (SHIFT.includes(k)) port = [land[0], land[1] - 0.3, land[2]];
-    if (port) layout.push({ o, land, port: [port[0], port[1], port[2] ?? land[2]] });
+    const land = [o.position.x, o.position.z, o.rotation.y, o.position.y];
+    const port = PORTRAIT[m][k];
+    if (port) layout.push({ o, land, port: [port[0], port[1], port[2] ?? land[2], port[3] ?? land[3]] });
   }
 }
 let portrait = null;
@@ -151,7 +156,8 @@ function applyLayout(p) {
   if (p === portrait) return;
   portrait = p;
   for (const { o, land, port } of layout) {
-    const [x, z, ry] = p ? port : land;
+    const [x, z, ry, y] = p ? port : land;
+    o.position.y = y;
     o.position.x = x;
     o.position.z = z;
     o.rotation.y = ry;
@@ -163,6 +169,7 @@ function applyLayout(p) {
 // correcto: tú decides cuándo está listo.
 const T = (id, icon, label, type, hint, extra = {}) => ({ id, icon, label, type, hint, ...extra });
 const H = {
+  heat: 'Mantén el dedo sobre el pan para tostarlo. Muévelo para dorarlo a tu gusto… ¡o quémalo!',
   spread: 'Unta a tu manera: despacio deja grumos, rápido una capa fina. Las vetas siguen tu dedo.',
   honey: 'Desliza para dejar caer un hilo de miel.',
   place: 'Toca para colocar y arrastra para moverlo. Puedes apilar unas cosas sobre otras.',
@@ -173,6 +180,7 @@ const STATIONS = {
   golden: [
     {
       id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 1.9, tools: [
+        T('heat', '🔥', 'Tostar', 'heat', H.heat),
         T('avocado', '🥑', 'Aguacate', 'spread', H.spread),
         T('ricotta', '🤍', 'Ricotta', 'spread', H.spread),
         T('honey', '🍯', 'Miel', 'spread', H.honey),
@@ -209,6 +217,7 @@ const STATIONS = {
   cutre: [
     {
       id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 1.6, tools: [
+        T('heat', '🔥', 'Tostar', 'heat', H.heat),
         T('butter', '🧈', 'Margarina', 'spread', 'Unta la margarina… es lo que hay.'),
       ],
     },
@@ -380,7 +389,14 @@ el.addEventListener('pointerdown', (e) => {
   const info = surfaceInfo();
   if (tool && info) {
     const s = sets[mood];
-    if (tool.type === 'spread') {
+    if (tool.type === 'heat') {
+      const h = hitSurface(e, info);
+      if (h) {
+        undo.push(s.toast.snapshot());
+        drag = { kind: 'heat', uv: h.uv.clone(), info };
+        return;
+      }
+    } else if (tool.type === 'spread') {
       const h = hitSurface(e, info);
       if (h) {
         undo.push(s.toast.snapshot());
@@ -448,6 +464,11 @@ el.addEventListener('pointermove', (e) => {
         sfx.scrape(drag.uv.distanceTo(h.uv));
       }
       drag.uv = h.uv.clone();
+      break;
+    }
+    case 'heat': {
+      const h = hitSurface(e, drag.info);
+      drag.uv = h ? h.uv.clone() : null;
       break;
     }
     case 'move': {
@@ -519,7 +540,7 @@ function computeView() {
     want.dir.copy(c.dir);
     if (p) {
       want.dist = 9;
-      want.fov = fovFor(3.3, 9, a);
+      want.fov = fovFor(3.9, 9, a);
     } else if (tight) {
       want.dist = 7.4;
       want.target.x += 1.3;
@@ -573,6 +594,13 @@ function loop() {
   const time = clock.elapsedTime;
   const s = sets[mood];
 
+  // tostar mientras se mantiene pulsado
+  if (drag && drag.kind === 'heat') {
+    if (drag.uv) {
+      s.toast.heat(drag.uv.x, drag.uv.y, dt);
+      sfx.sizzle(true);
+    } else sfx.sizzle(false);
+  }
   // verter mientras se mantiene pulsado (aunque el dedo no se mueva)
   if (drag && drag.kind === 'pour' && drag.uv) {
     drag.surf.pour(drag.uv, dt);
@@ -607,6 +635,8 @@ function loop() {
   camera.lookAt(cur.target);
 
   s.steam.userData.update(time, camera);
+  // el vapor no tapa el latte art mientras trabajas en la taza
+  s.steam.visible = station.id !== 'coffee';
   room.update(time);
 
   for (let i = anims.length - 1; i >= 0; i--) {
@@ -621,4 +651,8 @@ function loop() {
 }
 loop();
 
-window.__bs = { scene, camera, sets, applyMood, selectStation, STATIONS, get station() { return station; } };
+window.__bs = {
+  scene, camera, sets, applyMood, selectStation, STATIONS,
+  get station() { return station; },
+  settled: () => cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
+};
