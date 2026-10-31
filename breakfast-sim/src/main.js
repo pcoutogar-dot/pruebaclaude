@@ -137,7 +137,7 @@ for (const s of Object.values(sets)) {
 // lo que se prepara en ella. [x, z, giro]
 const PORTRAIT = {
   golden: {
-    board: [-0.15, 0.05, 0.04], toast: [-0.3, 0.02, 0.12], knife: [0.42, 0.3, 1.25], avo: [1.32, 0.2, -1.2, 0],
+    board: [-0.15, 0.05, 0.04], toast: [-0.3, 0.02, 0.12], knife: [0.42, 0.3, 1.25], avo: [1.38, 0.02, -1.2, 0],
     napkin: [1.2, -0.95, 0.3], mug: [1.2, -0.95, -0.6], steam: [1.2, -0.95],
     juice: [-1.15, -1.0], daisies: [0.15, -1.32], bowl: [1.0, 1.18], plant: [-1.9, -1.25],
   },
@@ -411,6 +411,8 @@ function hitSurface(e, info, { withPlaced = false, exclude = null } = {}) {
   return h;
 }
 
+const ROUND = new Set(['blueberry', 'raspberry', 'tomato']);
+
 function pop(obj) {
   obj.userData.s = obj.scale.x;
   obj.scale.setScalar(0.001);
@@ -456,7 +458,8 @@ el.addEventListener('pointerdown', (e) => {
         return;
       }
     } else if (tool.type === 'place') {
-      const h = hitSurface(e, info, { withPlaced: true });
+      // lo redondo rueda: no se apila, se apoya en la superficie
+      const h = hitSurface(e, info, { withPlaced: !ROUND.has(tool.id) });
       if (h) {
         const refund = pay();
         if (!refund) return;
@@ -535,7 +538,7 @@ el.addEventListener('pointermove', (e) => {
       break;
     }
     case 'move': {
-      const h = hitSurface(e, drag.info, { withPlaced: true, exclude: drag.obj });
+      const h = hitSurface(e, drag.info, { withPlaced: !ROUND.has(tool.id), exclude: drag.obj });
       if (h) drag.obj.position.copy(drag.info.holder.worldToLocal(h.point.clone()));
       break;
     }
