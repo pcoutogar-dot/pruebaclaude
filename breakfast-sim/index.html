@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#f3e5d3" />
+  <title>Breakfast Simulator</title>
+</head>
+<body data-mood="golden">
+  <div id="app"></div>
+  <div id="vignette"></div>
+
+  <header id="hud">
+    <div class="pill clock"><span class="sun">☀︎</span><span id="time">07:32</span><span class="muted">· salida 08:15</span></div>
+    <div class="seg" id="mood">
+      <button data-mood="cutre">Piso compartido</button>
+      <button data-mood="golden" class="on">Mañana dorada</button>
+    </div>
+  </header>
+
+  <div id="msg"></div>
+
+  <footer id="bottom">
+    <div class="card">
+      <div id="hint">Desliza el dedo sobre la tostada para untar</div>
+      <div class="row">
+        <div class="bar"><i id="fill"></i></div>
+        <span id="pct">0%</span>
+      </div>
+      <div class="row actions">
+        <button id="reset">Otra tostada</button>
+        <button id="sound" aria-label="Sonido">♪</button>
+      </div>
+    </div>
+  </footer>
+
+  <div id="fade"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
