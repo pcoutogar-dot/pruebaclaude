@@ -102,3 +102,23 @@ body[data-mood="cutre"] #vignette {
   transition: opacity .45s ease;
 }
 #fade.on { opacity: 1; }
+
+/* iPhone en vertical: HUD compacto */
+@media (max-width: 520px) {
+  #hud { justify-content: center; }
+  .pill .muted { display: none; }
+  .pill { font-size: 14px; padding: 8px 13px; }
+  .seg button { font-size: 12px; padding: 7px 11px; }
+  #hint { font-size: 14px; }
+  .card { padding: 14px 16px 12px; border-radius: 24px; }
+  #msg { top: 16%; }
+}
+/* horizontal con poca altura (iPhone tumbado) */
+@media (max-height: 500px) {
+  #hud { top: max(10px, env(safe-area-inset-top)); padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  #bottom { justify-content: flex-end; padding-right: max(16px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); }
+  .card { width: 300px; padding: 12px 14px 10px; }
+  #hint { font-size: 13px; margin-bottom: 8px; }
+  .actions { margin-top: 8px; }
+  .actions button { padding: 8px 13px; font-size: 13px; }
+}

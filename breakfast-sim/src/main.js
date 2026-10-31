@@ -12,6 +12,7 @@ import * as P from './props.js';
 
 // ---------- Render ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+// iPhone tiene DPR 3: limitamos a 2 para ir fluidos sin perder nitidez
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
@@ -25,8 +26,8 @@ const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 60);
-const target = new THREE.Vector3(0.0, 0.5, 0.1);
-const camDir = new THREE.Vector3(0.48, 0.66, 0.92).normalize();
+const target = new THREE.Vector3();
+const camDir = new THREE.Vector3();
 let camDist = 8.6;
 
 const composer = new EffectComposer(renderer);
@@ -96,7 +97,8 @@ const sets = {};
   const hang = P.makePlant(0.7, true);
   hang.position.set(1.5, 2.39, -1.38);
   g.add(oats, beans, hang);
-  sets.golden = { group: shadows(g), toast, steam, spread: 'avocado' };
+  sets.golden = { group: shadows(g), toast, steam, spread: 'avocado',
+    items: { board, toast: toast.group, avo, knife, napkin, mug, steam, bowl, juice, daisies, plant } };
 }
 {
   // Piso compartido
@@ -127,9 +129,42 @@ const sets = {};
   jar.position.set(-1.4, 0, -0.6);
   jar.rotation.y = 0.5;
   g.add(jar);
-  sets.cutre = { group: shadows(g), toast, steam, spread: 'butter' };
+  sets.cutre = { group: shadows(g), toast, steam, spread: 'butter',
+    items: { towel, toast: toast.group, tub, knife, mug, steam, jar } };
 }
 scene.add(sets.golden.group, sets.cutre.group);
+
+// ---------- Dos composiciones: horizontal (3/4) y vertical (casi cenital) ----------
+// En vertical la tostada va en el centro y grande para el dedo; el resto se
+// coloca delante/detrás y se recorta en los bordes, como un flat-lay de Pinterest.
+const PORTRAIT = {
+  golden: {
+    napkin: [0.85, -0.85, 0.3], mug: [0.85, -0.85, -0.6], steam: [0.85, -0.85],
+    juice: [-0.8, -0.95], daisies: [-0.05, -1.3], bowl: [-0.75, 1.3], plant: [-1.7, -1.2],
+  },
+  cutre: { mug: [0.8, -0.85], steam: [0.8, -0.85], jar: [-0.8, -0.95, 0.5], tub: [0.9, 1.25, -0.3] },
+};
+const SHIFT = ['board', 'toast', 'avo', 'knife', 'towel']; // bajan hacia atrás en vertical
+const layout = [];
+for (const m of ['golden', 'cutre']) {
+  for (const [k, o] of Object.entries(sets[m].items)) {
+    const land = [o.position.x, o.position.z, o.rotation.y];
+    let port = PORTRAIT[m][k];
+    if (SHIFT.includes(k)) port = [land[0], land[1] - 0.3, land[2]];
+    if (port) layout.push({ o, land, port: [port[0], port[1], port[2] ?? land[2]] });
+  }
+}
+let portrait = null;
+function applyLayout(p) {
+  if (p === portrait) return;
+  portrait = p;
+  for (const { o, land, port } of layout) {
+    const [x, z, ry] = p ? port : land;
+    o.position.x = x;
+    o.position.z = z;
+    o.rotation.y = ry;
+  }
+}
 
 // ---------- Estado ----------
 let mood = 'golden';
@@ -333,26 +368,39 @@ const up = () => {
 el.addEventListener('pointerup', up);
 el.addEventListener('pointercancel', up);
 
-// ---------- Encuadre adaptado a móvil vertical ----------
+// ---------- Encuadre: vertical primero ----------
+const CAM = {
+  land: { target: new THREE.Vector3(0.0, 0.5, 0.1), dir: new THREE.Vector3(0.48, 0.66, 0.92).normalize() },
+  port: { target: new THREE.Vector3(0.0, 0.15, 0.2), dir: new THREE.Vector3(0.12, 1.45, 0.95).normalize() },
+};
 function resize() {
-  const a = innerWidth / innerHeight;
-  renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
+  const w = innerWidth, h = innerHeight, a = w / h;
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
   camera.aspect = a;
-  // mantenemos un ángulo horizontal mínimo para que quepa el desayuno en vertical
-  const minH = THREE.MathUtils.degToRad(44);
-  let vfov = 30;
-  const hNow = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(vfov) / 2) * a);
-  camDist = 8.6;
-  if (hNow < minH) {
-    vfov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(minH / 2) / a));
-    if (vfov > 58) {
-      camDist *= Math.tan(THREE.MathUtils.degToRad(vfov) / 2) / Math.tan(THREE.MathUtils.degToRad(58) / 2);
-      vfov = 58;
-    }
-    camDist *= 0.92;
+  const p = a < 0.9;
+  applyLayout(p);
+  const c = p ? CAM.port : CAM.land;
+  target.copy(c.target);
+  camDir.copy(c.dir);
+  if (p) {
+    // que quepan ~3.3 unidades de ancho (la tabla y algo de lo de alrededor)
+    camDist = 9;
+    const half = 3.3 / 2 / camDist;
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(half / a));
+  } else if (a > 1.8) {
+    // iPhone tumbado: más cerca y desplazado para dejar sitio a la tarjeta de la derecha
+    camDist = 7.4;
+    target.x += 1.3;
+    camera.fov = 30;
+  } else {
+    camDist = 8.6;
+    let vfov = 30;
+    const minH = THREE.MathUtils.degToRad(44);
+    const hNow = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(vfov) / 2) * a);
+    if (hNow < minH) vfov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(minH / 2) / a));
+    camera.fov = vfov;
   }
-  camera.fov = vfov;
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
