@@ -181,6 +181,16 @@ export class AvocadoPrep {
         const half = this.A.skins.includes(s) ? this.A : this.B;
         half.peeled++;
         this.falling.push({ s, t: 0, dir: Math.random() > 0.5 ? 1 : -1 });
+        // las últimas tiras (pegadas a la tabla) se sueltan solas
+        if (half.peeled >= K - 2) {
+          for (const r of half.skins) {
+            if (r.userData.gone) continue;
+            r.userData.gone = true;
+            r.material.transparent = true;
+            half.peeled++;
+            this.falling.push({ s: r, t: -0.25, dir: Math.random() > 0.5 ? 1 : -1 });
+          }
+        }
         ctx.sfx.scrape(0.02);
         setTimeout(() => ctx.sfx.stop(), 90);
         if (this.A.peeled + this.B.peeled >= K * 2) {
@@ -245,6 +255,7 @@ export class AvocadoPrep {
     for (let i = this.falling.length - 1; i >= 0; i--) {
       const f = this.falling[i];
       f.t += dt;
+      if (f.t < 0) continue;
       f.s.rotation.z += dt * 2.2 * f.dir;
       f.s.position.y -= dt * 0.9;
       f.s.position.x += dt * 0.6 * f.dir;

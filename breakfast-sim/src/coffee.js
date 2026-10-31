@@ -96,6 +96,7 @@ function makeKettle() {
   body.add(handle);
   body.position.set(-0.56, -0.4, 0);
   g.add(body);
+  g.rotation.y = -Math.PI / 2;
   return shadow(g);
 }
 
@@ -118,6 +119,7 @@ function makePitcher() {
   body.add(milk);
   body.position.set(-0.24, -0.4, 0);
   g.add(body);
+  g.rotation.y = -Math.PI / 2;
   g.userData.milk = milk;
   return shadow(g);
 }
@@ -186,9 +188,9 @@ export class CoffeeProc {
     this.puddles = new THREE.Group();
     this.drips = new THREE.Group();
     for (let i = 0; i < 5; i++) {
-      const d = new THREE.Mesh(new THREE.CapsuleGeometry(0.018, 0.12, 4, 8), M('#c9a37a', 0.25));
+      const d = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.07, 4, 8), M('#d2ae86', 0.2, { transparent: true, opacity: 0.85 }));
       const a = -0.6 + i * 0.35;
-      d.position.set(Math.cos(a) * 0.365, 0.55, Math.sin(a) * 0.365);
+      d.position.set(Math.cos(a) * 0.362, 0.6, Math.sin(a) * 0.362);
       d.visible = false;
       this.drips.add(d);
     }
@@ -274,7 +276,7 @@ export class CoffeeProc {
   }
 
   rest(o, p, dx, y, tilt) {
-    o.position.lerp(new THREE.Vector3(p.x + dx, y, p.z + 0.25), 0.15);
+    o.position.lerp(new THREE.Vector3(p.x + dx * 0.5, y, p.z + dx), 0.15);
     o.rotation.z += (tilt - o.rotation.z) * 0.15;
   }
 
