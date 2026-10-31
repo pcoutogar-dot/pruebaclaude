@@ -64,24 +64,39 @@ body[data-mood="cutre"] #vignette {
   display: flex; justify-content: center; padding: 0 16px; pointer-events: none;
 }
 .card { width: min(420px, 100%); border-radius: 26px; padding: 16px 18px 14px; }
-#hint { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 10px; }
-.row { display: flex; align-items: center; gap: 10px; }
-.bar { flex: 1; height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; }
-.bar i {
-  display: block; height: 100%; width: 0; border-radius: 99px;
-  background: linear-gradient(90deg, var(--accent-2), var(--accent));
-  transition: width .2s ease;
+.tabs { display: flex; gap: 4px; background: var(--line); border-radius: 999px; padding: 3px; margin-bottom: 10px; }
+.tab {
+  flex: 1; border: 0; background: transparent; color: var(--ink-soft);
+  font: 800 13px var(--font); padding: 7px 4px; border-radius: 999px; cursor: pointer;
+  display: flex; gap: 4px; align-items: center; justify-content: center; transition: all .2s ease;
 }
-#pct { font-weight: 800; font-size: 13px; color: var(--ink-soft); width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
-.actions { margin-top: 12px; justify-content: space-between; }
+.tab.on { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(110, 75, 40, 0.14); }
+#hint { font-weight: 650; font-size: 14px; line-height: 1.3; margin: 2px 2px 10px; color: var(--ink); min-height: 2.6em; }
+.tools {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 -18px; padding: 2px 18px 4px; scroll-snap-type: x proximity;
+}
+.tools::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; border: 1.5px solid transparent; background: rgba(255, 255, 255, 0.75);
+  color: var(--ink); font: 750 13px var(--font); border-radius: 16px; padding: 7px 12px 7px 8px;
+  display: flex; align-items: center; gap: 6px; cursor: pointer; scroll-snap-align: start;
+  box-shadow: 0 1px 4px rgba(110, 75, 40, 0.08); transition: all .15s ease;
+}
+.chip span { font-size: 18px; }
+.chip.on { background: #fff; border-color: var(--accent); box-shadow: 0 3px 12px rgba(233, 160, 122, 0.35); }
+.chip:active { transform: scale(0.95); }
+.row { display: flex; align-items: center; gap: 10px; }
+.actions { margin-top: 10px; gap: 8px; }
 .actions button {
-  border: 0; font: 800 14px var(--font); color: var(--ink); cursor: pointer;
-  background: #fff; border-radius: 999px; padding: 10px 16px;
+  border: 0; font: 800 13px var(--font); color: var(--ink); cursor: pointer;
+  background: #fff; border-radius: 999px; padding: 9px 14px;
   box-shadow: 0 2px 10px rgba(110, 75, 40, 0.12);
   transition: transform .15s ease;
 }
 .actions button:active { transform: scale(0.95); }
-#sound { width: 40px; padding: 10px 0; }
+#reset { margin-right: auto; }
+#sound { width: 38px; padding: 9px 0; }
 #sound.off { opacity: 0.45; text-decoration: line-through; }
 
 #msg {
@@ -109,8 +124,9 @@ body[data-mood="cutre"] #vignette {
   .pill .muted { display: none; }
   .pill { font-size: 14px; padding: 8px 13px; }
   .seg button { font-size: 12px; padding: 7px 11px; }
-  #hint { font-size: 14px; }
-  .card { padding: 14px 16px 12px; border-radius: 24px; }
+  #hint { font-size: 13px; }
+  .card { padding: 12px 14px 12px; border-radius: 24px; }
+  .tools { margin: 0 -14px; padding: 2px 14px 4px; }
   #msg { top: 16%; }
 }
 /* horizontal con poca altura (iPhone tumbado) */
@@ -118,7 +134,11 @@ body[data-mood="cutre"] #vignette {
   #hud { top: max(10px, env(safe-area-inset-top)); padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
   #bottom { justify-content: flex-end; padding-right: max(16px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); }
   .card { width: 300px; padding: 12px 14px 10px; }
-  #hint { font-size: 13px; margin-bottom: 8px; }
-  .actions { margin-top: 8px; }
-  .actions button { padding: 8px 13px; font-size: 13px; }
+  #hint { font-size: 12px; margin-bottom: 6px; min-height: 0; }
+  .tabs { margin-bottom: 6px; }
+  .tab { padding: 5px 2px; font-size: 12px; }
+  .chip { padding: 5px 10px 5px 6px; font-size: 12px; }
+  .actions { margin-top: 6px; }
+  .actions button { padding: 7px 11px; font-size: 12px; }
+  .card { width: 330px; }
 }

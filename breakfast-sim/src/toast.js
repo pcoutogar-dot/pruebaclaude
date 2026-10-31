@@ -182,86 +182,149 @@ export class Toast {
     this.flush();
   }
 
-  // pinta un trazo entre dos coordenadas uv
+  // Guarda el estado antes de un trazo (para "Deshacer")
+  snapshot() {
+    const cs = [this.cColor, this.cHeight, this.cRough, this.cPaint].map((c) => {
+      const x = c.getContext('2d');
+      return [x, x.getImageData(0, 0, c.width, c.height)];
+    });
+    return () => {
+      for (const [x, d] of cs) x.putImageData(d, 0, 0);
+      this.dirty = true;
+    };
+  }
+
+  // Pinta un trazo entre dos coordenadas uv. La dirección y la velocidad del
+  // dedo cambian el resultado: vetas del cuchillo, capa fina si vas rápido,
+  // grumos si vas despacio. No hay "untado perfecto".
   paint(u0, v0, u1, v1, spread) {
     const x0 = u0 * CW, y0 = (1 - v0) * CW, x1 = u1 * CW, y1 = (1 - v1) * CW;
     const d = Math.hypot(x1 - x0, y1 - y0);
-    const step = 10;
+    if (spread === 'honey') {
+      this.drizzle(x0, y0, x1, y1);
+      this.dirty = true;
+      return;
+    }
+    const ang = Math.atan2(y1 - y0, x1 - x0);
+    const thick = Math.max(0.45, Math.min(1.15, 1.2 - d / 70));
+    const step = 9;
     const n = Math.max(1, Math.ceil(d / step));
-    for (let i = 0; i <= n; i++) {
+    for (let i = 1; i <= n; i++) {
       const t = i / n;
-      this.stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, spread);
+      this.stamp(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, spread, ang, thick);
     }
     this.dirty = true;
   }
 
-  stamp(x, y, spread) {
-    const c = this.cColor.getContext('2d');
-    const hh = this.cHeight.getContext('2d');
-    const ro = this.cRough.getContext('2d');
-    const p = this.cPaint.getContext('2d');
-    const k = HW / CW, R = 64, r = Math.random;
-
-    c.save();
-    this.pathOn(c, CW);
-    c.clip();
-    hh.save();
-    this.pathOn(hh, HW);
-    hh.clip();
-    ro.save();
-    this.pathOn(ro, HW);
-    ro.clip();
-
-    if (spread === 'avocado') {
-      const g = c.createRadialGradient(x, y, 0, x, y, R);
-      g.addColorStop(0, 'rgba(158,196,86,0.95)');
-      g.addColorStop(0.7, 'rgba(146,186,76,0.8)');
-      g.addColorStop(1, 'rgba(146,186,76,0)');
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(x, y, R, 0, 7);
-      c.fill();
-      const cols = ['#d4e08a', '#b6cf68', '#7ea544', '#e3e8a6', '#5f8a33', '#c2d873'];
-      for (let i = 0; i < 9; i++) {
-        const a = r() * 6.28, dd = r() * R * 0.75, s = 3 + r() * 9;
-        c.globalAlpha = 0.5 + r() * 0.5;
-        c.fillStyle = cols[(r() * cols.length) | 0];
-        c.beginPath();
-        c.ellipse(x + Math.cos(a) * dd, y + Math.sin(a) * dd, s, s * (0.5 + r() * 0.5), r() * 3, 0, 7);
-        c.fill();
-      }
-      c.globalAlpha = 1;
-      const hg = hh.createRadialGradient(x * k, y * k, 0, x * k, y * k, R * k);
-      hg.addColorStop(0, 'rgba(235,235,235,0.5)');
-      hg.addColorStop(1, 'rgba(235,235,235,0)');
-      hh.fillStyle = hg;
-      hh.fillRect(0, 0, HW, HW);
-      for (let i = 0; i < 4; i++) {
-        hh.fillStyle = `rgba(255,255,255,${0.3 + r() * 0.4})`;
-        hh.beginPath();
-        hh.arc((x + (r() - 0.5) * R) * k, (y + (r() - 0.5) * R) * k, (3 + r() * 6) * k, 0, 7);
-        hh.fill();
-      }
-      ro.fillStyle = 'rgba(100,100,100,0.35)';
-    } else {
-      // mantequilla barata: fina, brillante y un poco triste
-      const g = c.createRadialGradient(x, y, 0, x, y, R);
-      g.addColorStop(0, 'rgba(255,232,150,0.22)');
-      g.addColorStop(1, 'rgba(255,232,150,0)');
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(x, y, R, 0, 7);
-      c.fill();
-      ro.fillStyle = 'rgba(70,70,70,0.25)';
+  clipAll(fn) {
+    const c = this.cColor.getContext('2d'), hh = this.cHeight.getContext('2d'), ro = this.cRough.getContext('2d');
+    for (const [x, S] of [[c, CW], [hh, HW], [ro, HW]]) {
+      x.save();
+      this.pathOn(x, S);
+      x.clip();
     }
-    ro.beginPath();
-    ro.arc(x * k, y * k, R * k * 0.9, 0, 7);
-    ro.fill();
+    fn(c, hh, ro);
     c.restore();
     hh.restore();
     ro.restore();
+  }
 
-    const mk = MW / CW;
+  drizzle(x0, y0, x1, y1) {
+    const k = HW / CW;
+    this.clipAll((c, hh, ro) => {
+      c.lineCap = hh.lineCap = ro.lineCap = 'round';
+      const w = 7 + Math.random() * 3;
+      c.strokeStyle = 'rgba(214,138,30,0.75)';
+      c.lineWidth = w;
+      c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+      c.strokeStyle = 'rgba(255,226,150,0.6)';
+      c.lineWidth = w * 0.3;
+      c.beginPath(); c.moveTo(x0 - 1.5, y0 - 1.5); c.lineTo(x1 - 1.5, y1 - 1.5); c.stroke();
+      hh.strokeStyle = 'rgba(200,200,200,0.6)';
+      hh.lineWidth = w * k;
+      hh.beginPath(); hh.moveTo(x0 * k, y0 * k); hh.lineTo(x1 * k, y1 * k); hh.stroke();
+      ro.strokeStyle = 'rgba(30,30,30,0.9)';
+      ro.lineWidth = w * k;
+      ro.beginPath(); ro.moveTo(x0 * k, y0 * k); ro.lineTo(x1 * k, y1 * k); ro.stroke();
+    });
+  }
+
+  stamp(x, y, spread, ang = 0, thick = 1) {
+    const k = HW / CW, r = Math.random;
+    const R = 54;
+    this.clipAll((c, hh, ro) => {
+      const ellipse = (ctx, cx, cy, rx, ry) => {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, ang, 0, 7);
+        ctx.fill();
+      };
+      if (spread === 'avocado' || spread === 'ricotta') {
+        const avo = spread === 'avocado';
+        c.save();
+        c.translate(x, y);
+        c.rotate(ang);
+        const g = c.createRadialGradient(0, 0, 0, 0, 0, R);
+        const base = avo ? '150,188,78' : '252,248,238';
+        g.addColorStop(0, `rgba(${base},${0.9 * thick})`);
+        g.addColorStop(0.7, `rgba(${base},${0.75 * thick})`);
+        g.addColorStop(1, `rgba(${base},0)`);
+        c.fillStyle = g;
+        c.beginPath();
+        c.ellipse(0, 0, R * 1.15, R * 0.8, 0, 0, 7);
+        c.fill();
+        // vetas del cuchillo en la dirección del trazo
+        for (let i = 0; i < 3; i++) {
+          const off = (r() - 0.5) * R * 1.2;
+          c.strokeStyle = avo
+            ? `rgba(${r() > 0.5 ? '205,222,130' : '108,145,52'},${0.35 * thick})`
+            : `rgba(${r() > 0.5 ? '255,255,255' : '214,206,190'},${0.5 * thick})`;
+          c.lineWidth = 1.5 + r() * 3;
+          c.beginPath();
+          c.moveTo(-R * 0.9, off);
+          c.lineTo(R * 0.9, off + (r() - 0.5) * 4);
+          c.stroke();
+        }
+        c.restore();
+        if (avo) {
+          // tropezones: más cuanto más despacio untas
+          const cols = ['#d4e08a', '#b6cf68', '#7ea544', '#e3e8a6', '#5f8a33', '#c2d873'];
+          const chunks = Math.round(3 + thick * 7);
+          for (let i = 0; i < chunks; i++) {
+            const a = r() * 6.28, dd = r() * R * 0.75, s = 3 + r() * 9 * thick;
+            c.globalAlpha = 0.5 + r() * 0.5;
+            c.fillStyle = cols[(r() * cols.length) | 0];
+            c.beginPath();
+            c.ellipse(x + Math.cos(a) * dd, y + Math.sin(a) * dd, s, s * (0.5 + r() * 0.5), r() * 3, 0, 7);
+            c.fill();
+          }
+          c.globalAlpha = 1;
+        }
+        const hg = hh.createRadialGradient(x * k, y * k, 0, x * k, y * k, R * k);
+        hg.addColorStop(0, `rgba(235,235,235,${0.45 * thick})`);
+        hg.addColorStop(1, 'rgba(235,235,235,0)');
+        hh.fillStyle = hg;
+        ellipse(hh, x * k, y * k, R * k * 1.15, R * k * 0.8);
+        for (let i = 0; i < (avo ? 4 : 2); i++) {
+          hh.fillStyle = `rgba(255,255,255,${(0.3 + r() * 0.4) * thick})`;
+          hh.beginPath();
+          hh.arc((x + (r() - 0.5) * R) * k, (y + (r() - 0.5) * R) * k, (3 + r() * 6) * k, 0, 7);
+          hh.fill();
+        }
+        ro.fillStyle = avo ? 'rgba(100,100,100,0.35)' : 'rgba(150,150,150,0.3)';
+      } else {
+        // margarina barata: fina, brillante y un poco triste
+        const g = c.createRadialGradient(x, y, 0, x, y, R);
+        g.addColorStop(0, 'rgba(255,232,150,0.22)');
+        g.addColorStop(1, 'rgba(255,232,150,0)');
+        c.fillStyle = g;
+        c.beginPath();
+        c.arc(x, y, R, 0, 7);
+        c.fill();
+        ro.fillStyle = 'rgba(70,70,70,0.25)';
+      }
+      ellipse(ro, x * k, y * k, R * k, R * k * 0.75);
+    });
+    const p = this.cPaint.getContext('2d'), mk = MW / CW;
     p.fillStyle = '#000';
     p.beginPath();
     p.arc(x * mk, y * mk, R * mk * 0.85, 0, 7);

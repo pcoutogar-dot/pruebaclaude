@@ -43,6 +43,7 @@ export function makeMug({ fancy }) {
   coffee.position.y = 0.6;
   coffee.receiveShadow = true;
   g.add(coffee);
+  g.userData.coffee = coffee;
   g.scale.setScalar(1.05);
   return g;
 }
@@ -168,43 +169,14 @@ export function makeKnife({ fancy }) {
   return g;
 }
 
-// ---------- Bol de yogur con frutos rojos y granola ----------
+// ---------- Bol (vacío: el jugador vierte el yogur y decora) ----------
 export function makeBowl() {
   const g = new THREE.Group();
   const prof = [[0, 0], [0.24, 0], [0.29, 0.02], [0.46, 0.2], [0.55, 0.38], [0.53, 0.4],
     [0.45, 0.23], [0.27, 0.06], [0, 0.06]];
   g.add(mesh(lathe(prof), std('#fff', 0.35, { map: speckleTexture('#c9dbe3', '#4f6470', 900, 11) })));
-  const yog = mesh(new THREE.CircleGeometry(0.5, 48), std('#fbf7f0', 0.4));
-  yog.rotation.x = -Math.PI / 2;
-  yog.position.y = 0.33;
-  g.add(yog);
-  const r = rng(91);
-  const blue = std('#3d3f73', 0.45);
-  const rasp = std('#d4435c', 0.6, { bumpMap: noiseBump(3, 3000, [2, 4]), bumpScale: 2 });
-  const gran = std('#b98348', 0.9);
-  const place = (o, rad, y) => {
-    const a = r() * 6.28, d = Math.sqrt(r()) * rad;
-    o.position.set(Math.cos(a) * d, y, Math.sin(a) * d);
-    g.add(o);
-  };
-  for (let i = 0; i < 26; i++) {
-    const o = mesh(new THREE.DodecahedronGeometry(0.035 + r() * 0.03, 0), gran);
-    o.rotation.set(r() * 3, r() * 3, r() * 3);
-    o.position.set(-0.15 + (r() - 0.5) * 0.4, 0.35, (r() - 0.5) * 0.6);
-    g.add(o);
-  }
-  for (let i = 0; i < 11; i++) place(mesh(new THREE.SphereGeometry(0.055, 20, 14), blue), 0.38, 0.37);
-  for (let i = 0; i < 4; i++) {
-    const o = mesh(new THREE.IcosahedronGeometry(0.075, 2), rasp);
-    o.scale.y = 1.15;
-    place(o, 0.3, 0.39);
-  }
-  // hojita de menta
-  const mint = mesh(new THREE.SphereGeometry(0.07, 16, 8), std('#5f9a4a', 0.5));
-  mint.scale.set(1, 0.15, 0.55);
-  mint.position.set(0.12, 0.4, -0.1);
-  mint.rotation.y = 0.6;
-  g.add(mint);
+  g.userData.surfaceY = 0.3;
+  g.userData.surfaceR = 0.47;
   return g;
 }
 
