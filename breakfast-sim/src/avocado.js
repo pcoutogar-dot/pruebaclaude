@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { AVO } from './props.js';
 import { avocadoFleshTexture, noiseBump } from './textures.js';
 import { CANNON } from './physics.js';
+import { Skin } from './skin.js';
 
 const K = 6;
 // radio del aguacate a lo largo de su eje (interpolando el perfil)
@@ -19,8 +20,13 @@ const lathe = (pts, segs, a, b, sx = 1) =>
   new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x * sx, y)), segs, a, b);
 
 const skinMat = new THREE.MeshStandardMaterial({
-  color: '#344a20', roughness: 0.85, bumpMap: noiseBump(8, 6000, [1, 2.5]), bumpScale: 3, side: THREE.DoubleSide,
+  color: '#344a20', roughness: 0.9, bumpMap: noiseBump(8, 6000, [1, 2.5]), bumpScale: 3, side: THREE.DoubleSide,
 });
+// por dentro, la piel del aguacate es verde clarito
+skinMat.onBeforeCompile = (sh) => {
+  sh.fragmentShader = sh.fragmentShader.replace('#include <color_fragment>',
+    '#include <color_fragment>\n if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.55, 0.68, 0.28);');
+};
 const underMat = new THREE.MeshStandardMaterial({ color: '#93bd4e', roughness: 0.45 });
 const fleshTex = avocadoFleshTexture();
 const hollowTex = avocadoFleshTexture(true);
@@ -29,16 +35,8 @@ const sliceMat = new THREE.MeshStandardMaterial({ color: '#6f9a3a', roughness: 0
 function half(withPit) {
   const wrap = new THREE.Group();
   const inner = new THREE.Group();
-  const skins = [];
-  for (let i = 0; i < K; i++) {
-    const m = new THREE.Mesh(lathe(AVO, 6, (i * Math.PI) / K, Math.PI / K), skinMat.clone());
-    m.castShadow = m.receiveShadow = true;
-    m.userData.skin = true;
-    m.userData.phi0 = (i * Math.PI) / K;
-    m.userData.orig = m.geometry.attributes.position.array.slice();
-    skins.push(m);
-    inner.add(m);
-  }
+  const skin = new Skin(AVO, skinMat);
+  inner.add(skin.mesh, skin.strip);
   const under = new THREE.Mesh(lathe(AVO, 36, 0, Math.PI, 0.96), underMat);
   under.castShadow = true;
   inner.add(under);
@@ -66,7 +64,7 @@ function half(withPit) {
   wrap.add(inner);
   const slices = new THREE.Group();
   wrap.add(slices);
-  return { wrap, inner, skins, face, faceMat, pit, slices, peeled: 0 };
+  return { wrap, inner, skin, under, face, faceMat, pit, slices };
 }
 
 export class AvocadoPrep {
@@ -84,9 +82,7 @@ export class AvocadoPrep {
     this.A = half(true);
     this.B = half(false);
     this.group.add(this.A.wrap, this.B.wrap);
-    this.bending = new Map(); // tiras de piel que se están doblando (maleables)
     this.loose = []; // trozos sueltos con física (piel, hueso)
-    this.queue = []; // tiras que se sueltan solas con un pequeño retraso
     this.reset();
   }
 
@@ -98,22 +94,13 @@ export class AvocadoPrep {
     this.slices = 0;
     this.pitDrag = null;
     this.peelDrag = null;
-    this.bending.clear();
-    this.queue.length = 0;
     for (const it of this.loose) {
       this.physics.remove(it);
       it.mesh.removeFromParent();
     }
     this.loose.length = 0;
     for (const h of [this.A, this.B]) {
-      h.peeled = 0;
-      h.skins.forEach((s) => {
-        s.visible = true;
-        s.userData.gone = false;
-        s.geometry.attributes.position.array.set(s.userData.orig);
-        s.geometry.attributes.position.needsUpdate = true;
-        s.geometry.computeVertexNormals();
-      });
+      h.skin.reset();
       h.faceMat.map = fleshTex;
       h.faceMat.needsUpdate = true;
       h.slices.clear();
@@ -202,18 +189,16 @@ export class AvocadoPrep {
       this.pitDrag = { hist: [] };
       ctx.sfx.plop();
     }
-    if (step === 'peel' && h.object.userData.skin && !h.object.userData.gone && this.flipT >= 1) {
-      // coges una tira: el borde que tocas es el que se levanta
-      const s = h.object;
-      const local = s.parent.worldToLocal(h.point.clone());
-      const phi = Math.atan2(local.x, local.z);
-      const mid = s.userData.phi0 + Math.PI / K / 2;
-      const b = this.bending.get(s) || { th: 0, v: 0 };
-      b.fromStart = phi < mid; // tocando cerca del inicio → la bisagra está al final
-      b.target = 0;
-      this.bending.set(s, b);
-      this.peelDrag = { s, b, x: e.clientX, y: e.clientY };
-      ctx.sfx.plop();
+    if (step === 'peel' && this.state === 'pitless' && this.flipT >= 1) {
+      const sk = h.object.userData.skin;
+      if (sk) {
+        const half = sk === this.A.skin ? this.A : this.B;
+        const q = sk.paramOf(half.inner.worldToLocal(h.point.clone()));
+        if (sk.begin(q)) {
+          this.peelDrag = { half, sk, q };
+          ctx.sfx.plop(0.6, 1.4);
+        }
+      }
     }
     if (step === 'slice' && this.peeled) this.sliceStart = { e: [e.clientX, e.clientY], h };
     return true;
@@ -254,12 +239,20 @@ export class AvocadoPrep {
         if (this.pitDrag.hist.length > 6) this.pitDrag.hist.shift();
       }
     } else if (step === 'peel' && this.peelDrag) {
-      // cuanto más tiras, más se dobla la piel desde el borde (blandita)
+      // la tira crece por donde pasa el dedo (sobre la piel o sobre la carne ya pelada)
       const pd = this.peelDrag;
-      const pull = Math.hypot(e.clientX - pd.x, e.clientY - pd.y);
-      pd.b.target = Math.min(2.3, pull / 85);
-      ctx.sfx.scrape(Math.min(0.01, d * 0.0004));
-      if (pull > 190) this.detach(pd.s, ctx, dx, dy);
+      const h = ctx.cast(e, [pd.sk.mesh, pd.half.under]);
+      if (h) {
+        const q = pd.sk.paramOf(pd.half.inner.worldToLocal(h.point.clone()));
+        const sp = Math.hypot((q.phi - pd.q.phi) * 0.4, q.y - pd.q.y);
+        pd.sk.extend(q, sp);
+        pd.q = q;
+        ctx.sfx.scrape(Math.min(0.012, sp * 0.08));
+        // un tirón muy brusco rompe la tira
+        if (sp > 0.28) this.finishStrip(ctx, dx, dy);
+      }
+      const f = ctx.planePoint(e, this.home.y + 0.55);
+      if (f && this.peelDrag) pd.sk.setFinger(pd.half.inner.worldToLocal(f));
     } else if (step === 'slice' && this.sliceStart) {
       this.acc += d;
     }
@@ -273,11 +266,7 @@ export class AvocadoPrep {
       else this.A.pit.position.set(0, 0.36, 0);
       this.pitDrag = null;
     }
-    if (step === 'peel' && this.peelDrag) {
-      // si sueltas antes de tiempo, la piel vuelve a su sitio con un pequeño rebote
-      this.peelDrag.b.target = 0;
-      this.peelDrag = null;
-    }
+    if (step === 'peel' && this.peelDrag) this.finishStrip(ctx, 0, 0);
     if (step === 'slice' && this.sliceStart && this.acc > 40) {
       const h = this.sliceStart.h;
       let o = h.object, half = this.A;
@@ -327,65 +316,44 @@ export class AvocadoPrep {
     ctx.chime();
   }
 
-  // la tira se despega: deja de estar unida y cae con física real
-  detach(s, ctx, dx = 0, dy = 0) {
-    if (s.userData.gone) return;
-    s.userData.gone = true;
-    this.bending.delete(s);
-    if (this.peelDrag?.s === s) this.peelDrag = null;
-    s.updateWorldMatrix(true, false);
-    const geo = s.geometry.clone().applyMatrix4(s.matrixWorld);
-    geo.computeBoundingBox();
-    const c = geo.boundingBox.getCenter(new THREE.Vector3());
-    const size = geo.boundingBox.getSize(new THREE.Vector3());
-    geo.translate(-c.x, -c.y, -c.z);
-    geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, skinMat);
-    m.castShadow = m.receiveShadow = true;
-    m.position.copy(c);
-    this.debris.add(m);
-    s.visible = false;
-    const he = new CANNON.Vec3(Math.max(0.02, size.x / 2), Math.max(0.02, size.y / 2), Math.max(0.02, size.z / 2));
-    const it = this.physics.add(m, [[new CANNON.Box(he)]], { mass: 0.06, linearDamping: 0.35, angularDamping: 0.5, home: null });
-    it.body.velocity.set(dx * 0.02, 3 + Math.random() * 2, -dy * 0.02);
-    it.body.angularVelocity.set((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 5);
-    this.loose.push(it);
-    const half = this.A.skins.includes(s) ? this.A : this.B;
-    half.peeled++;
-    ctx.sfx.plop();
-    // las últimas tiras, pegadas a la tabla, se sueltan solas
-    if (half.peeled >= K - 3) {
-      half.skins.forEach((r, i) => {
-        if (!r.userData.gone && !this.queue.some((q) => q.s === r)) this.queue.push({ s: r, t: 0.25 + i * 0.12 });
-      });
+  // la tira se separa y cae con física real (con la forma que tenía al soltarla)
+  finishStrip(ctx, dx = 0, dy = 0) {
+    const pd = this.peelDrag;
+    this.peelDrag = null;
+    if (!pd) return;
+    const geo0 = pd.sk.finish();
+    if (geo0) {
+      pd.half.inner.updateWorldMatrix(true, false);
+      const geo = geo0.applyMatrix4(pd.half.inner.matrixWorld);
+      geo.computeBoundingBox();
+      const c = geo.boundingBox.getCenter(new THREE.Vector3());
+      const size = geo.boundingBox.getSize(new THREE.Vector3());
+      geo.translate(-c.x, -c.y, -c.z);
+      geo.computeVertexNormals();
+      const m = new THREE.Mesh(geo, skinMat);
+      m.castShadow = m.receiveShadow = true;
+      m.position.copy(c);
+      this.debris.add(m);
+      const he = new CANNON.Vec3(Math.max(0.02, size.x / 2), Math.max(0.015, size.y / 4), Math.max(0.02, size.z / 2));
+      const it = this.physics.add(m, [[new CANNON.Box(he)]], { mass: 0.05, linearDamping: 0.4, angularDamping: 0.6, home: null });
+      it.body.velocity.set(dx * 0.015, 2 + Math.random() * 1.5, dy * 0.015);
+      it.body.angularVelocity.set((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 4);
+      this.loose.push(it);
+      ctx.sfx.plop(0.7, 1.2);
     }
-    if (this.A.peeled + this.B.peeled >= K * 2) {
+    // ¿queda poca piel a la vista? lo que está pegado a la tabla se suelta solo
+    const left = this.A.skin.remaining(this.A.inner.matrixWorld) + this.B.skin.remaining(this.B.inner.matrixWorld);
+    if (left < 0.12) {
+      this.A.skin.clearAll();
+      this.B.skin.clearAll();
       this.state = 'peeled';
       ctx.chime();
     }
   }
 
-  // dobla una tira alrededor de su borde (bisagra) según el ángulo th
-  bend(s, b) {
-    const pos = s.geometry.attributes.position, o = s.userData.orig, a = pos.array;
-    const P = AVO.length, phi0 = s.userData.phi0, dphi = Math.PI / K;
-    const hingePhi = b.fromStart ? phi0 + dphi : phi0;
-    const sh = Math.sin(hingePhi), ch = Math.cos(hingePhi);
-    for (let i = 0; i < pos.count; i++) {
-      const seg = Math.floor(i / P), j = i % P;
-      let f = seg / 6;
-      if (b.fromStart) f = 1 - f;
-      const r = AVO[j][0];
-      const hx = r * sh, hz = r * ch;
-      const vx = o[i * 3] - hx, vz = o[i * 3 + 2] - hz;
-      const beta = (b.fromStart ? -1 : 1) * b.th * Math.pow(f, 1.3);
-      const cb = Math.cos(beta), sb = Math.sin(beta);
-      a[i * 3] = hx + vx * cb - vz * sb;
-      a[i * 3 + 2] = hz + vx * sb + vz * cb;
-      a[i * 3 + 1] = o[i * 3 + 1];
-    }
-    pos.needsUpdate = true;
-    s.geometry.computeVertexNormals();
+  // fracción de piel pegada (para la interfaz)
+  get skinLeft() {
+    return (this.A.skin.remaining(this.A.inner.matrixWorld) + this.B.skin.remaining(this.B.inner.matrixWorld)) / 2;
   }
 
   update(dt, step, ctx) {
@@ -395,24 +363,7 @@ export class AvocadoPrep {
       this.flipT = Math.min(1, this.flipT + dt * 1.6);
       this.pose();
     }
-    // piel maleable: muelle amortiguado (se dobla con retraso y rebota un poco)
-    for (const [s, b] of this.bending) {
-      const k = 90, c = 9;
-      b.v += ((b.target - b.th) * k - b.v * c) * dt;
-      b.th += b.v * dt;
-      if (b.target === 0 && Math.abs(b.th) < 0.002 && Math.abs(b.v) < 0.01) {
-        b.th = 0;
-        this.bending.delete(s);
-      }
-      this.bend(s, b);
-    }
-    for (let i = this.queue.length - 1; i >= 0; i--) {
-      const q = this.queue[i];
-      q.t -= dt;
-      if (q.t <= 0) {
-        this.queue.splice(i, 1);
-        if (ctx) this.detach(q.s, ctx);
-      }
-    }
+    // la tira que estás pelando se levanta con un poco de retraso (blandita)
+    if (this.peelDrag) this.peelDrag.sk.deform(dt);
   }
 }

@@ -4,6 +4,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import './look.js';
 import './style.css';
 import { buildRoom } from './room.js';
 import { Toast } from './toast.js';
@@ -330,7 +331,7 @@ const STATIONS = {
         { id: 'cut', label: 'Cortar', done: () => avoPrep.cut, tools: [P_('avoCut', '🔪', 'Cuchillo', 'Desliza el dedo a lo largo del aguacate para abrirlo con el cuchillo.')] },
         { id: 'open', label: 'Abrir', done: () => avoPrep.open, tools: [P_('avoOpen', '🔄', 'Girar', 'Arrastra para girar y separar las dos mitades.')] },
         { id: 'pit', label: 'Hueso', done: () => avoPrep.pitless, tools: [P_('avoPit', '🟤', 'Hueso', 'Coge el hueso con el dedo y sácalo arrastrando.')] },
-        { id: 'peel', label: 'Pelar', done: () => avoPrep.peeled, tools: [P_('avoPeel', '🫳', 'Pelar', 'Pasa el dedo por la piel para pelarla tira a tira.')] },
+        { id: 'peel', label: 'Pelar', done: () => avoPrep.peeled, tools: [P_('avoPeel', '🫳', 'Pelar', 'Pon el dedo en la piel y tira: se pela por donde lo pases. Despacio sale una tira ancha; deprisa, fina. Un tirón brusco la rompe.')] },
         { id: 'slice', label: 'Laminar', done: () => false, tools: [P_('avoSliceCut', '🔪', 'Laminar', 'Desliza de lado a lado para cortar láminas. O déjalo así para machacarlo en la tostada.')] },
       ],
     },

@@ -10,7 +10,7 @@ const std = (color, roughness = 0.8, o = {}) => new THREE.MeshStandardMaterial({
 const MOODS = {
   golden: {
     bg: '#f3e5d3', wall: '#f4e7d7', cabinet: '#b7c2a2', knob: '#c9a46a', frame: '#fbf6ee',
-    sun: ['#ffd29a', 4.6], hemi: ['#fff1df', '#b8916f', 1.0], env: 0.3, exposure: 0.88,
+    sun: ['#ffd29a', 4.6], hemi: ['#fff1df', '#c9a08e', 1.0], env: 0.22, exposure: 0.86,
     sky: 1.7,
   },
   cutre: {
@@ -126,7 +126,8 @@ export function buildRoom(scene) {
   Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 6, bottom: -4, near: 2, far: 30 });
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
-  sun.shadow.radius = 4;
+  sun.shadow.radius = 6;
+  sun.shadow.intensity = 0.72; // sombras suaves, nunca negras
   scene.add(sun);
   scene.add(sun.target);
 
