@@ -1,3 +1,4 @@
+import { real } from './real.js';
 import * as TG from './texgen.js';
 // La cocina: paredes, ventana, encimera, armarios y la luz.
 // Dos "moods": 'cutre' (piso compartido) y 'golden' (mañana dorada).
@@ -27,23 +28,18 @@ export function buildRoom(scene) {
   // texturas realistas: color + relieve (normal map) + rugosidad
   const tex = {
     golden: {
-      wall: TG.plaster('#f4e7d7', { seed: 2 }),
-      counter: TG.oakWood(),
-      tiles: TG.tiles('zellige'),
+      wall: real('white_plaster_02', [3, 2]),
+      counter: real('oak_veneer_01', [5, 1.2]),
+      tiles: real('long_white_tiles', [3.5, 0.35]),
       sky: skyTexture('golden'),
     },
     cutre: {
-      wall: TG.plaster('#d2cec4', { seed: 8 }),
+      wall: real('worn_plaster_wall', [3, 2]),
       counter: TG.laminate(),
-      tiles: TG.tiles('bath', { N: 6 }),
+      tiles: real('interior_tiles', [3, 0.3]),
       sky: skyTexture('cutre'),
     },
   };
-  for (const k of ['golden', 'cutre']) {
-    const t = tex[k].tiles;
-    const rep = k === 'golden' ? [9, 1.4] : [10.5, 1.6];
-    for (const m of [t.map, t.normalMap, t.roughnessMap]) m.repeat.set(...rep);
-  }
 
   const wallMat = std('#ffffff', 0.95);
   const tileMat = std('#ffffff', 1);
@@ -101,7 +97,7 @@ export function buildRoom(scene) {
 
   // balda en la pared (solo en golden)
   const shelf = new THREE.Group();
-  const board = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 0.42), std('#ffffff', 1, (() => { const t = TG.oakWood({ W: 512, H: 256, planks: 1, repeat: [1, 1], light: 6 }); return { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap }; })()));
+  const board = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 0.42), std('#ffffff', 1, real('oak_veneer_01', [1.4, 0.2])));
   board.castShadow = board.receiveShadow = true;
   shelf.add(board);
   for (const x of [-1.1, 1.1]) {
@@ -183,8 +179,11 @@ export function buildRoom(scene) {
       m.normalMap = t.normalMap;
       m.roughnessMap = t.roughnessMap;
       m.roughness = 1;
-      m.normalScale.set(0.6, 0.6);
+      m.normalScale.set(1, 1);
     }
+    // tintes: pared crema y azulejo verde salvia en la mañana dorada
+    wallMat.color.set(M.wall);
+    tileMat.color.set(mood === 'golden' ? '#e3ecdc' : '#ffffff');
     skyMat.map = T.sky;
     skyMat.color.setScalar(M.sky);
     for (const m of [wallMat, counterMat, tileMat, skyMat]) m.needsUpdate = true;

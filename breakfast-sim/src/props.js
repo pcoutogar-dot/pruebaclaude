@@ -1,3 +1,4 @@
+import { real } from './real.js';
 import * as TG from './texgen.js';
 // Objetos del desayuno. Modelado procedural "cute-realista": formas redondeadas,
 // materiales mate tipo cerámica artesanal y colores pastel.
@@ -103,7 +104,7 @@ export function makeBoard() {
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + 1.5) / 3, (uv.getY(i) + 1) / 2);
   geo.rotateX(-Math.PI / 2);
   geo.translate(0, 0.015, 0);
-  const t = TG.oakWood({ W: 512, H: 512, planks: 1, repeat: [1, 1], light: 10 });
+  const t = real('olive_veneer', [0.7, 0.7]);
   const m = std('#ffffff', 1, { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap });
   const o = mesh(geo, m);
   o.userData.top = 0.08;
@@ -282,7 +283,7 @@ export function makeNapkin(color = '#efc7b4') {
   }
   geo.computeVertexNormals();
   geo.rotateX(-Math.PI / 2);
-  const m = new THREE.Mesh(geo, std('#fff', 1, (({ map, normalMap }) => { map.repeat.set(2, 2); normalMap.repeat.set(2, 2); return { map, normalMap }; })(TG.linen(color))));
+  const m = new THREE.Mesh(geo, std(color, 1, real('rough_linen', [1.2, 1.2])));
   m.receiveShadow = true;
   return m;
 }
