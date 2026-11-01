@@ -18,6 +18,7 @@ import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets } from './fx.js';
 import { noiseBump } from './textures.js';
+import * as TG from './texgen.js';
 
 // ---------- Render ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
@@ -191,8 +192,9 @@ physics.static(new CANNON.Box(new CANNON.Vec3(0.55, 0.035, 0.85)), 4.0, 0.032, 0
 // naranjas y limón en la zona de preparación: para jugar (y, más adelante, exprimir)
 function citrus(color, r, sy = 1) {
   const g = new THREE.Group();
-  const peel = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 24), new THREE.MeshStandardMaterial({
-    color, roughness: 0.55, bumpMap: noiseBump(4, 7000, [1, 2]), bumpScale: 2,
+  const t = TG.citrusPeel(color, { seed: Math.round(r * 100) });
+  const peel = new THREE.Mesh(new THREE.SphereGeometry(r, 48, 32), new THREE.MeshStandardMaterial({
+    map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, roughness: 1,
   }));
   peel.scale.y = sy;
   peel.castShadow = peel.receiveShadow = true;

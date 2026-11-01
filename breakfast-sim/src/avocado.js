@@ -1,3 +1,4 @@
+import * as TG from './texgen.js';
 // Preparar el aguacate, paso a paso y a mano:
 //   cortar → abrir girando → sacar el hueso → pelar a tiras → laminar (opcional)
 // Cada gesto es pequeño y "satisfactorio"; ninguno se puede hacer mal.
@@ -19,8 +20,10 @@ function radiusAt(t) {
 const lathe = (pts, segs, a, b, sx = 1) =>
   new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x * sx, y)), segs, a, b);
 
+const skinTex = TG.avocadoSkin();
+for (const t of [skinTex.map, skinTex.normalMap, skinTex.roughnessMap]) t.repeat.set(2, 3);
 const skinMat = new THREE.MeshStandardMaterial({
-  color: '#344a20', roughness: 0.9, bumpMap: noiseBump(8, 6000, [1, 2.5]), bumpScale: 3, side: THREE.DoubleSide,
+  map: skinTex.map, normalMap: skinTex.normalMap, roughnessMap: skinTex.roughnessMap, roughness: 1, side: THREE.DoubleSide,
 });
 // por dentro, la piel del aguacate es verde clarito
 skinMat.onBeforeCompile = (sh) => {

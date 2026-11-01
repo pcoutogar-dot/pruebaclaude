@@ -1,3 +1,4 @@
+import * as TG from './texgen.js';
 // La cocina: paredes, ventana, encimera, armarios y la luz.
 // Dos "moods": 'cutre' (piso compartido) y 'golden' (mañana dorada).
 import * as THREE from 'three';
@@ -23,33 +24,30 @@ const MOODS = {
 export function buildRoom(scene) {
   const g = new THREE.Group();
   scene.add(g);
+  // texturas realistas: color + relieve (normal map) + rugosidad
   const tex = {
     golden: {
-      wall: plasterTexture('#f4e7d7', 2),
-      counter: oakTexture(4),
-      tiles: tileTextures('zellige', 9),
+      wall: TG.plaster('#f4e7d7', { seed: 2 }),
+      counter: TG.oakWood(),
+      tiles: TG.tiles('zellige'),
       sky: skyTexture('golden'),
     },
     cutre: {
-      wall: plasterTexture('#d2cec4', 8),
-      counter: laminateTexture(5),
-      tiles: tileTextures('bath', 3),
+      wall: TG.plaster('#d2cec4', { seed: 8 }),
+      counter: TG.laminate(),
+      tiles: TG.tiles('bath', { N: 6 }),
       sky: skyTexture('cutre'),
     },
   };
-  tex.golden.tiles.map.wrapS = tex.golden.tiles.map.wrapT = THREE.RepeatWrapping;
-  tex.cutre.tiles.map.wrapS = tex.cutre.tiles.map.wrapT = THREE.RepeatWrapping;
   for (const k of ['golden', 'cutre']) {
     const t = tex[k].tiles;
-    t.bump.wrapS = t.bump.wrapT = THREE.RepeatWrapping;
-    const rep = k === 'golden' ? [9, 1.4] : [16, 2.4];
-    t.map.repeat.set(...rep);
-    t.bump.repeat.set(...rep);
+    const rep = k === 'golden' ? [9, 1.4] : [10.5, 1.6];
+    for (const m of [t.map, t.normalMap, t.roughnessMap]) m.repeat.set(...rep);
   }
 
   const wallMat = std('#ffffff', 0.95);
-  const tileMat = std('#ffffff', 0.22, { bumpScale: 2 });
-  const counterMat = std('#ffffff', 0.5);
+  const tileMat = std('#ffffff', 1);
+  const counterMat = std('#ffffff', 1);
   const edgeMat = std('#d7b089', 0.55);
   const cabMat = std('#b7c2a2', 0.7);
   const knobMat = std('#c9a46a', 0.3, { metalness: 0.8 });
@@ -103,7 +101,7 @@ export function buildRoom(scene) {
 
   // balda en la pared (solo en golden)
   const shelf = new THREE.Group();
-  const board = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 0.42), std('#d9b48a', 0.6, { map: oakTexture(14) }));
+  const board = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 0.42), std('#ffffff', 1, (() => { const t = TG.oakWood({ W: 512, H: 256, planks: 1, repeat: [1, 1], light: 6 }); return { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap }; })()));
   board.castShadow = board.receiveShadow = true;
   shelf.add(board);
   for (const x of [-1.1, 1.1]) {
@@ -180,15 +178,17 @@ export function buildRoom(scene) {
     const M = MOODS[mood], T = tex[mood];
     scene.background = new THREE.Color(M.bg);
     scene.fog = new THREE.Fog(M.bg, 14, 30);
-    wallMat.map = T.wall;
-    counterMat.map = T.counter;
-    tileMat.map = T.tiles.map;
-    tileMat.bumpMap = T.tiles.bump;
+    for (const [m, t] of [[wallMat, T.wall], [counterMat, T.counter], [tileMat, T.tiles]]) {
+      m.map = t.map;
+      m.normalMap = t.normalMap;
+      m.roughnessMap = t.roughnessMap;
+      m.roughness = 1;
+      m.normalScale.set(0.6, 0.6);
+    }
     skyMat.map = T.sky;
     skyMat.color.setScalar(M.sky);
     for (const m of [wallMat, counterMat, tileMat, skyMat]) m.needsUpdate = true;
     edgeMat.color.set(mood === 'golden' ? '#d7b089' : '#8f8d88');
-    counterMat.roughness = mood === 'golden' ? 0.55 : 0.35;
     cabMat.color.set(M.cabinet);
     knobMat.color.set(M.knob);
     frameMat.color.set(M.frame);

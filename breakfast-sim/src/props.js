@@ -1,3 +1,4 @@
+import * as TG from './texgen.js';
 // Objetos del desayuno. Modelado procedural "cute-realista": formas redondeadas,
 // materiales mate tipo cerámica artesanal y colores pastel.
 import * as THREE from 'three';
@@ -27,7 +28,7 @@ const MUG = [[0, 0], [0.27, 0], [0.31, 0.02], [0.33, 0.08], [0.35, 0.4], [0.36, 
 export function makeMug({ fancy }) {
   const g = new THREE.Group();
   const mat = fancy
-    ? std('#fff', 0.5, { map: speckleTexture('#e9dccb', '#6f5a48', 1600, 5, { color: '#c99c74', v: 0.14 }) })
+    ? std('#fff', 1, (({ map, normalMap, roughnessMap }) => ({ map, normalMap, roughnessMap, normalScale: new THREE.Vector2(0.4, 0.4) }))(TG.stoneware('#e9dccb', { band: { color: '#c99c74', v: 0.14 } })))
     : std('#f4f4f2', 0.18);
   g.add(mesh(lathe(MUG), mat));
   const handle = mesh(new THREE.TorusGeometry(0.15, 0.036, 16, 40, Math.PI), mat);
@@ -102,9 +103,8 @@ export function makeBoard() {
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) + 1.5) / 3, (uv.getY(i) + 1) / 2);
   geo.rotateX(-Math.PI / 2);
   geo.translate(0, 0.015, 0);
-  const t = oakTexture(44);
-  t.repeat.set(1, 1);
-  const m = std('#e8c49a', 0.55, { map: t });
+  const t = TG.oakWood({ W: 512, H: 512, planks: 1, repeat: [1, 1], light: 10 });
+  const m = std('#ffffff', 1, { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap });
   const o = mesh(geo, m);
   o.userData.top = 0.08;
   return o;
@@ -119,7 +119,7 @@ export function makeAvocadoHalf() {
   const inner = new THREE.Group();
   const skin = mesh(
     lathe(AVO, 48, 0, Math.PI),
-    std('#344a20', 0.85, { bumpMap: noiseBump(8, 6000, [1, 2.5]), bumpScale: 3, side: THREE.DoubleSide }),
+    std('#ffffff', 1, (() => { const t = TG.avocadoSkin(); t.map.repeat.set(2, 2); t.normalMap.repeat.set(2, 2); t.roughnessMap.repeat.set(2, 2); return { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, side: THREE.DoubleSide }; })()),
   );
   inner.add(skin);
   // cara del corte
@@ -174,7 +174,7 @@ export function makeBowl() {
   const g = new THREE.Group();
   const prof = [[0, 0], [0.24, 0], [0.29, 0.02], [0.46, 0.2], [0.55, 0.38], [0.53, 0.4],
     [0.45, 0.23], [0.27, 0.06], [0, 0.06]];
-  g.add(mesh(lathe(prof), std('#fff', 0.35, { map: speckleTexture('#c9dbe3', '#4f6470', 900, 11) })));
+  g.add(mesh(lathe(prof), std('#fff', 1, (({ map, normalMap, roughnessMap }) => ({ map, normalMap, roughnessMap, normalScale: new THREE.Vector2(0.4, 0.4) }))(TG.stoneware('#c9dbe3', { speck: '#4f6470', seed: 11 })))));
   g.userData.surfaceY = 0.3;
   g.userData.surfaceR = 0.47;
   return g;
@@ -282,7 +282,7 @@ export function makeNapkin(color = '#efc7b4') {
   }
   geo.computeVertexNormals();
   geo.rotateX(-Math.PI / 2);
-  const m = new THREE.Mesh(geo, std('#fff', 0.95, { map: linenTexture(color) }));
+  const m = new THREE.Mesh(geo, std('#fff', 1, (({ map, normalMap }) => { map.repeat.set(2, 2); normalMap.repeat.set(2, 2); return { map, normalMap }; })(TG.linen(color))));
   m.receiveShadow = true;
   return m;
 }
