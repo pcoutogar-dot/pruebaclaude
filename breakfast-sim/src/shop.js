@@ -33,7 +33,7 @@ export const ITEMS = {
 export const TOOL_ITEM = {
   avoCut: 'avocado', grind: 'beans', foamMilk: 'milk', instant: 'instant', ricotta: 'ricotta', honey: 'honey', drizzle: 'honey',
   egg: 'egg', radish: 'radish', tomato: 'tomato', sprouts: 'sprouts', chili: 'chili', sesame: 'sesame',
-  yogurt: 'yogurt', blueberry: 'blueberry', raspberry: 'raspberry', strawberry: 'strawberry',
+  yogurt: 'yogurt', yogurtPour: 'yogurt', blueberry: 'blueberry', raspberry: 'raspberry', strawberry: 'strawberry',
   banana: 'banana', granola: 'granola', mint: 'mint', cinnamon: 'cinnamon', butter: 'butter',
 };
 

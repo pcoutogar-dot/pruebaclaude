@@ -217,6 +217,34 @@ export class Toast {
     this.dirty = true;
   }
 
+  // Tostadora: calor uniforme con los bordes algo más dorados y las marcas
+  // horizontales de las resistencias
+  toasterHeat(dt) {
+    const c = this.cColor.getContext('2d'), a = Math.min(0.25, dt * 0.32);
+    c.save();
+    this.pathOn(c, CW);
+    c.clip();
+    c.globalCompositeOperation = 'multiply';
+    const g = c.createRadialGradient(CW / 2, CW / 2, CW * 0.15, CW / 2, CW / 2, CW * 0.62);
+    g.addColorStop(0, `rgba(214,160,96,${a})`);
+    g.addColorStop(1, `rgba(186,120,60,${a * 1.3})`);
+    c.fillStyle = g;
+    c.fillRect(0, 0, CW, CW);
+    // marcas suaves de las resistencias (apenas se intuyen)
+    for (let y = 40; y < CW; y += 78) {
+      const gy = c.createLinearGradient(0, y - 14, 0, y + 14);
+      gy.addColorStop(0, 'rgba(170,105,50,0)');
+      gy.addColorStop(0.5, `rgba(170,105,50,${a * 0.22})`);
+      gy.addColorStop(1, 'rgba(170,105,50,0)');
+      c.fillStyle = gy;
+      c.fillRect(0, y - 14 + Math.sin(y) * 4, CW, 28);
+    }
+    c.restore();
+    this.heatTotal += dt * 0.8;
+    this.crustMat.color.copy(this.crustRaw).lerp(this.crustBurnt, Math.min(0.85, this.heatTotal / 14));
+    this.dirty = true;
+  }
+
   // Guarda el estado antes de un trazo (para "Deshacer")
   snapshot() {
     const cs = [this.cColor, this.cHeight, this.cRough, this.cPaint].map((c) => {

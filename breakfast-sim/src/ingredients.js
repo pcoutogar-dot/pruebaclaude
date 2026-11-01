@@ -4,6 +4,86 @@
 // Pequeñas variaciones aleatorias de forma y tamaño: no hay dos iguales.
 import * as THREE from 'three';
 import { makeEggHalf } from './props.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+// ---------- Frutos rojos realistas ----------
+// Arándano: achatado, con pruina (polvillo azulado mate) y coronita de 5 puntas
+const blueMat = new THREE.MeshPhysicalMaterial({
+  color: '#3b4577', roughness: 0.62, sheen: 1, sheenColor: new THREE.Color('#a9b6dd'), sheenRoughness: 0.6,
+});
+const crownMat = new THREE.MeshStandardMaterial({ color: '#2a2438', roughness: 0.8 });
+const crownGeo = (() => {
+  const parts = [new THREE.TorusGeometry(0.014, 0.006, 6, 14).rotateX(Math.PI / 2)];
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    const c = new THREE.ConeGeometry(0.006, 0.016, 5);
+    c.rotateZ(-0.9).rotateY(-a).translate(Math.cos(a) * 0.016, 0.004, Math.sin(a) * 0.016);
+    parts.push(c);
+  }
+  return mergeGeometries(parts);
+})();
+function blueberry() {
+  const g = new THREE.Group();
+  const r = 0.05 * (0.85 + Math.random() * 0.3);
+  const b = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), blueMat);
+  b.scale.set(1, 0.82, 1);
+  b.position.y = r * 0.8;
+  g.add(b);
+  const c = new THREE.Mesh(crownGeo, crownMat);
+  c.position.y = r * 1.62;
+  c.scale.setScalar(r / 0.05);
+  g.add(c);
+  // cada arándano cae como cae: la corona no siempre mira arriba
+  g.rotation.set((Math.random() - 0.5) * 1.6, Math.random() * 6.3, (Math.random() - 0.5) * 1.6);
+  const wrap = new THREE.Group();
+  wrap.add(g);
+  return wrap;
+}
+
+// Frambuesa: dedal de drupas brillantes, hueca por debajo
+const raspGeo = (() => {
+  const parts = [];
+  const H = 0.12;
+  for (let k = 0; k < 7; k++) {
+    const t = k / 6;
+    const y = 0.012 + t * (H - 0.03);
+    const rr = 0.052 * Math.sin(Math.PI * (0.22 + 0.7 * t)) + 0.006;
+    const n = Math.max(4, Math.round(rr * 190));
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + (k % 2) * (Math.PI / n);
+      const d = new THREE.SphereGeometry(0.0175 * (0.9 + Math.random() * 0.2), 10, 8);
+      d.translate(Math.cos(a) * rr, y, Math.sin(a) * rr);
+      parts.push(d);
+    }
+  }
+  const top = new THREE.SphereGeometry(0.017, 10, 8).translate(0, H - 0.012, 0);
+  parts.push(top);
+  return mergeGeometries(parts);
+})();
+const raspMats = ['#c92f4d', '#d23a57', '#b8263f'].map((c) => new THREE.MeshPhysicalMaterial({
+  color: c, roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.4,
+}));
+const holeMat = new THREE.MeshStandardMaterial({ color: '#7d1c2c', roughness: 0.9 });
+function raspberry() {
+  const g = new THREE.Group();
+  const m = new THREE.Mesh(raspGeo, raspMats[(Math.random() * 3) | 0]);
+  g.add(m);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(0.03, 16), holeMat);
+  hole.rotation.x = Math.PI / 2;
+  hole.position.y = 0.006;
+  g.add(hole);
+  const s = 0.9 + Math.random() * 0.25;
+  g.scale.setScalar(s);
+  // a veces tumbada, a veces de pie
+  if (Math.random() < 0.4) {
+    g.rotation.z = Math.PI / 2;
+    g.position.y = 0.05 * s;
+  }
+  const wrap = new THREE.Group();
+  wrap.add(g);
+  wrap.rotation.y = Math.random() * 6.3;
+  return wrap;
+}
 
 const M = (color, roughness = 0.5, o = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...o });
 const mat = {
@@ -118,19 +198,8 @@ export const PLACE = {
     }
     return g;
   },
-  blueberry: () => {
-    const g = new THREE.Group();
-    g.add(sphereish(0.05, mat.blue, 0.9));
-    return g;
-  },
-  raspberry: () => {
-    const g = new THREE.Group();
-    const o = new THREE.Mesh(new THREE.IcosahedronGeometry(0.065 * v(0.1), 2), mat.rasp);
-    o.scale.y = 1.15;
-    o.position.y = 0.065;
-    g.add(o);
-    return g;
-  },
+  blueberry,
+  raspberry,
   strawberry: () => {
     const g = new THREE.Group();
     const o = crescent(0.17, 0.07, 0.02, mat.strawIn, mat.straw);

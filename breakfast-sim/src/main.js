@@ -14,11 +14,13 @@ import { makePlaced } from './ingredients.js';
 import { Shop } from './shop.js';
 import { AvocadoPrep } from './avocado.js';
 import { CoffeeProc, setMugLevel } from './coffee.js';
+import { ToasterProc } from './toaster.js';
 import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets } from './fx.js';
 import { noiseBump } from './textures.js';
 import * as TG from './texgen.js';
+import { real } from './real.js';
 
 // ---------- Render ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
@@ -110,7 +112,7 @@ const sets = {};
   coffee.material.roughness = 0.5;
   coffee.rotation.z = 0;
   coffee.material.needsUpdate = true;
-  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e2dccf', push: 0.55, size: [10, 15], capacity: 1500, height: true });
+  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e2dccf', push: 0.55, size: [10, 15], capacity: 2200, height: true });
   // superficie con relieve: el yogur a cucharadas tiene volumen
   const ysurf = new THREE.Mesh(
     new THREE.RingGeometry(0.0001, bowl.userData.surfaceR, 72, 24),
@@ -167,7 +169,7 @@ for (const s of Object.values(sets)) {
 // ---------- Zona de preparación (a la derecha de la encimera) ----------
 // Aquí se hacen los procesos (pelar, colar...) sin amontonar la mesa del desayuno.
 const AVO_ZONE = new THREE.Vector3(3.55, 0.065, 0.15);
-const COFFEE_ZONE = new THREE.Vector3(5.7, 0.02, -0.3);
+const COFFEE_ZONE = new THREE.Vector3(6.7, 0.02, -0.3);
 const prepBoard = P.makeBoard();
 prepBoard.scale.setScalar(0.8);
 prepBoard.position.set(4.0, 0, 0.55);
@@ -175,8 +177,23 @@ prepBoard.rotation.y = Math.PI / 2;
 const avoPrep = new AvocadoPrep({ physics, debris: sets.golden.group, home: AVO_ZONE });
 const zoneLight = new THREE.PointLight('#ffd9ad', 7, 7, 1.6);
 zoneLight.position.set(4.8, 2.3, 0.8);
-sets.golden.group.add(prepBoard, avoPrep.holder, zoneLight);
+const zoneLight2 = new THREE.PointLight('#ffd9ad', 6, 7, 1.6);
+zoneLight2.position.set(6.8, 2.3, 0.8);
+sets.golden.group.add(prepBoard, avoPrep.holder, zoneLight, zoneLight2);
 const coffeeProc = new CoffeeProc({ mug: sets.golden.mug, latte: sets.golden.latte, parent: sets.golden.group, droplets });
+
+// tostadora en la zona de preparación (con sitio alrededor)
+const toasterProc = new ToasterProc({
+  parent: sets.golden.group,
+  getToast: () => sets.golden.toast,
+  getHome: () => {
+    const e = homes.get(sets.golden.toast.group);
+    const [x, z, ry] = e ? (portrait ? e.port : e.land) : [0, 0, 0];
+    return { pos: new THREE.Vector3(x, sets.golden.items.board.userData.top * 0.9 + 0.005, z), ry };
+  },
+});
+toasterProc.obj.position.set(5.3, 0, -1.0);
+toasterProc.obj.scale.setScalar(1.6);
 
 // obstáculos físicos: tablas, taza, bol, vaso… (siguen a su objeto)
 physics.static(new CANNON.Box(new CANNON.Vec3(0.55, 0.035, 0.85)), 4.0, 0.032, 0.55);
@@ -192,9 +209,10 @@ physics.static(new CANNON.Box(new CANNON.Vec3(0.55, 0.035, 0.85)), 4.0, 0.032, 0
 // naranjas y limón en la zona de preparación: para jugar (y, más adelante, exprimir)
 function citrus(color, r, sy = 1) {
   const g = new THREE.Group();
-  const t = TG.citrusPeel(color, { seed: Math.round(r * 100) });
+  // piel escaneada de cítrico real (la naranja es la del limón con otro tono)
+  const t = real('citrus', [3, 2], { diff: sy > 1 ? 'citrus' : 'orange' });
   const peel = new THREE.Mesh(new THREE.SphereGeometry(r, 48, 32), new THREE.MeshStandardMaterial({
-    map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, roughness: 1,
+    map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, roughness: 1, normalScale: new THREE.Vector2(1.5, 1.5),
   }));
   peel.scale.y = sy;
   peel.castShadow = peel.receiveShadow = true;
@@ -209,7 +227,7 @@ function citrus(color, r, sy = 1) {
   g.add(leaf);
   return g;
 }
-for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 5.0, -1.05], ['#f6a33a', 0.33, 0.95, 5.65, -1.2], ['#f2d64a', 0.27, 1.25, 4.4, -1.15]]) {
+for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 8.0, -1.1], ['#f6a33a', 0.33, 0.95, 8.6, -0.85], ['#f2d64a', 0.27, 1.25, 8.25, -0.25]]) {
   const o = citrus(color, r, sy);
   o.position.set(x, r * sy + 0.02, z);
   o.rotation.z = (Math.random() - 0.5) * 0.4;
@@ -253,6 +271,28 @@ function moveKnife(point, dir) {
   const fwd = new THREE.Vector3(Math.cos(k.rotation.y), 0, -Math.sin(k.rotation.y));
   k.position.set(point.x - fwd.x * 0.6, point.y + 0.01, point.z - fwd.z * 0.6);
 }
+
+// tarro de yogur para verter (origen en el borde por donde cae)
+const yogPot = new THREE.Group();
+{
+  const body = new THREE.Group();
+  const cer = new THREE.MeshStandardMaterial({ color: '#f5efe6', roughness: 0.6 });
+  const pot = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.16, 0], [0.19, 0.02], [0.21, 0.32], [0.2, 0.33], [0.185, 0.04], [0, 0.04]].map(([x, y]) => new THREE.Vector2(x, y)), 36), cer);
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(0.207, 0.2, 0.12, 36, 1, true), new THREE.MeshStandardMaterial({ color: '#a9c4d8', roughness: 0.7 }));
+  label.position.y = 0.16;
+  const fill = new THREE.Mesh(new THREE.CircleGeometry(0.19, 28), new THREE.MeshStandardMaterial({ color: '#fbf8f1', roughness: 0.4 }));
+  fill.rotation.x = -Math.PI / 2;
+  fill.position.y = 0.28;
+  body.add(pot, label, fill);
+  body.position.set(-0.2, -0.32, 0);
+  yogPot.add(body);
+  yogPot.traverse((c) => c.isMesh && (c.castShadow = true));
+  yogPot.visible = false;
+  scene.add(yogPot);
+}
+const yogStream = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1, 12, 1, true), new THREE.MeshStandardMaterial({ color: '#fbf8f1', roughness: 0.4 }));
+yogStream.visible = false;
+scene.add(yogStream);
 
 const spoon = new THREE.Group();
 {
@@ -338,8 +378,15 @@ const STATIONS = {
       ],
     },
     {
-      id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 2.6, tools: [
-        T('heat', '🔥', 'Tostar', 'heat', H.heat),
+      id: 'toast', label: 'Tostada', icon: '🍞', surface: 'toast', width: 2.6, steps: [
+        {
+          id: 'toaster', label: 'Tostar', done: () => toasterProc.done, tools: [
+            P_('toasterUse', '🍞', 'Tostadora', 'Toca para meter el pan. Arrastra hacia abajo para bajar la palanca. Toca otra vez para que salte cuando te guste.'),
+            T('noToast', '⏭️', 'Sin tostar', 'skip', 'Pasar sin tostar.', { run: () => (toasterProc.state = 'skipped') }),
+          ],
+        },
+        {
+          id: 'dress', label: 'Preparar', done: () => false, tools: [
         T('avocado', '🥑', 'Aguacate', 'spread', 'Carga el cuchillo en el medio aguacate y úntalo: despacio deja tropezones, rápido queda cremoso.',
           { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
         T('ricotta', '🤍', 'Ricotta', 'spread', 'Carga el cuchillo en el tarro de ricotta y úntala a tu manera.'),
@@ -356,10 +403,13 @@ const STATIONS = {
         T('chili', '🌶️', 'Chile', 'sprinkle', H.sprinkle),
         T('sesame', '✨', 'Sésamo', 'sprinkle', H.sprinkle),
       ],
+        },
+      ],
     },
     {
       id: 'bowl', label: 'Bol', icon: '🥣', surface: 'bowl', width: 1.7, tools: [
-        T('yogurt', '🥄', 'Yogur', 'spoon', 'Toca para echar una cucharada de yogur. Arrastra para extenderlo con el dorso de la cuchara.'),
+        T('yogurtPour', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para verter el yogur del tarro: cae espeso y se va plegando. Muévete para repartirlo.'),
+        T('yogurt', '🥄', 'Cuchara', 'spoon', 'Toca para echar una cucharada. Arrastra para extender el yogur con el dorso de la cuchara.'),
         T('blueberry', '🫐', 'Arándanos', 'place', H.place),
         T('raspberry', '🍓', 'Frambuesa', 'place', H.place),
         T('strawberry', '🍓', 'Fresa', 'place', H.orient, { orient: true }),
@@ -417,6 +467,7 @@ const anims = [];
 function focusObject() {
   const s = sets[mood];
   if (station.id === 'avocado') return prepBoard; // cámara fija aunque lances el aguacate
+  if (station.id === 'toast' && mood === 'golden' && curStep()?.id === 'toaster') return toasterProc.obj;
   if (station.id === 'coffee' && mood === 'golden' && curStep()?.id === 'grind') return coffeeProc.grinder;
   return { toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[station.id];
 }
@@ -466,6 +517,11 @@ function renderUI() {
     b.onclick = () => {
       if (locked) {
         say('Aún no', locked);
+        return;
+      }
+      if (t.type === 'skip') {
+        t.run();
+        renderUI();
         return;
       }
       tool = t;
@@ -527,6 +583,12 @@ $('reset').addEventListener('click', () => {
   if (station.id === 'toast') {
     s.toast.reset();
     s.toast.placed.clear();
+    if (mood === 'golden') {
+      toasterProc.reset();
+      const h = toasterProc.getHome();
+      s.toast.group.position.copy(h.pos);
+      s.toast.group.rotation.set(0, h.ry, 0);
+    }
   } else if (station.id === 'bowl') {
     s.yogurt.reset();
     s.bowlPlaced.clear();
@@ -565,6 +627,12 @@ $('work').addEventListener('click', () => {
     }
     avoPrep.reset();
     coffeeProc.reset();
+    toasterProc.reset();
+    {
+      const h = toasterProc.getHome();
+      sets.golden.toast.group.position.copy(h.pos);
+      sets.golden.toast.group.rotation.set(0, h.ry, 0);
+    }
     setMugLevel(sets.cutre.mug, 0);
     for (const list of Object.values(STATIONS))
       for (const st of list) if (st.steps) st.steps.forEach((x) => (x.adv = false));
@@ -682,7 +750,7 @@ const grabY = (it) => Math.max(it.body.position.y, 0.9);
 function handleDown(e) {
   // procesos (aguacate, café) y café soluble
   if (tool && tool.type === 'proc') {
-    const proc = station.id === 'avocado' ? avoPrep : coffeeProc;
+    const proc = station.id === 'avocado' ? avoPrep : station.id === 'toast' ? toasterProc : coffeeProc;
     const step = curStep().id;
     if (step === 'art') undo.push(coffeeProc.snapshot());
     if (proc.down(step, e, procCtx)) {
@@ -744,6 +812,14 @@ function handleDown(e) {
         undo.push(s.toast.snapshot());
         drag = { kind: 'spread', uv: h.uv.clone(), point: h.point.clone() };
         moveKnife(h.point);
+        return;
+      }
+    } else if (tool.type === 'jarpour') {
+      const h = hitSurface(e, info);
+      if (h) {
+        if (!pay()) return;
+        undo.push(s.yogurt.snapshot());
+        drag = { kind: 'jarpour', uv: h.uv.clone(), point: h.point.clone(), info };
         return;
       }
     } else if (tool.type === 'spoon') {
@@ -836,6 +912,14 @@ el.addEventListener('pointermove', (e) => {
         moveKnife(h.point, new THREE.Vector3(dx, 0, dy));
         sfx.scrape(d * 0.0012);
         updateKnifeBlob();
+      }
+      break;
+    }
+    case 'jarpour': {
+      const h = hitSurface(e, drag.info);
+      if (h) {
+        drag.uv = h.uv.clone();
+        drag.point = h.point.clone();
       }
       break;
     }
@@ -973,6 +1057,7 @@ const FOCUS_DIR = new THREE.Vector3(0.12, 1.75, 0.8).normalize();
 const want = { target: new THREE.Vector3(), dir: new THREE.Vector3(), dist: 8, fov: 30 };
 const cur = { target: new THREE.Vector3(0, 0.3, 0), dir: OV.land.dir.clone(), dist: 8, fov: 30 };
 const tmp = new THREE.Vector3();
+let tween = null, lastFocus = undefined;
 const fovFor = (width, dist, a) => THREE.MathUtils.radToDeg(2 * Math.atan(width / 2 / dist / a));
 
 function computeView() {
@@ -1068,6 +1153,37 @@ function loop() {
   physics.step(dt);
   droplets.update(dt);
   if (s.yogurt) s.yogurt.relax(dt);
+  // tarro de yogur: sigue al dedo, se inclina al verter y cae un chorro espeso que se pliega
+  const potOn = station.id === 'bowl' && tool?.id === 'yogurtPour';
+  yogStream.visible = false;
+  if (!potOn) yogPot.visible = false;
+  else {
+    const pouring = drag?.kind === 'jarpour';
+    // en reposo: apoyado en la encimera, al lado del bol (sin taparlo)
+    const bowlTop = s.bowl.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(portrait ? -0.95 : 0.95, 0.34, -0.15));
+    const goal = pouring ? drag.point.clone().add(new THREE.Vector3(0, 0.62, 0)) : bowlTop;
+    if (!yogPot.visible) {
+      yogPot.visible = true;
+      yogPot.position.copy(goal);
+    }
+    yogPot.position.lerp(goal, Math.min(1, dt * 10));
+    yogPot.rotation.z += ((pouring ? -1.9 : 0) - yogPot.rotation.z) * Math.min(1, dt * 8);
+    if (pouring && Math.abs(yogPot.rotation.z + 1.9) < 0.4 && !s.yogurt.full) {
+      // el punto de caída "dibuja" pequeños pliegues
+      const fold = new THREE.Vector2(Math.sin(time * 7) * 0.025, Math.cos(time * 5.3) * 0.02);
+      s.yogurt.ribbon(drag.uv.clone().add(fold), dt);
+      const top = yogPot.position, bot = drag.point;
+      const h = top.y - bot.y;
+      yogStream.visible = true;
+      yogStream.scale.set(1 + Math.sin(time * 9) * 0.12, h, 1 + Math.cos(time * 7) * 0.12);
+      yogStream.position.set(top.x + Math.sin(time * 7) * 0.01, bot.y + h / 2, top.z);
+      sfx.scrape(0.003);
+    }
+    if (s.yogurt.full && pouring && !drag.warned) {
+      drag.warned = true;
+      say('El bol está lleno 🥣', 'Ahora decora a tu gusto');
+    }
+  }
   // cuchara: visible con la herramienta de yogur; hace "dip" al soltar la cucharada
   const spoonOn = station.id === 'bowl' && tool?.id === 'yogurt';
   if (!spoonOn) spoon.visible = false;
@@ -1088,6 +1204,8 @@ function loop() {
     s.mug.position.z += (tz - s.mug.position.z) * Math.min(1, dt * 4);
     s.steam.position.set(s.mug.position.x, 0.62, s.mug.position.z);
     avoPrep.update(dt, station.id === 'avocado' ? curStep().id : null, procCtx);
+    toasterProc.update(dt, procCtx);
+    if (toasterProc.state !== 'toasting') sfx.sizzle(false);
     coffeeProc.update(dt, inCoffee ? curStep().id : null, procCtx);
     s.items.avo.visible = avoPrep.open;
     // el medio aguacate de la mesa refleja lo que has hecho (sin hueso, pelado)
@@ -1130,11 +1248,30 @@ function loop() {
   s.toast.flush();
 
   computeView();
-  const k = 1 - Math.exp(-dt * 3.5);
-  cur.target.lerp(want.target, k);
-  cur.dir.lerp(want.dir, k).normalize();
-  cur.dist += (want.dist - cur.dist) * k;
-  cur.fov += (want.fov - cur.fov) * k;
+  // viaje de cámara entre estaciones: aceleración y frenada suaves, y se aleja
+  // un poco a mitad de camino (arco) para no atravesar objetos
+  const focusNow = focusObject();
+  if (focusNow !== lastFocus) {
+    lastFocus = focusNow;
+    tween = { t: 0, from: { target: cur.target.clone(), dir: cur.dir.clone(), dist: cur.dist, fov: cur.fov } };
+    yawT = pitchT = 0;
+  }
+  if (tween) {
+    tween.t = Math.min(1, tween.t + dt / 1.3);
+    const e = tween.t < 0.5 ? 4 * tween.t ** 3 : 1 - (-2 * tween.t + 2) ** 3 / 2;
+    const f = tween.from;
+    cur.target.copy(f.target).lerp(want.target, e);
+    cur.dir.copy(f.dir).lerp(want.dir, e).normalize();
+    cur.dist = f.dist + (want.dist - f.dist) * e + Math.sin(tween.t * Math.PI) * Math.max(f.dist, want.dist) * 0.22;
+    cur.fov = f.fov + (want.fov - f.fov) * e;
+    if (tween.t >= 1) tween = null;
+  } else {
+    const k = 1 - Math.exp(-dt * 3);
+    cur.target.lerp(want.target, k);
+    cur.dir.lerp(want.dir, k).normalize();
+    cur.dist += (want.dist - cur.dist) * k;
+    cur.fov += (want.fov - cur.fov) * k;
+  }
   if (Math.abs(camera.fov - cur.fov) > 0.01) {
     camera.fov = cur.fov;
     camera.updateProjectionMatrix();
@@ -1165,7 +1302,7 @@ function loop() {
 loop();
 
 window.__bs = {
-  scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad,
+  scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
   get station() { return station; },
-  settled: () => cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
+  settled: () => !tween && cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
 };

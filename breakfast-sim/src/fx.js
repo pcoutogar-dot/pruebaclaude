@@ -80,8 +80,8 @@ export class Ripples {
       for (const w of this.waves) {
         const d = Math.hypot(x - w.x, y - w.y), front = w.t * 0.45;
         if (d > front) continue;
-        const fade = Math.exp(-w.t * 2.6) * Math.exp(-d * 4);
-        z += w.amp * fade * Math.sin(d * 55 - w.t * 22);
+        const fade = Math.exp(-w.t * 1.8) * Math.exp(-d * 3);
+        z += w.amp * fade * Math.sin(d * 28 - w.t * 9); // ondas amplias y lentas (sin "vibrar")
       }
       // el borde no se mueve (la taza lo sujeta)
       a[i * 3 + 2] = z * Math.min(1, (this.R - Math.hypot(x, y)) * 20);

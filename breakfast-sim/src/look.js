@@ -13,8 +13,9 @@ C.lights_physical_pars_fragment = C.lights_physical_pars_fragment.replace(
   '\treflectedLight.directDiffuse += saturate( ( dot( geometryNormal, directLight.direction ) + 0.4 ) / 1.4 ) * directLight.color * BRDF_Lambert( material.diffuseColor );',
 );
 
+// los líquidos (material.defines.NO_MATTE) conservan su brillo
 C.roughnessmap_fragment += `
-#ifndef USE_TRANSMISSION
+#if !defined( USE_TRANSMISSION ) && !defined( NO_MATTE )
   roughnessFactor = max( roughnessFactor, 0.55 );
 #endif
 `;

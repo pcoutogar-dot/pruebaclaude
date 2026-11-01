@@ -16,11 +16,11 @@ function load(file, srgb) {
 }
 
 // nombre de Poly Haven → { map, normalMap, roughnessMap } con su repetición
-export function real(name, repeat = [1, 1]) {
+export function real(name, repeat = [1, 1], { diff = name, nor = name, rough = name } = {}) {
   const out = {
-    map: load(`${name}_diff`, true).clone(),
-    normalMap: load(`${name}_nor_gl`, false).clone(),
-    roughnessMap: load(`${name}_rough`, false).clone(),
+    map: load(`${diff}_diff`, true).clone(),
+    normalMap: load(`${nor}_nor_gl`, false).clone(),
+    roughnessMap: load(`${rough}_rough`, false).clone(),
   };
   for (const t of Object.values(out)) {
     t.repeat.set(...repeat);

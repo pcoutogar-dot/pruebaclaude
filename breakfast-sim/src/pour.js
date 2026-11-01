@@ -109,6 +109,26 @@ export class PourSurface {
     this.dirty = true;
   }
 
+  // chorro espeso desde el tarro: cae continuo y se pliega, luego se asienta
+  ribbon(uv, dt) {
+    const [x, y] = this.px(uv);
+    const n = Math.round(dt * 380);
+    for (let i = 0; i < n && !this.full; i++) {
+      const a = Math.random() * 6.283, d = Math.random() * 10;
+      this.p.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, r: 14 + Math.random() * 6, age: 0, cx: x, cy: y });
+    }
+    // lo nuevo empuja a lo anterior: el yogur se va extendiendo por el bol
+    const k = dt * 60 * 0.9;
+    for (const q of this.p) {
+      const dx = q.x - x, dy = q.y - y, d = Math.hypot(dx, dy) + 0.001;
+      const f = (k * 48) / (d + 30);
+      q.x += (dx / d) * f;
+      q.y += (dy / d) * f;
+    }
+    this.contain();
+    this.dirty = true;
+  }
+
   // el pegote se asienta: se expande un poco y se aplana
   relax(dt) {
     let moved = false;

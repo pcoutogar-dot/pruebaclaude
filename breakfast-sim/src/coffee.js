@@ -190,16 +190,30 @@ export class CoffeeProc {
     }));
     this.spill.rotation.x = -Math.PI / 2;
     this.puddles = new THREE.Group();
+    // desbordamiento: regueros por fuera de la taza + charco brillante irregular
+    const liquid = M('#8f6040', 0.08, { transparent: true, opacity: 0.82 });
+    liquid.defines = { NO_MATTE: '' };
+    this.liquid = liquid;
     this.drips = new THREE.Group();
-    for (let i = 0; i < 5; i++) {
-      const d = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.07, 4, 8), M('#d2ae86', 0.2, { transparent: true, opacity: 0.85 }));
-      const a = -0.6 + i * 0.35;
-      d.position.set(Math.cos(a) * 0.362, 0.6, Math.sin(a) * 0.362);
-      d.visible = false;
-      this.drips.add(d);
-    }
+    this.rivulets = [-0.5, 0.15, 0.7].map((a) => {
+      const m = new THREE.Mesh(new THREE.BufferGeometry(), liquid);
+      m.userData.a = a + (Math.random() - 0.5) * 0.2;
+      m.visible = false;
+      this.drips.add(m);
+      return m;
+    });
     mug.add(this.drips);
-    parent.add(this.grinder, this.dripper, this.kettle, this.pitcher, this.water, this.milkStream, this.spill, this.puddles);
+    const blob = new THREE.Shape();
+    for (let i = 0; i <= 48; i++) {
+      const t = (i / 48) * Math.PI * 2;
+      const r = 1 + 0.16 * Math.sin(3 * t + 1) + 0.09 * Math.sin(5 * t + 2) + 0.05 * Math.sin(9 * t);
+      i ? blob.lineTo(Math.cos(t) * r, Math.sin(t) * r) : blob.moveTo(Math.cos(t) * r, Math.sin(t) * r);
+    }
+    this.puddle = new THREE.Mesh(new THREE.ShapeGeometry(blob, 48), liquid);
+    this.puddle.rotation.x = -Math.PI / 2;
+    this.puddle.receiveShadow = true;
+    this.puddle.visible = false;
+    parent.add(this.grinder, this.dripper, this.kettle, this.pitcher, this.water, this.milkStream, this.spill, this.puddles, this.puddle);
     this.reset();
   }
 
@@ -217,6 +231,7 @@ export class CoffeeProc {
     this.puddles.clear();
     this.drips.children.forEach((d) => (d.visible = false));
     this.spill.visible = false;
+    this.puddle.visible = false;
     this.latte.reset();
     this.setMix(0);
     this.grinder.userData.beans.scale.set(1, 1, 1);
@@ -273,14 +288,16 @@ export class CoffeeProc {
     this.kettle.visible = step === 'brew' && !this.brewed;
     this.pitcher.visible = step === 'foam' || step === 'art';
     this.spill.position.set(p.x, 0.012, p.z);
+    this.puddle.position.set(p.x, 0.035, p.z);
     if (!this.holding) {
-      if (this.kettle.visible) this.rest(this.kettle, p, 0.75, 1.25, -0.1);
-      if (this.pitcher.visible) this.rest(this.pitcher, p, 0.65, 0.95, 0);
+      // en reposo, apoyados sobre la encimera junto a la taza (no flotando)
+      if (this.kettle.visible) this.rest(this.kettle, p, 0.95, 0.42, 0);
+      if (this.pitcher.visible) this.rest(this.pitcher, p, 0.8, 0.42, 0);
     }
   }
 
   rest(o, p, dx, y, tilt) {
-    o.position.lerp(new THREE.Vector3(p.x + dx * 0.5, y, p.z + dx), 0.15);
+    o.position.lerp(new THREE.Vector3(p.x + dx, y, p.z + 0.35), 0.15);
     o.rotation.z += (tilt - o.rotation.z) * 0.15;
   }
 
@@ -326,7 +343,8 @@ export class CoffeeProc {
       return;
     }
     if ((step === 'brew' || step === 'art') && this.holding) {
-      const y = step === 'brew' ? MUG_TOP + 0.75 : MUG_TOP + 0.3;
+      // a una altura que no choca con la taza ni con el filtro
+      const y = step === 'brew' ? MUG_TOP + 0.8 : MUG_TOP + 0.55;
       const p = ctx.planePoint(e, y);
       if (p) this.tool.position.copy(p);
     }
@@ -386,8 +404,9 @@ export class CoffeeProc {
       const m = this.pitcher.userData.milk;
       if (this.holding) {
         this.foam = Math.min(1, this.foam + dt * 0.3);
-        m.position.y = 0.2 + this.foam * 0.12 + Math.sin(ctx.time * 30) * 0.004;
-        this.pitcher.position.x += Math.sin(ctx.time * 40) * 0.002;
+        // la leche sube suave al espumar (sin vibraciones)
+        m.position.y += (0.2 + this.foam * 0.12 - m.position.y) * Math.min(1, dt * 6);
+        m.scale.setScalar(1 + this.foam * 0.04);
         ctx.sfx.sizzle(true);
       } else ctx.sfx.sizzle(false);
     }
@@ -433,12 +452,35 @@ export class CoffeeProc {
 
   updateSpill() {
     const s = this.spilled;
+    // la servilleta se empapa poco a poco
     this.spill.visible = s > 0;
-    this.spill.scale.setScalar(0.55 + Math.min(0.6, s * 0.25));
-    this.drips.children.forEach((d, i) => {
-      d.visible = s > i * 0.25;
-      d.scale.y = 0.6 + Math.min(1.2, (s - i * 0.25) * 0.8);
+    this.spill.scale.setScalar(0.5 + Math.min(0.7, s * 0.3));
+    // regueros: bajan pegados a la pared de la taza y se ensanchan
+    const OUT = [[0.352, 0.7], [0.362, 0.66], [0.352, 0.4], [0.332, 0.08], [0.312, 0.02], [0.29, 0.0]];
+    this.rivulets.forEach((m, i) => {
+      const f = Math.min(1, Math.max(0, (s - i * 0.18) * 0.9));
+      m.visible = f > 0.02;
+      if (!m.visible) return;
+      const yEnd = 0.7 - 0.7 * f, pts = [];
+      for (let k = 0; k < OUT.length; k++) {
+        const [r, y] = OUT[k];
+        if (y >= yEnd) pts.push(new THREE.Vector2(r + 0.007, y));
+        else {
+          const [r0, y0] = OUT[k - 1];
+          const t = (y0 - yEnd) / (y0 - y);
+          pts.push(new THREE.Vector2(r0 + (r - r0) * t + 0.007, yEnd));
+          break;
+        }
+      }
+      pts.reverse();
+      const w = 0.07 + 0.16 * f;
+      m.geometry.dispose();
+      m.geometry = new THREE.LatheGeometry(pts, 6, m.userData.a - w / 2, w);
     });
+    // charco: aparece cuando el café llega a la base y se extiende
+    const pr = Math.max(0, s - 0.6);
+    this.puddle.visible = pr > 0;
+    this.puddle.scale.setScalar(0.36 + Math.min(0.22, pr * 0.18));
   }
 
   showStream(m, tip, floorY) {

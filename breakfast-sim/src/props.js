@@ -120,7 +120,7 @@ export function makeAvocadoHalf() {
   const inner = new THREE.Group();
   const skin = mesh(
     lathe(AVO, 48, 0, Math.PI),
-    std('#ffffff', 1, (() => { const t = TG.avocadoSkin(); t.map.repeat.set(2, 2); t.normalMap.repeat.set(2, 2); t.roughnessMap.repeat.set(2, 2); return { map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, side: THREE.DoubleSide }; })()),
+    std('#3f5a26', 1, { ...real('avocado_skin', [2, 2]), side: THREE.DoubleSide, normalScale: new THREE.Vector2(1.4, 1.4) }),
   );
   inner.add(skin);
   // cara del corte
