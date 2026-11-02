@@ -534,14 +534,117 @@ function renderUI() {
   $('work').style.display = table ? '' : 'none';
   $('reset').style.display = table ? 'none' : '';
   hint.textContent = tool ? tool.hint : station.hint;
+  if (uiReady) renderNav();
+  ghostSoon();
+}
+
+// ---------- Manita guía: enseña el gesto que toca, sobre el objeto ----------
+// Aparece al llegar a un paso o al cambiar de herramienta, y vuelve si llevas
+// un rato sin tocar nada.
+const GESTURE = {
+  avoCut: 'swipeH', avoOpen: 'dragDown', avoPit: 'dragUp', avoPeel: 'dragUp', avoSliceCut: 'swipeV',
+  grind: 'circle', brew: 'holdCircle', foamMilk: 'hold', pourMilk: 'hold', instant: 'tap',
+};
+function gestureFor(t) {
+  if (!t) return null;
+  if (t.id === 'toasterUse') return toasterProc.state === 'in' ? 'dragDown' : toasterProc.done ? null : 'tap';
+  if (GESTURE[t.id]) return GESTURE[t.id];
+  return { spread: 'zigzag', heat: 'hold', place: 'tap', sprinkle: 'swipeH', jarpour: 'hold', spoon: 'tap', smear: 'swipeV', dust: 'swipeH', drizzle: 'zigzag' }[t.type] || null;
+}
+const ghost = { el: null, kind: null, t: 0, wait: 0.8, idle: 0, cycles: 0 };
+function ghostFor(kind) {
+  ghost.kind = kind;
+  ghost.t = 0;
+  ghost.cycles = 0;
+}
+function ghostSoon() {
+  ghost.wait = 1.0;
+  ghost.kind = null;
+}
+function ghostPath(kind, t) {
+  // t en [0,1): devuelve desplazamiento en px, escala y opacidad
+  const s = Math.sin(t * Math.PI), e = t < 0.15 ? t / 0.15 : t > 0.85 ? (1 - t) / 0.15 : 1;
+  switch (kind) {
+    case 'swipeH': return { x: -70 + 140 * t, y: 0, k: 1, o: e };
+    case 'swipeV': return { x: 0, y: -55 + 110 * t, k: 1, o: e };
+    case 'dragDown': return { x: 0, y: -40 + 100 * t, k: 1, o: e };
+    case 'dragUp': return { x: 10, y: 30 - 100 * t, k: 1, o: e };
+    case 'zigzag': return { x: -60 + 120 * t, y: Math.sin(t * Math.PI * 4) * 28, k: 1, o: e };
+    case 'circle': return { x: Math.cos(t * Math.PI * 4) * 45, y: Math.sin(t * Math.PI * 4) * 45, k: 1, o: e };
+    case 'holdCircle': return { x: Math.cos(t * Math.PI * 2) * 22, y: Math.sin(t * Math.PI * 2) * 22, k: 0.88, o: e };
+    case 'hold': return { x: 0, y: 0, k: 0.82 + 0.08 * Math.cos(t * Math.PI * 6), o: e };
+    case 'tap': return { x: 0, y: -12 * s * (t < 0.5 ? 1 : 0), k: t > 0.45 && t < 0.6 ? 0.8 : 1, o: e };
+    default: return { x: 0, y: 0, k: 1, o: 0 };
+  }
+}
+function ghostAnchor() {
+  let o = focusObject();
+  if (tool?.type === 'spread' && station.id === 'toast') o = sets[mood].toast.group;
+  if (tool?.id === 'avoPit') o = avoPrep.A.pit;
+  if (!o) return null;
+  const v = o.getWorldPosition(new THREE.Vector3());
+  v.y += 0.35;
+  v.project(camera);
+  return { x: ((v.x + 1) / 2) * innerWidth, y: ((1 - v.y) / 2) * innerHeight };
+}
+function updateGhost(dt) {
+  const el = $('ghost');
+  ghost.idle += dt;
+  if (ghost.wait > 0) {
+    ghost.wait -= dt;
+    if (ghost.wait <= 0 && !tween) ghostFor(gestureFor(tool));
+    else if (ghost.wait <= 0) ghost.wait = 0.3;
+  }
+  // si llevas un rato sin tocar nada, te lo vuelve a enseñar
+  if (!ghost.kind && ghost.idle > 7 && !drag) {
+    ghost.idle = 0;
+    ghostFor(gestureFor(tool));
+  }
+  const a = ghost.kind && !drag ? ghostAnchor() : null;
+  if (!a) {
+    el.style.opacity = 0;
+    return;
+  }
+  ghost.t += dt / 1.6;
+  if (ghost.t >= 1) {
+    ghost.t = 0;
+    if (++ghost.cycles >= 2) ghost.kind = null;
+  }
+  const g = ghostPath(ghost.kind, ghost.t);
+  el.style.opacity = g.o * 0.95;
+  el.style.transform = `translate(${a.x + g.x - 12}px, ${a.y + g.y - 6}px) scale(${g.k})`;
+}
+
+// ---------- Navegación: flechas ‹ ›, deslizar y "dónde estoy" ----------
+function stationIndex() {
+  return STATIONS[mood].indexOf(station);
+}
+function navigate(dir) {
+  const list = STATIONS[mood], i = stationIndex() + dir;
+  if (i < 0 || i >= list.length) return;
+  selectStation(list[i]);
+  sfx.plop(0.5, 1.5);
+}
+function renderNav() {
+  const list = STATIONS[mood], i = stationIndex();
+  $('whereName').textContent = `${station.icon} ${station.label}`;
+  $('whereDots').innerHTML = list.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
+  $('navPrev').hidden = i <= 0;
+  $('navNext').hidden = i >= list.length - 1;
+  // si ya has terminado lo de esta estación, la flecha "siguiente" late para invitarte
+  const finished = station.steps ? station.steps.slice(0, -1).every((x) => x.done()) && !station.steps[station.steps.length - 1].tools.length : false;
+  $('navNext').classList.toggle('pulse', finished || (station.steps && station.steps.every((x, k) => k === station.steps.length - 1 || x.done()) && station.stepIdx === station.steps.length - 1));
 }
 
 function selectStation(st) {
   station = st;
+  ghostFor(null);
   if (st.steps) st.stepIdx = firstOpenStep(st);
   const list = curTools();
   tool = list.find((t) => !t.lock?.()) || null;
   renderUI();
+  renderNav();
+  ghostSoon();
 }
 
 function applyMood(m) {
@@ -647,6 +750,8 @@ $('work').addEventListener('click', () => {
   }, 900);
 });
 $('fridgeBtn').addEventListener('click', () => shop.open('fridge'));
+$('navPrev').addEventListener('click', () => navigate(-1));
+$('navNext').addEventListener('click', () => navigate(1));
 const soundBtn = $('sound');
 soundBtn.addEventListener('click', () => {
   sfx.on = !sfx.on;
@@ -729,8 +834,12 @@ function startGrab(it) {
   sfx.plop(0.8, 1.3);
 }
 
+let flick = null;
 el.addEventListener('pointerdown', (e) => {
   sfx.ensure();
+  flick = { x: e.clientX, y: e.clientY, t: performance.now() };
+  ghost.kind = null;
+  ghost.idle = 0;
   el.setPointerCapture(e.pointerId);
   lastX = e.clientX;
   lastY = e.clientY;
@@ -1009,6 +1118,15 @@ el.addEventListener('pointermove', (e) => {
   }
 });
 const up = (e) => {
+  // deslizar rápido en horizontal sobre una zona vacía = cambiar de estación
+  if (drag?.kind === 'orbit' && flick && e) {
+    const dx = e.clientX - flick.x, dy = e.clientY - flick.y, dtm = performance.now() - flick.t;
+    if (dtm < 600 && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+      yawT = pitchT = 0;
+      navigate(dx < 0 ? 1 : -1);
+    }
+  }
+  ghost.idle = 0;
   pendingGrab = null;
   if (drag?.kind === 'proc') drag.proc.up(drag.step, e, procCtx);
   if (drag?.kind === 'grab') physics.release(drag.it);
@@ -1296,6 +1414,7 @@ function loop() {
     if (t === 1) anims.splice(i, 1);
   }
 
+  updateGhost(dt);
   composer.render();
   requestAnimationFrame(loop);
 }

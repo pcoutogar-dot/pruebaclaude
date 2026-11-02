@@ -219,3 +219,36 @@ body.late #time { color: #c0563a; }
 .step.done i { background: var(--accent-2); color: #fff; }
 .step.locked { opacity: 0.45; cursor: default; }
 .chip.locked { opacity: 0.6; }
+
+/* ---------- Navegación: flechas, dónde estoy y manita guía ---------- */
+.where {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  top: calc(max(14px, env(safe-area-inset-top)) + 96px);
+  flex-direction: column; gap: 3px; padding: 6px 16px 7px; pointer-events: none;
+}
+.where b { font-size: 15px; }
+#whereDots { display: flex; gap: 5px; }
+#whereDots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+#whereDots i.on { background: var(--accent); width: 16px; border-radius: 4px; }
+.nav {
+  position: fixed; top: 42%; width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7); background: var(--glass);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(110, 75, 40, 0.18);
+  font: 400 34px/1 var(--font); color: var(--ink); cursor: pointer;
+  display: grid; place-items: center; padding: 0 0 4px; transition: transform .15s ease, opacity .25s ease;
+}
+.nav:active { transform: scale(0.9); }
+.nav.prev { left: max(10px, env(safe-area-inset-left)); }
+.nav.next { right: max(10px, env(safe-area-inset-right)); }
+.nav[hidden] { display: none; }
+.nav.pulse { animation: navpulse 1.4s ease-in-out infinite; }
+@keyframes navpulse { 0%, 100% { box-shadow: 0 6px 20px rgba(110,75,40,.18); } 50% { box-shadow: 0 0 0 8px rgba(233,160,122,.35); } }
+#ghost {
+  position: fixed; left: 0; top: 0; font-size: 38px; pointer-events: none; opacity: 0;
+  filter: drop-shadow(0 4px 6px rgba(60, 40, 20, 0.35)); will-change: transform, opacity;
+}
+@media (max-height: 500px) {
+  .where { top: max(10px, env(safe-area-inset-top)); }
+  .nav { top: 38%; }
+}

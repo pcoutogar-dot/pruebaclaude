@@ -70,6 +70,8 @@ export class ToasterProc {
   down(step, e, ctx) {
     this.last = [e.clientX, e.clientY];
     this.acc = 0;
+    // solo responde si tocas la tostadora o el pan (el resto sirve para moverte)
+    if (!ctx.cast(e, [this.obj, this.getToast().group])) return false;
     if (this.anim) return true;
     if (this.state === 'idle') {
       // meter el pan: vuela de la tabla a la ranura
