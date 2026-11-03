@@ -104,6 +104,10 @@ export class AvocadoPrep {
       it.mesh.removeFromParent();
     }
     this.loose.length = 0;
+    if (this.halfBodies) {
+      for (const b of this.halfBodies) this.physics.world.removeBody(b);
+      this.halfBodies = null;
+    }
     for (const h of [this.A, this.B]) {
       h.skin.reset();
       h.faceMat.map = fleshTex;
@@ -198,7 +202,7 @@ export class AvocadoPrep {
       const sk = h.object.userData.skin;
       if (sk) {
         const half = sk === this.A.skin ? this.A : this.B;
-        const q = sk.paramOf(half.inner.worldToLocal(h.point.clone()));
+        const q = sk.uvOf(half.inner.worldToLocal(h.point.clone()));
         if (sk.begin(q)) {
           this.peelDrag = { half, sk, q };
           ctx.sfx.plop(0.6, 1.4);
@@ -248,13 +252,13 @@ export class AvocadoPrep {
       const pd = this.peelDrag;
       const h = ctx.cast(e, [pd.sk.mesh, pd.half.under]);
       if (h) {
-        const q = pd.sk.paramOf(pd.half.inner.worldToLocal(h.point.clone()));
-        const sp = Math.hypot((q.phi - pd.q.phi) * 0.4, q.y - pd.q.y);
+        const q = pd.sk.uvOf(pd.half.inner.worldToLocal(h.point.clone()));
+        const sp = q.distanceTo(pd.q);
         pd.sk.extend(q, sp);
         pd.q = q;
         ctx.sfx.scrape(Math.min(0.012, sp * 0.08));
-        // un tirón muy brusco rompe la tira
-        if (sp > 0.28) this.finishStrip(ctx, dx, dy);
+        // un tirón muy brusco arranca la tira de golpe
+        if (sp > 0.3) this.finishStrip(ctx, dx, dy);
       }
       const f = ctx.planePoint(e, this.home.y + 0.55);
       if (f && this.peelDrag) pd.sk.setFinger(pd.half.inner.worldToLocal(f));
@@ -326,33 +330,60 @@ export class AvocadoPrep {
     const pd = this.peelDrag;
     this.peelDrag = null;
     if (!pd) return;
-    const geo0 = pd.sk.finish();
-    if (geo0) {
-      pd.half.inner.updateWorldMatrix(true, false);
-      const geo = geo0.applyMatrix4(pd.half.inner.matrixWorld);
-      geo.computeBoundingBox();
-      const c = geo.boundingBox.getCenter(new THREE.Vector3());
-      const size = geo.boundingBox.getSize(new THREE.Vector3());
-      geo.translate(-c.x, -c.y, -c.z);
-      geo.computeVertexNormals();
-      const m = new THREE.Mesh(geo, skinMat);
-      m.castShadow = m.receiveShadow = true;
-      m.position.copy(c);
-      this.debris.add(m);
-      const he = new CANNON.Vec3(Math.max(0.02, size.x / 2), Math.max(0.015, size.y / 4), Math.max(0.02, size.z / 2));
-      const it = this.physics.add(m, [[new CANNON.Box(he)]], { mass: 0.05, linearDamping: 0.4, angularDamping: 0.6, home: null });
-      it.body.velocity.set(dx * 0.015, 2 + Math.random() * 1.5, dy * 0.015);
-      it.body.angularVelocity.set((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 4);
-      this.loose.push(it);
-      ctx.sfx.plop(0.7, 1.2);
-    }
-    // ¿queda poca piel a la vista? lo que está pegado a la tabla se suelta solo
-    const left = this.A.skin.remaining(this.A.inner.matrixWorld) + this.B.skin.remaining(this.B.inner.matrixWorld);
-    if (left < 0.12) {
-      this.A.skin.clearAll();
-      this.B.skin.clearAll();
+    const piece = pd.sk.finish();
+    if (piece) this.dropPiece(pd.half, piece, dx, dy);
+    ctx.sfx.plop(0.7, 1.2);
+    // ¿queda poca piel a la vista? el resto se desprende de una vez
+    const left = (this.A.skin.remaining(this.A.inner.matrixWorld) + this.B.skin.remaining(this.B.inner.matrixWorld)) / 2;
+    if (left < 0.3) {
+      for (const h of [this.A, this.B]) {
+        const rest = h.skin.dropRest();
+        if (rest) this.dropPiece(h, rest, 0, 0);
+      }
       this.state = 'peeled';
       ctx.chime();
+    }
+  }
+
+  // un trozo de piel que cae con física: su cuerpo son varias esferas que siguen
+  // su forma, así rueda, se apoya y se asienta de forma natural
+  dropPiece(half, piece, dx, dy) {
+    half.inner.updateWorldMatrix(true, false);
+    const M = half.inner.matrixWorld;
+    const geo = piece.geo.applyMatrix4(M);
+    const pts = piece.pts.map((p) => p.clone().applyMatrix4(M));
+    const c = pts.reduce((a, p) => a.add(p), new THREE.Vector3()).divideScalar(pts.length);
+    geo.translate(-c.x, -c.y, -c.z);
+    geo.computeVertexNormals();
+    const mat = half.skin.stripMat.clone();
+    mat.alphaMap = piece.alpha;
+    mat.onBeforeCompile = skinMat.onBeforeCompile;
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = m.receiveShadow = true;
+    m.position.copy(c);
+    this.debris.add(m);
+    // hasta 8 esferas repartidas por el trozo
+    const step = Math.max(1, Math.floor(pts.length / 8));
+    const shapes = [];
+    for (let i = 0; i < pts.length && shapes.length < 8; i += step) shapes.push([new CANNON.Sphere(0.045), pts[i].clone().sub(c)]);
+    const it = this.physics.add(m, shapes, { mass: 0.08, linearDamping: 0.25, angularDamping: 0.5, home: null });
+    // sale hacia fuera del aguacate (no se queda metida dentro)
+    const out = c.clone().sub(half.wrap.getWorldPosition(new THREE.Vector3())).setY(0).normalize();
+    it.body.velocity.set(out.x * 2.5 + dx * 0.02, 3 + Math.random() * 1.5, out.z * 2.5 + dy * 0.02);
+    it.body.angularVelocity.set((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 5);
+    this.loose.push(it);
+  }
+
+  // las mitades boca abajo hacen de obstáculo para lo que cae
+  addHalfColliders() {
+    if (this.halfBodies) return;
+    this.halfBodies = [];
+    for (const h of [this.A, this.B]) {
+      h.wrap.updateWorldMatrix(true, false);
+      for (const [x, r] of [[0.35, 0.3], [0.7, 0.22]]) {
+        const w = h.wrap.localToWorld(new THREE.Vector3(x, -0.08, 0));
+        this.halfBodies.push(this.physics.static(new CANNON.Sphere(r * 0.85), w.x, w.y, w.z));
+      }
     }
   }
 
@@ -367,6 +398,7 @@ export class AvocadoPrep {
     if (step === 'peel' && this.state === 'pitless' && this.flipT < 1) {
       this.flipT = Math.min(1, this.flipT + dt * 1.6);
       this.pose();
+      if (this.flipT >= 1) this.addHalfColliders();
     }
     // la tira que estás pelando se levanta con un poco de retraso (blandita)
     if (this.peelDrag) this.peelDrag.sk.deform(dt);
