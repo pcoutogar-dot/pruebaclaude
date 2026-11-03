@@ -221,6 +221,7 @@ export class CoffeeProc {
     this.turns = 0;
     this.brew = 0;
     this.brewed = false;
+    this.brewReady = false;
     this.foam = 0;
     this.milk = 0;
     this.spilled = 0;
@@ -353,6 +354,8 @@ export class CoffeeProc {
   up() {
     this.holding = false;
     this.center = null;
+    // al soltar el hervidor (si ya hay café), el filtro se retira
+    if (this.brewReady && !this.brewed) this.brewed = true;
   }
 
   update(dt, step, ctx) {
@@ -380,11 +383,18 @@ export class CoffeeProc {
         const bed = this.dripper.userData.bed;
         bed.material.color.lerp(new THREE.Color('#2f1a0c'), dt * 0.6);
         bed.position.y = 0.17 + Math.sin(ctx.time * 3) * 0.006 + Math.min(0.06, this.brew * 0.2);
-        if (this.brew >= 0.42) {
-          this.brewed = true;
-          this.holding = false;
+        if (this.brew >= 0.42 && !this.brewReady) {
+          this.brewReady = true;
           ctx.chime();
-          ctx.say('Café colado ☕', 'Ahora, a espumar la leche');
+          ctx.say('Café colado ☕', 'Suelta cuando quieras… o sigue echando agua');
+        }
+        if (this.level > 1) {
+          this.spilled += dt;
+          if (!this.warned) {
+            this.warned = true;
+            ctx.say('¡Se desborda! 💦', 'Tú mandas');
+          }
+          this.updateSpill();
         }
       } else {
         // agua fuera del filtro: charquito en la encimera
@@ -403,9 +413,14 @@ export class CoffeeProc {
     if (step === 'foam') {
       const m = this.pitcher.userData.milk;
       if (this.holding) {
-        this.foam = Math.min(1, this.foam + dt * 0.3);
+        this.foam = Math.min(2, this.foam + dt * 0.3);
         // la leche sube suave al espumar (sin vibraciones)
-        m.position.y += (0.2 + this.foam * 0.12 - m.position.y) * Math.min(1, dt * 6);
+        m.position.y += (0.2 + Math.min(this.foam, 1.6) * 0.12 - m.position.y) * Math.min(1, dt * 6);
+        // espuma de más: se sale de la jarra y gotea
+        if (this.foam > 1.5 && Math.random() < dt * 12) {
+          const w = this.pitcher.localToWorld(new THREE.Vector3(-0.24 + (Math.random() - 0.5) * 0.3, 0.0, (Math.random() - 0.5) * 0.3));
+          this.droplets.splash(w, '#fbf6ee', 2, 0.6, 0.02);
+        }
         m.scale.setScalar(1 + this.foam * 0.04);
         ctx.sfx.sizzle(true);
       } else ctx.sfx.sizzle(false);

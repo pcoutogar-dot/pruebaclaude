@@ -273,7 +273,7 @@ export class Toast {
     }
     const ang = Math.atan2(y1 - y0, x1 - x0);
     // la carga del cuchillo: al principio capa generosa, luego cada vez más fina
-    const thick = Math.max(0.62, Math.min(1.15, 1.25 - d / 80)) * Math.max(0.12, amount);
+    const thick = Math.min(1.25, Math.max(0.62, Math.min(1.15, 1.25 - d / 80)) * Math.max(0.12, amount));
     const step = 9;
     const n = Math.max(1, Math.ceil(d / step));
     for (let i = 1; i <= n; i++) {
@@ -325,13 +325,13 @@ export class Toast {
         ctx.ellipse(cx, cy, rx, ry, ang, 0, 7);
         ctx.fill();
       };
-      if (spread === 'avocado' || spread === 'ricotta') {
+      if (spread === 'avocado' || spread === 'ricotta' || spread === 'yogurt') {
         const avo = spread === 'avocado';
         c.save();
         c.translate(x, y);
         c.rotate(ang);
         const g = c.createRadialGradient(0, 0, 0, 0, 0, R);
-        const base = avo ? '150,188,78' : '252,248,238';
+        const base = avo ? '150,188,78' : spread === 'yogurt' ? '251,250,246' : '252,248,238';
         g.addColorStop(0, `rgba(${base},${0.9 * thick})`);
         g.addColorStop(0.7, `rgba(${base},${0.75 * thick})`);
         g.addColorStop(1, `rgba(${base},0)`);

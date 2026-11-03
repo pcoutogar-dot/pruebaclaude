@@ -112,7 +112,7 @@ const sets = {};
   coffee.material.roughness = 0.5;
   coffee.rotation.z = 0;
   coffee.material.needsUpdate = true;
-  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e2dccf', push: 0.55, size: [10, 15], capacity: 2200, height: true });
+  const yogurt = new PourSurface({ drawBase: bowlBase, milk: '#fbf8f1', halo: '#e2dccf', push: 0.55, size: [10, 15], capacity: 3600, height: true });
   // superficie con relieve: el yogur a cucharadas tiene volumen
   const ysurf = new THREE.Mesh(
     new THREE.RingGeometry(0.0001, bowl.userData.surfaceR, 72, 24),
@@ -294,6 +294,59 @@ const yogStream = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1, 12, 
 yogStream.visible = false;
 scene.add(yogStream);
 
+// el bol también rebosa: el yogur sube por encima del borde, gotea por fuera y
+// forma un charco en la encimera
+const bowlOver = (() => {
+  const mat = new THREE.MeshStandardMaterial({ color: '#fbf8f1', roughness: 0.35 });
+  const drips = [0.4, 1.7, 2.9, 4.3, 5.4].map((a) => {
+    const m = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+    m.userData.a = a;
+    m.castShadow = true;
+    m.visible = false;
+    sets.golden.bowl.add(m);
+    return m;
+  });
+  const blob = new THREE.Shape();
+  for (let i = 0; i <= 40; i++) {
+    const t = (i / 40) * Math.PI * 2, r = 1 + 0.18 * Math.sin(3 * t) + 0.1 * Math.sin(7 * t + 1);
+    i ? blob.lineTo(Math.cos(t) * r, Math.sin(t) * r) : blob.moveTo(Math.cos(t) * r, Math.sin(t) * r);
+  }
+  const puddle = new THREE.Mesh(new THREE.ShapeGeometry(blob, 40), mat);
+  puddle.rotation.x = -Math.PI / 2;
+  puddle.position.y = 0.012;
+  puddle.visible = false;
+  sets.golden.bowl.add(puddle);
+  // perfil exterior del bol, del borde hacia abajo
+  const OUT = [[0.555, 0.39], [0.55, 0.38], [0.46, 0.2], [0.29, 0.02], [0.25, 0.0]];
+  return function update(over) {
+    const ys = sets.golden.ysurf;
+    const f = Math.min(1, over / 1500);
+    ys.material.displacementScale = 0.085 + f * 0.12; // el montón sube por encima del borde
+    drips.forEach((m, i) => {
+      const g = Math.min(1, Math.max(0, (over - 150 - i * 140) / 700));
+      m.visible = g > 0.02;
+      if (!m.visible) return;
+      const yEnd = 0.39 - 0.39 * g, pts = [];
+      for (let k = 0; k < OUT.length; k++) {
+        const [r, y] = OUT[k];
+        if (y >= yEnd) pts.push(new THREE.Vector2(r + 0.012, y));
+        else {
+          const [r0, y0] = OUT[k - 1], t = (y0 - yEnd) / (y0 - y);
+          pts.push(new THREE.Vector2(r0 + (r - r0) * t + 0.012, yEnd));
+          break;
+        }
+      }
+      pts.reverse();
+      const w = 0.12 + 0.2 * g;
+      m.geometry.dispose();
+      m.geometry = new THREE.LatheGeometry(pts, 6, m.userData.a - w / 2, w);
+    });
+    const pr = Math.max(0, over - 700);
+    puddle.visible = pr > 0;
+    puddle.scale.setScalar(0.42 + Math.min(0.26, pr / 4000));
+  };
+})();
+
 const spoon = new THREE.Group();
 {
   const wood = new THREE.MeshStandardMaterial({ color: '#c9a27a', roughness: 0.55 });
@@ -366,6 +419,26 @@ const H = {
   sprinkle: 'Desliza para espolvorear donde quieras.',
 };
 const P_ = (id, icon, label, hint, extra) => T(id, icon, label, 'proc', hint, extra);
+// todo lo que se coloca o espolvorea vale en cualquier plato: sin límites
+const TOPPINGS = [
+  T('avoSlice', '🥑', 'Láminas', 'place', H.orient, {
+    orient: true,
+    qty: () => avoPrep.slices,
+    lock: () => (avoPrep.slices > 0 ? null : 'Lamina el aguacate primero (pestaña 🥑, paso Laminar)'),
+  }),
+  T('egg', '🥚', 'Huevo', 'place', H.place),
+  T('blueberry', '🫐', 'Arándanos', 'place', H.place),
+  T('raspberry', '🍓', 'Frambuesa', 'place', H.place),
+  T('strawberry', '🍓', 'Fresa', 'place', H.orient, { orient: true }),
+  T('banana', '🍌', 'Plátano', 'place', H.place),
+  T('radish', '🌸', 'Rabanito', 'place', H.place),
+  T('tomato', '🍅', 'Cherry', 'place', H.place),
+  T('sprouts', '🌱', 'Brotes', 'place', H.place),
+  T('mint', '🌿', 'Menta', 'place', H.orient, { orient: true }),
+  T('granola', '🥣', 'Granola', 'sprinkle', H.sprinkle),
+  T('chili', '🌶️', 'Chile', 'sprinkle', H.sprinkle),
+  T('sesame', '✨', 'Sésamo', 'sprinkle', H.sprinkle),
+];
 const STATIONS = {
   golden: [
     {
@@ -391,17 +464,8 @@ const STATIONS = {
           { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
         T('ricotta', '🤍', 'Ricotta', 'spread', 'Carga el cuchillo en el tarro de ricotta y úntala a tu manera.'),
         T('honey', '🍯', 'Miel', 'spread', H.honey),
-        T('avoSlice', '🥑', 'Láminas', 'place', H.orient, {
-          orient: true,
-          qty: () => avoPrep.slices,
-          lock: () => (avoPrep.slices > 0 ? null : 'Lamina el aguacate primero (pestaña 🥑, paso Laminar)'),
-        }),
-        T('egg', '🥚', 'Huevo', 'place', H.place),
-        T('radish', '🌸', 'Rabanito', 'place', H.place),
-        T('tomato', '🍅', 'Cherry', 'place', H.place),
-        T('sprouts', '🌱', 'Brotes', 'place', H.place),
-        T('chili', '🌶️', 'Chile', 'sprinkle', H.sprinkle),
-        T('sesame', '✨', 'Sésamo', 'sprinkle', H.sprinkle),
+        T('yogurtPourT', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para echar yogur del tarro encima. Sí, en la tostada también.'),
+        ...TOPPINGS,
       ],
         },
       ],
@@ -410,13 +474,8 @@ const STATIONS = {
       id: 'bowl', label: 'Bol', icon: '🥣', surface: 'bowl', width: 1.7, tools: [
         T('yogurtPour', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para verter el yogur del tarro: cae espeso y se va plegando. Muévete para repartirlo.'),
         T('yogurt', '🥄', 'Cuchara', 'spoon', 'Toca para echar una cucharada. Arrastra para extender el yogur con el dorso de la cuchara.'),
-        T('blueberry', '🫐', 'Arándanos', 'place', H.place),
-        T('raspberry', '🍓', 'Frambuesa', 'place', H.place),
-        T('strawberry', '🍓', 'Fresa', 'place', H.orient, { orient: true }),
-        T('banana', '🍌', 'Plátano', 'place', H.place),
-        T('granola', '🥣', 'Granola', 'sprinkle', H.sprinkle),
-        T('mint', '🌿', 'Menta', 'place', H.orient, { orient: true }),
         T('drizzle', '🍯', 'Miel', 'drizzle', H.honey),
+        ...TOPPINGS,
       ],
     },
     {
@@ -1253,11 +1312,7 @@ function loop() {
   // verter mientras se mantiene pulsado (aunque el dedo no se mueva)
   if (drag && drag.kind === 'pour' && drag.uv) {
     drag.surf.pour(drag.uv, dt);
-    sfx.scrape(drag.surf.full ? 0 : 0.006);
-    if (drag.surf.full && !drag.warned) {
-      drag.warned = true;
-      say(station.id === 'coffee' ? 'La taza está llena ☕' : 'El bol está lleno 🥣', 'Ahora decora a tu gusto');
-    }
+    sfx.scrape(0.006);
   }
   procCtx.time = time;
   // coger: tras mantener el dedo un instante sobre un objeto suelto
@@ -1270,15 +1325,20 @@ function loop() {
   }
   physics.step(dt);
   droplets.update(dt);
-  if (s.yogurt) s.yogurt.relax(dt);
+  if (s.yogurt) {
+    s.yogurt.relax(dt);
+    bowlOver(s.yogurt.over || 0);
+  }
   // tarro de yogur: sigue al dedo, se inclina al verter y cae un chorro espeso que se pliega
-  const potOn = station.id === 'bowl' && tool?.id === 'yogurtPour';
+  const potOn = (station.id === 'bowl' || station.id === 'toast') && tool?.type === 'jarpour';
   yogStream.visible = false;
   if (!potOn) yogPot.visible = false;
   else {
     const pouring = drag?.kind === 'jarpour';
     // en reposo: apoyado en la encimera, al lado del bol (sin taparlo)
-    const bowlTop = s.bowl.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(portrait ? -0.95 : 0.95, 0.34, -0.15));
+    const bowlTop = station.id === 'toast'
+      ? s.toast.group.getWorldPosition(new THREE.Vector3()).setY(0).add(new THREE.Vector3(0, 0.34, 1.05))
+      : s.bowl.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(portrait ? -0.95 : 0.95, 0.34, -0.15));
     const goal = pouring ? drag.point.clone().add(new THREE.Vector3(0, 0.62, 0)) : bowlTop;
     if (!yogPot.visible) {
       yogPot.visible = true;
@@ -1286,10 +1346,17 @@ function loop() {
     }
     yogPot.position.lerp(goal, Math.min(1, dt * 10));
     yogPot.rotation.z += ((pouring ? -1.9 : 0) - yogPot.rotation.z) * Math.min(1, dt * 8);
-    if (pouring && Math.abs(yogPot.rotation.z + 1.9) < 0.4 && !s.yogurt.full) {
+    if (pouring && Math.abs(yogPot.rotation.z + 1.9) < 0.4) {
       // el punto de caída "dibuja" pequeños pliegues
       const fold = new THREE.Vector2(Math.sin(time * 7) * 0.025, Math.cos(time * 5.3) * 0.02);
-      s.yogurt.ribbon(drag.uv.clone().add(fold), dt);
+      const uvF = drag.uv.clone().add(fold);
+      if (drag.info.kind === 'toast') {
+        // en la tostada: el yogur cae espeso y se queda encima
+        const prev = drag.prevUV || uvF;
+        s.toast.paint(prev.x, prev.y, uvF.x, uvF.y, 'yogurt', 1.15);
+        s.toast.paint(uvF.x, uvF.y, uvF.x + 0.004, uvF.y, 'yogurt', 1.15);
+        drag.prevUV = uvF;
+      } else s.yogurt.ribbon(uvF, dt);
       const top = yogPot.position, bot = drag.point;
       const h = top.y - bot.y;
       yogStream.visible = true;
@@ -1297,9 +1364,9 @@ function loop() {
       yogStream.position.set(top.x + Math.sin(time * 7) * 0.01, bot.y + h / 2, top.z);
       sfx.scrape(0.003);
     }
-    if (s.yogurt.full && pouring && !drag.warned) {
+    if (s.yogurt.over > 250 && pouring && drag.info.kind !== 'toast' && !drag.warned) {
       drag.warned = true;
-      say('El bol está lleno 🥣', 'Ahora decora a tu gusto');
+      say('¡A rebosar! 🥣', 'Sigue si quieres… se sale por el borde');
     }
   }
   // cuchara: visible con la herramienta de yogur; hace "dip" al soltar la cucharada

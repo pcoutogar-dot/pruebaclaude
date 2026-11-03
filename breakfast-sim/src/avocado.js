@@ -280,7 +280,7 @@ export class AvocadoPrep {
         o = o.parent;
       }
       const local = half.wrap.worldToLocal(h.point.clone());
-      if (half.slices.children.length < 9) {
+      if (half.slices.children.length < 24) {
         // corte: un aro fino que sigue la curva del aguacate en ese punto
         const x = THREE.MathUtils.clamp(local.x, 0.1, 0.92);
         const ring = new THREE.Mesh(new THREE.TorusGeometry(radiusAt(x) * 0.965, 0.011, 6, 28, Math.PI), sliceMat);

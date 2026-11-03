@@ -42,6 +42,7 @@ export class PourSurface {
 
   reset() {
     this.p = [];
+    this.over = 0;
     this.decor.getContext('2d').clearRect(0, 0, S, S);
     this.dirty = true;
     this.render();
@@ -49,6 +50,16 @@ export class PourSurface {
 
   get full() {
     return this.p.length >= this.capacity;
+  }
+
+  // nunca se bloquea: pasado el tope, lo más antiguo queda "enterrado" (se
+  // recicla) y se cuenta como lo que rebosa
+  room() {
+    if (this.p.length >= this.capacity) {
+      this.p.shift();
+      this.over = (this.over || 0) + 1;
+    }
+    return true;
   }
 
   get fill() {
@@ -73,7 +84,7 @@ export class PourSurface {
   pour(uv, dt) {
     const [x, y] = this.px(uv);
     const n = Math.round(dt * 300);
-    for (let i = 0; i < n && !this.full; i++) {
+    for (let i = 0; i < n && this.room(); i++) {
       const a = Math.random() * 6.283, d = Math.random() * 4;
       this.p.push({
         x: x + Math.cos(a) * d,
@@ -98,7 +109,7 @@ export class PourSurface {
   dollop(uv) {
     const [x, y] = this.px(uv);
     const n = 55;
-    for (let i = 0; i < n && !this.full; i++) {
+    for (let i = 0; i < n && this.room(); i++) {
       const a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * 26;
       this.p.push({
         x: x + Math.cos(a) * d, y: y + Math.sin(a) * d,
@@ -113,7 +124,7 @@ export class PourSurface {
   ribbon(uv, dt) {
     const [x, y] = this.px(uv);
     const n = Math.round(dt * 380);
-    for (let i = 0; i < n && !this.full; i++) {
+    for (let i = 0; i < n && this.room(); i++) {
       const a = Math.random() * 6.283, d = Math.random() * 10;
       this.p.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, r: 14 + Math.random() * 6, age: 0, cx: x, cy: y });
     }

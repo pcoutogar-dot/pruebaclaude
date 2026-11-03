@@ -11,6 +11,7 @@
 |---|---|
 | **Libertad** | Sin plantillas ni objetivos de forma. Puedes poner 1 arándano o 40, en espiral o amontonados. |
 | **Huella personal** | La velocidad, la dirección, el pulso y el orden cambian el resultado (vetas, capas, grumos, goteos). |
+| **Sin topes** | Todo se puede llenar hasta rebosar (taza, bol, jarra, filtro) y cualquier ingrediente va en cualquier plato: yogur en la tostada, huevo en el bol… Las fuentes (tarro, aguacate, ricotta) siempre están al alcance de donde trabajas. |
 | **Sin castigo** | No hay error irreversible: siempre hay *Deshacer* y *Empezar de nuevo*. Nada "se echa a perder". |
 | **Progresión = más herramientas** | Con dinero no compras "puntos", compras **posibilidades creativas**: más ingredientes, utensilios y técnicas. |
 
