@@ -666,22 +666,6 @@ def diccionario():
     return [pg("page", a, run, chapter=("·", "Diccionario de supervivencia", "Las palabras clave, de la A a la Z"), lbl="Diccionario"), pg("page", b, run, lbl="Diccionario")]
 
 
-# ======================================================================= final
-def final():
-    body = bloque('<h3>Tu progreso</h3>',
-                  p('Marca cada casilla cuando lo hayas hecho de verdad, en la calle.'),
-                  checklist([("He saludado y dado las gracias en inglés", "Hello, thank you."),
-                             ("He pedido que me lo repitan más despacio", "Slowly, please."),
-                             ("He comprado algo y he entendido el precio", "How much is it?"),
-                             ("He pedido un plato sin picante", "Not spicy, please."),
-                             ("He explicado en la farmacia lo que necesitaba", "I need something for…"),
-                             ("Me he presentado a alguien nuevo", "My name is…, I'm from Spain."),
-                             ("He quedado para un café", "Would you like a coffee?")]),
-                  '<div class="promise"><span>Si has marcado tres casillas,</span><span>ya hablas inglés.</span><span>Lo demás es práctica.</span></div>',
-                  '<div class="sign"><small>Escríbeme y cuéntame qué tal te va,</small><span class="ph">[Tu nombre]</span></div>')
-    return [pg("page", body, LIBRO, lbl="Tu progreso")]
-
-
 # ======================================================================= índice y montaje
 def indice(caps):
     items = []
@@ -695,7 +679,7 @@ def indice(caps):
 
 def paginas():
     portada = {"kind": "raw", "body": PORTADA, "lbl": "Portada", "id": "portada"}
-    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + cap1() + cap2() + cap3() + cap4() + cap5() + cap6() + cap7() + cap8() + cap9() + cap10() + paises() + tarjetas() + diccionario() + final()
+    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + cap1() + cap2() + cap3() + cap4() + cap5() + cap6() + cap7() + cap8() + cap9() + cap10() + paises() + tarjetas() + diccionario()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)
