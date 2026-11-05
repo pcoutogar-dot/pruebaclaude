@@ -178,7 +178,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 /* diálogo */
 .dlg { background: var(--mint); border-radius: 2.4cqw; padding: 3cqw 3.4cqw; display: grid; gap: 1.3cqw; }
 .dlg h4 { color: var(--hibiscus); font-size: 4.6cqw; }
-.dlg .l { display: grid; grid-template-columns: 15cqw 1fr; gap: 2cqw; font-size: 3.35cqw; line-height: 1.28; }
+.dlg .l { display: grid; grid-template-columns: 18cqw 1fr; gap: 2cqw; font-size: 3.35cqw; line-height: 1.28; }
 .dlg .who { font: 700 2.4cqw/1.5 var(--body); letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
 .dlg .me .who { color: var(--jade); }
 .dlg .me .t { font-weight: 700; }
@@ -234,7 +234,8 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 
 /* diccionario */
 .dict { columns: 2; column-gap: 5cqw; font-size: 2.75cqw; line-height: 1.22; }
-.dict div { break-inside: avoid; padding: .3cqw 0; border-bottom: .15cqw solid var(--mint); }
+.dict .grp { break-inside: avoid; }
+.dict .grp div { break-inside: avoid; padding: .3cqw 0; border-bottom: .15cqw solid var(--mint); }
 .dict b { font-size: 3cqw; }
 .dict i { font-style: normal; color: var(--jade-deep); background: var(--mango-soft); padding: 0 .6cqw; border-radius: .5cqw; margin-left: .6cqw; }
 .dict span { display: block; color: var(--ink-soft); }
@@ -249,7 +250,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 /* sonidos */
 .snd { display: grid; gap: 1.3cqw; }
 .snd div { display: grid; grid-template-columns: 13cqw 1fr; gap: 3cqw; align-items: center; padding-bottom: 1.3cqw; border-bottom: .2cqw solid var(--mint); }
-.snd b { font: 800 5.4cqw/1 var(--display); color: var(--jade); text-align: center; background: var(--mango-soft); border-radius: 1.6cqw; padding: 1.4cqw 0; }
+.snd .key { font: 800 5.4cqw/1 var(--display); color: var(--jade); text-align: center; background: var(--mango-soft); border-radius: 1.6cqw; padding: 1.4cqw 0; }
 .snd p { font-size: 3.15cqw; line-height: 1.35; }
 
 /* costumbres */
@@ -276,6 +277,15 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .c-th { background: var(--mint); color: var(--jade-deep); }
 .c-vn { background: var(--hibiscus-soft); color: #7A2343; }
 .c-ph { background: var(--mango-soft); color: #6B4A00; }
+
+/* créditos y notas */
+.credpage { justify-content: flex-end; }
+.cred { display: grid; gap: 2.6cqw; }
+.cred p { font-size: 2.95cqw; line-height: 1.45; color: var(--ink-soft); }
+.cred p b { font: 800 4.6cqw/1.1 var(--display); color: var(--jade); }
+.lines { display: grid; gap: 0; border-top: .3cqw solid var(--jade); }
+.lines div { display: grid; grid-template-columns: 1fr 34cqw; gap: 3cqw; height: 9cqw; border-bottom: .2cqw solid var(--ink-soft); }
+.lines .l-say { border-left: .2cqw solid var(--mint); }
 
 /* práctica y juegos */
 .practice { gap: 2cqw; }
@@ -541,7 +551,7 @@ def locales(items):
 
 
 def sonidos(items):
-    return '<div class="snd">' + "".join(f"<div><b>{e(a)}</b><p>{e(b)}</p></div>" for a, b in items) + "</div>"
+    return '<div class="snd">' + "".join(f'<div><span class="key">{e(a)}</span><p>{e(b)}</p></div>' for a, b in items) + "</div>"
 
 
 def checklist(items):
@@ -718,8 +728,9 @@ def corregir(frases, titulo="Encuentra el error", instr="Tacha lo que está mal 
 
 def ficha(campos, titulo="Tu primera ficha", instr="Rellénala con tus datos, en inglés."):
     filas = "".join(f'<div class="field"><span class="lab">{e(a)}<small>{e(b)}</small></span><span class="line"></span></div>' for a, b in campos)
-    _EJ["n"] += 0
-    return f'<div class="ex">{_cab(titulo, instr)}<div class="form">{filas}</div></div>'
+    cab = _cab(titulo, instr)
+    _sol("Respuesta personal: no hay solución.")
+    return f'<div class="ex">{cab}<div class="form">{filas}</div></div>'
 
 
 def reto(texto):

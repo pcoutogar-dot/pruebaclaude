@@ -81,6 +81,39 @@ CONTRA = '''<div class="page back"><div class="in">
 </div></div>'''
 
 
+# ======================================================================= créditos y notas
+def creditos():
+    body = bloque('<div class="cred">'
+                  '<p><b>Inglés para valientes</b><br>Lo que necesitas decir y entender para vivir tranquila en el Sudeste Asiático.</p>'
+                  '<p>Primera edición, 2026.<br>© <span class="ph">[Tu nombre]</span>, 2026. Todos los derechos reservados.</p>'
+                  '<p>Texto, diseño e ilustraciones: <span class="ph">[Tu nombre]</span>.<br>Audios: <span class="ph">TU-DOMINIO.com</span>.</p>'
+                  '<p>Ninguna parte de este libro puede reproducirse sin permiso por escrito, salvo citas breves. Las tarjetas recortables y las fichas están pensadas para que las fotocopies para tu uso personal.</p>'
+                  '<p>Las normas de visado, los teléfonos, los precios y las fechas de las fiestas cambian con frecuencia. Se han revisado con cuidado, pero comprueba siempre la información en las fuentes oficiales antes de viajar. Este libro tampoco sustituye el consejo de un médico ni de un abogado.</p>'
+                  '<p>ISBN: <span class="ph">[pendiente]</span><br>Impreso bajo demanda.</p>'
+                  '</div>')
+    return [pg("page", body, LIBRO, cls="credpage", lbl="Créditos")]
+
+
+def contactos():
+    def campo(en, es):
+        return f'<div class="field"><span class="lab">{e(en)}<small>{e(es)}</small></span><span class="line"></span></div>'
+    body = bloque('<h3>Mis teléfonos importantes</h3>',
+                  p('Rellénalos el primer día. Y hazle una foto a esta página, por si pierdes el libro.', 'soft'),
+                  '<div class="form">' + campo("Emergency number", "Emergencias del país") + campo("Tourist police", "Policía turística")
+                  + campo("My hospital", "Mi hospital privado más cercano") + campo("My insurance", "Mi seguro y número de póliza")
+                  + campo("My embassy", "Mi embajada o consulado") + campo("My landlord", "Mi casero") + campo("My doctor at home", "Mi médico en casa")
+                  + campo("Family", "Familia") + campo("A friend here", "Una amiga aquí") + '</div>')
+    return [pg("page", body, LIBRO, lbl="Mis teléfonos")]
+
+
+def notas():
+    body = bloque('<h3>Mis frases</h3>',
+                  p('Las que oigas por la calle, las que te enseñe una vecina, las que te hayan salvado el día. Apúntalas aquí: son las que mejor se aprenden.', 'soft'),
+                  '<div class="legend"><span>Frase</span><span>Cómo suena</span></div>',
+                  '<div class="lines">' + ''.join('<div><span class="l-en"></span><span class="l-say"></span></div>' for _ in range(11)) + '</div>')
+    return [pg("page", body, LIBRO, lbl="Mis frases")]
+
+
 # ======================================================================= carta
 def carta():
     tazas = f'''<svg class="cups" viewBox="0 0 84 26" aria-hidden="true">
@@ -392,8 +425,8 @@ def cap5():
                truco("Ojo, falsos amigos", "«Constipated» no es constipada: significa estreñida. Si tienes un resfriado di «I have a cold». Y «embarrassed» es avergonzada; embarazada es «pregnant».", badge="Cuidado", pink=True))
     g = bloque(sec("Las partes del cuerpo", "The body | De bódi"),
                vocab([("head", "jed", "cabeza"), ("eye", "ái", "ojo"), ("ear", "íer", "oído, oreja"), ("throat", "zróut", "garganta"),
-                      ("chest", "chest", "pecho"), ("back", "bak", "espalda"), ("stomach", "s-tómak", "estómago, tripa"),
-                      ("hand", "jand", "mano"), ("leg", "leg", "pierna"), ("knee", "nii", "rodilla"),
+                      ("chest", "chest", "pecho"), ("heart", "jart", "corazón"), ("back", "bak", "espalda"), ("stomach", "s-tómak", "estómago, tripa"),
+                      ("arm", "arm", "brazo"), ("hand", "jand", "mano"), ("leg", "leg", "pierna"), ("knee", "nii", "rodilla"),
                       ("foot", "fut", "pie"), ("ankle", "ánkel", "tobillo")]),
                frases([("I am diabetic.", "Ái am daiabétik", "Soy diabética."),
                        ("I have a heart condition.", "Ái jav a jart kondíshon", "Tengo un problema de corazón.")], small=True))
@@ -839,16 +872,24 @@ def tarjetas():
     aler = ('<div class="cut"><div class="hd"><strong>FOOD ALLERGY</strong><span>Very important<br>Muy importante</span></div>'
             + campo("I am allergic to", "Soy alérgica a") + campo("In the local language", "Pide que te lo escriban en el idioma del país")
             + '<div class="ask"><div>Is there any in this food?<small>¿Lleva esto la comida?</small></div></div></div>')
+    ayuda = ('<div class="cut"><div class="hd jade"><strong>HELP CARD</strong><span>Para enseñar<br>cuando no te salen las palabras</span></div>'
+             '<div class="ask"><div>I speak a little English. Please speak slowly.<small>Hablo poco inglés. Hable despacio, por favor.</small></div>'
+             '<div>Please write it down.<small>Escríbamelo, por favor.</small></div>'
+             '<div>Please call this number for me.<small>Llame a este número por mí, por favor.</small></div></div>'
+             + campo("Number", "Teléfono de una persona de confianza") + '</div>')
     b = bloque(casa, aler)
-    return [pg("page", a, run, chapter=("·", "Tarjetas para recortar", "Médica, dirección y alergias"), lbl="Tarjetas"), pg("page", b, run, lbl="Tarjetas")]
+    c = bloque(sec("Tu tarjeta de ayuda", "Para el bolso: la enseñas y listo"), ayuda,
+               p('Si no te salen las palabras, enséñala. Funciona en una ventanilla, en una tienda o con un conductor. En una urgencia nadie tiene que adivinar nada.', 'soft'))
+    return [pg("page", a, run, chapter=("·", "Tarjetas para recortar", "Médica, dirección, alergias y ayuda"), lbl="Tarjetas"),
+            pg("page", b, run, lbl="Tarjetas"), pg("page", c, run, lbl="Tarjetas")]
 
 
 # ======================================================================= diccionario
 DICC = [
     ("A", [("address", "adrés", "dirección"), ("airport", "érport", "aeropuerto"), ("allergy", "álerdyi", "alergia"), ("ambulance", "ámbiulans", "ambulancia"), ("ATM", "ei-ti-ém", "cajero")]),
-    ("B", [("bag", "bag", "bolso, bolsa"), ("bill", "bil", "cuenta, factura"), ("broken", "bróuken", "roto, estropeado")]),
+    ("B", [("bill", "bil", "cuenta, factura"), ("broken", "bróuken", "roto, estropeado")]),
     ("C", [("cash", "kash", "efectivo"), ("change", "chéindy", "cambio"), ("contract", "kóntrakt", "contrato")]),
-    ("D", [("deposit", "dipósit", "fianza, depósito"), ("doctor", "dóktor", "médico"), ("doesn't work", "dásent uérk", "no funciona")]),
+    ("D", [("deposit", "dipósit", "fianza, depósito"), ("doctor", "dóktor", "médico")]),
     ("E", [("emergency", "emérdyensi", "urgencia"), ("exit", "éksit", "salida"), ("expensive", "ekspénsiv", "caro")]),
     ("F", [("fee", "fii", "comisión, tasa"), ("fever", "fíiver", "fiebre"), ("form", "form", "formulario"), ("free", "frii", "gratis, libre")]),
     ("H", [("help", "jelp", "ayuda"), ("hospital", "jóspital", "hospital")]),
@@ -869,8 +910,8 @@ def diccionario():
     def bloque_dicc(letras):
         out = []
         for L, items in letras:
-            out.append(f'<div class="letter-h">{L}</div>')
-            out += [f"<div><b>{e(a)}</b><i>{e(b)}</i><span>{e(c)}</span></div>" for a, b, c in items]
+            ents = "".join(f"<div><b>{e(a)}</b><i>{e(b)}</i><span>{e(c)}</span></div>" for a, b, c in items)
+            out.append(f'<div class="grp"><div class="letter-h">{L}</div>{ents}</div>')
         return '<div class="dict">' + "".join(out) + "</div>"
     mitad = 7
     a = bloque('<h3>Diccionario de supervivencia</h3>', p('Las palabras clave, de la A a la Z.', 'soft'), bloque_dicc(DICC[:mitad]))
@@ -897,7 +938,7 @@ def paginas():
     capitulos = []
     for i, c in enumerate(caps, start=1):
         capitulos += c() + practica(i)
-    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + costumbres_paises() + vivir_alli() + fiestas() + tarjetas() + diccionario() + test_final() + soluciones()
+    cuerpo = creditos() + carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + costumbres_paises() + vivir_alli() + fiestas() + tarjetas() + diccionario() + test_final() + soluciones() + contactos() + notas()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)

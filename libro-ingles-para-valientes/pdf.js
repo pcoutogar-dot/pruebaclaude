@@ -31,6 +31,9 @@ const path = require('path');
     await page.emulateMedia({ media: 'print' });
     await page.pdf({ path: path.join(dir, 'libro.pdf'), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
     console.log('libro.pdf generado');
+    await page.evaluate(() => document.querySelectorAll('.page.cover, .page.back').forEach(el => el.closest('.slot').remove()));
+    await page.pdf({ path: path.join(dir, 'libro-interior.pdf'), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
+    console.log('libro-interior.pdf generado (sin cubiertas, para Amazon KDP)');
   }
   if (process.argv.includes('--shots')) {
     const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });

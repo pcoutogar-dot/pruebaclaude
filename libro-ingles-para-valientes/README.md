@@ -1,12 +1,13 @@
 # Inglés para valientes
 
-Libro de inglés de supervivencia (88 páginas, 6 × 9 pulgadas) para hispanohablantes de más de 50 años que se van a vivir a Tailandia, Vietnam o Filipinas.
+Libro de inglés de supervivencia (92 páginas, 6 × 9 pulgadas) para hispanohablantes de más de 50 años que se van a vivir a Tailandia, Vietnam o Filipinas.
 
 ## Archivos
 
 | Archivo | Qué es |
 |---|---|
-| `libro.pdf` | El libro listo para imprenta (Amazon KDP, 6 × 9 pulgadas, sin sangrado) |
+| `libro.pdf` | El libro completo con cubiertas, para revisar y para vender en PDF |
+| `libro-interior.pdf` | Solo el interior, sin cubiertas: es el archivo que se sube a Amazon KDP (6 × 9 pulgadas, sin sangrado) |
 | `libro.html` | Vista previa del libro completo en el navegador |
 | `contenido.py` | Todo el texto del libro. Aquí se corrige y se amplía |
 | `build.py` | Diseño, ilustraciones, códigos QR y montaje de páginas |
