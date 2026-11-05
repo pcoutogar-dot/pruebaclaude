@@ -103,11 +103,11 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .sign .ph { justify-self: start; font: 600 8cqw/1 var(--hand); color: var(--jade); background: none; padding: 0; }
 
 /* índice */
-.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.15cqw; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .75cqw; }
 .toc li { display: grid; grid-template-columns: 7cqw 1fr auto; align-items: baseline; gap: 2cqw; font-size: 3.45cqw; line-height: 1.15; }
 .toc li .n { font: 800 3.6cqw/1 var(--display); color: var(--mango); -webkit-text-stroke: .15cqw var(--jade); }
 .toc li .t { min-width: 0; }
-.toc li .t small { display: block; font-size: 2.7cqw; color: var(--ink-soft); margin-top: .4cqw; }
+.toc li .t small { display: block; font-size: 2.6cqw; color: var(--ink-soft); margin-top: .2cqw; }
 .toc li .p { font-variant-numeric: tabular-nums; color: var(--ink-soft); font-size: 3.2cqw; }
 .toc li.extra .n { color: var(--hibiscus); -webkit-text-stroke: 0; }
 
@@ -251,6 +251,56 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .snd div { display: grid; grid-template-columns: 13cqw 1fr; gap: 3cqw; align-items: center; padding-bottom: 1.3cqw; border-bottom: .2cqw solid var(--mint); }
 .snd b { font: 800 5.4cqw/1 var(--display); color: var(--jade); text-align: center; background: var(--mango-soft); border-radius: 1.6cqw; padding: 1.4cqw 0; }
 .snd p { font-size: 3.15cqw; line-height: 1.35; }
+
+/* práctica y juegos */
+.practice { gap: 2cqw; }
+.pr-top { display: grid; grid-template-columns: 1fr 16cqw; gap: 3cqw; align-items: center; margin: -7cqw -8cqw 0; padding: 5.4cqw 8cqw 2.8cqw; background: var(--hibiscus-soft); }
+.pr-top .pr-k { font: 700 2.5cqw/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--hibiscus); }
+.pr-top h3 { margin-top: 1.2cqw; font-size: 6.4cqw; }
+.pr-top small { display: block; font: italic 400 3cqw/1.3 var(--body); color: var(--ink-soft); margin-top: .8cqw; }
+.pr-ico { width: 16cqw; height: 13cqw; }
+.ex { display: grid; gap: 1.2cqw; }
+.ex-h { display: grid; grid-template-columns: 6cqw 1fr; gap: 2cqw; align-items: start; }
+.ex-n { width: 6cqw; height: 6cqw; border-radius: 50%; background: var(--jade); color: #fff; display: grid; place-items: center; font: 800 3.4cqw/1 var(--display); }
+.ex-h b { display: block; font: 800 4cqw/1.1 var(--display); color: var(--jade); }
+.ex-h div span { display: block; font-size: 2.9cqw; color: var(--ink-soft); margin-top: .4cqw; }
+.ws { display: grid; grid-template-columns: 1fr 24cqw; gap: 3cqw; align-items: center; }
+.wsg { display: grid; gap: .5cqw; }
+.wsg span { aspect-ratio: 1.12; display: grid; place-items: center; font: 700 3.1cqw/1 var(--body); background: var(--mint); border-radius: .7cqw; color: var(--ink); }
+.wsg span.on { background: var(--mango); color: var(--jade-deep); }
+.wsg.mini { gap: .25cqw; width: 34cqw; }
+.wsg.mini span { font-size: 1.7cqw; border-radius: .35cqw; }
+.wsw { display: grid; gap: 1cqw; }
+.wsw span { font: 700 3.2cqw/1 var(--body); letter-spacing: .06em; padding: 1.2cqw 1.8cqw; border: .3cqw solid var(--jade); border-radius: 1.4cqw; text-align: center; color: var(--jade); }
+.mt { display: grid; grid-template-columns: 1fr 1fr; gap: 10cqw; }
+.mt > div { display: grid; gap: 1.2cqw; }
+.mt-l, .mt-r { display: flex; align-items: center; gap: 1.6cqw; font-size: 3.4cqw; line-height: 1.15; min-height: 5cqw; }
+.mt-l { justify-content: space-between; font-weight: 700; }
+.mt-l .k, .mt-r .k { font: 800 2.8cqw/1 var(--display); color: var(--hibiscus); min-width: 3cqw; }
+.mt-l .k { order: -1; }
+.mt i { flex: none; width: 2.4cqw; height: 2.4cqw; border-radius: 50%; background: var(--hibiscus); }
+.mt-l i { margin-left: auto; }
+.mc { display: grid; gap: .9cqw; padding-bottom: 1.4cqw; border-bottom: .2cqw solid var(--mint); }
+.mc p { font-size: 3.3cqw; font-weight: 700; }
+.mc > div { display: flex; flex-wrap: wrap; gap: 1cqw 3.4cqw; }
+.mc span { display: inline-flex; align-items: center; gap: 1.2cqw; font-size: 3.2cqw; }
+.mc span i, .vf b { display: inline-block; width: 3.2cqw; height: 3.2cqw; border: .4cqw solid var(--jade); border-radius: 50%; }
+.bank { display: flex; flex-wrap: wrap; gap: 1.2cqw; }
+.bank span { font: 700 3.1cqw/1 var(--body); background: var(--mango-soft); color: var(--jade-deep); padding: 1.3cqw 2cqw; border-radius: 1.4cqw; }
+.fill, .ord, .vf { margin: 0; padding-left: 5cqw; display: grid; gap: 1.6cqw; font-size: 3.35cqw; line-height: 1.5; }
+.fill li::marker, .ord li::marker, .vf li::marker { font-weight: 700; color: var(--hibiscus); }
+.gap { display: inline-block; width: 20cqw; border-bottom: .35cqw solid var(--ink-soft); margin: 0 1.2cqw; vertical-align: -.4cqw; }
+.gap.long { display: block; width: auto; height: 5.4cqw; margin: .6cqw 0 0; }
+.ord li s { color: var(--ink-soft); text-decoration-color: var(--hibiscus); }
+.vf li { display: grid; grid-template-columns: 1fr auto auto; gap: 2cqw; align-items: center; }
+.vf b { width: 5.4cqw; height: 5.4cqw; border-radius: 1.2cqw; display: grid; place-items: center; font: 800 3cqw/1 var(--display); color: var(--jade); }
+.form { display: grid; gap: 1.6cqw; background: var(--mint); padding: 3cqw 3.4cqw; border-radius: 2cqw; }
+.reto { position: relative; margin-top: 1cqw; border: .45cqw dashed var(--hibiscus); border-radius: 2.4cqw; padding: 3.6cqw 3.6cqw 3cqw; }
+.reto .rt { position: absolute; top: -2.6cqw; left: 3.4cqw; background: var(--hibiscus); color: #fff; font: 800 2.8cqw/1 var(--display); text-transform: uppercase; letter-spacing: .05em; padding: 1.2cqw 2cqw; border-radius: 1.2cqw; transform: rotate(-2deg); }
+.reto p { font-size: 3.3cqw; line-height: 1.4; }
+.sols { display: grid; gap: 1.1cqw; font-size: 2.9cqw; line-height: 1.35; }
+.sols div { display: grid; grid-template-columns: 30cqw 1fr; gap: 2cqw; border-bottom: .15cqw solid var(--mint); padding-bottom: .9cqw; align-items: start; }
+.sols b { color: var(--jade); }
 
 .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; border-top: 1px solid var(--rule); padding-top: 24px; }
 .notes div { display: grid; gap: 6px; min-width: 0; }
@@ -478,6 +528,153 @@ DOCTORA = f'''<svg viewBox="0 0 44 44" aria-hidden="true">
   <rect x="30" y="1.5" width="13" height="9.5" rx="3" fill="#FBE3EB"/><path d="M33 10.6 L30.4 14.2 L36 10.8 Z" fill="#FBE3EB"/>
   <text x="36.5" y="9.2" text-anchor="middle" font-family="Bricolage Grotesque, system-ui, sans-serif" font-weight="800" font-size="7.4" fill="{H}">?</text>
 </svg>'''
+
+
+# ---------------------------------------------------------------- ejercicios y juegos
+import random as _random
+
+SOLUCIONES = []          # (titulo, html) en orden de aparición
+_EJ = {"n": 0, "cap": ""}
+
+
+def practica_inicio(cap):
+    """Llamar antes de los ejercicios de un capítulo: numera y agrupa sus soluciones."""
+    _EJ["n"] = 0
+    _EJ["cap"] = cap
+
+
+def _num():
+    _EJ["n"] += 1
+    return _EJ["n"]
+
+
+def _sol(texto_html):
+    SOLUCIONES.append((f'{_EJ["cap"]}, ejercicio {_EJ["n"]}', texto_html))
+
+
+def _cab(titulo, instr):
+    return f'<div class="ex-h"><span class="ex-n">{_num()}</span><div><b>{e(titulo)}</b><span>{e(instr)}</span></div></div>'
+
+
+def practica_cab(titulo="Practica y juega", sub=""):
+    return (f'<div class="pr-top"><div><span class="pr-k">Practica y juega</span><h3>{e(titulo)}</h3>'
+            f'{f"<small>{e(sub)}</small>" if sub else ""}</div>{JUEGO}</div>')
+
+
+def sopa(palabras, n=10, seed=1, titulo="Sopa de letras", instr="Busca estas palabras. Están en horizontal y en vertical."):
+    rnd = _random.Random(seed)
+    for _intento in range(400):
+        g = [[None] * n for _ in range(n)]
+        pos = {}
+        ok = True
+        for w in sorted(palabras, key=len, reverse=True):
+            placed = False
+            for _ in range(300):
+                d = rnd.choice("HV")
+                r = rnd.randrange(n if d == "H" else n - len(w) + 1)
+                c = rnd.randrange(n - len(w) + 1 if d == "H" else n)
+                cells = [(r, c + i) if d == "H" else (r + i, c) for i in range(len(w))]
+                if all(g[y][x] in (None, ch) for (y, x), ch in zip(cells, w)):
+                    for (y, x), ch in zip(cells, w):
+                        g[y][x] = ch
+                    pos[w] = cells
+                    placed = True
+                    break
+            if not placed:
+                ok = False
+                break
+        if ok:
+            break
+    letras = "ABCDEFGHIJKLMNOPRSTUVWY"
+    sol = {cell for cells in pos.values() for cell in cells}
+    for y in range(n):
+        for x in range(n):
+            if g[y][x] is None:
+                g[y][x] = rnd.choice(letras)
+    def grid(mark, cls=""):
+        celdas = "".join(f'<span class="{"on" if mark and (y, x) in sol else ""}">{g[y][x]}</span>' for y in range(n) for x in range(n))
+        return f'<div class="wsg {cls}" style="grid-template-columns:repeat({n},1fr)">{celdas}</div>'
+    lista = "".join(f"<span>{w}</span>" for w in palabras)
+    html = f'<div class="ex">{_cab(titulo, instr)}<div class="ws">{grid(False)}<div class="wsw">{lista}</div></div></div>'
+    _sol(grid(True, "mini"))
+    return html
+
+
+def unir(pares, titulo="Une con una flecha", instr="Une cada palabra en inglés con su significado.", seed=3):
+    rnd = _random.Random(seed)
+    der = list(range(len(pares)))
+    while True:
+        rnd.shuffle(der)
+        if all(der[i] != i for i in range(len(der))) or len(der) < 2:
+            break
+    letras = "abcdefgh"
+    izq_html = "".join(f'<div class="mt-l"><span class="k">{i + 1}</span>{e(a)}<i></i></div>' for i, (a, _) in enumerate(pares))
+    der_html = "".join(f'<div class="mt-r"><i></i><span class="k">{letras[j]}</span>{e(pares[k][1])}</div>' for j, k in enumerate(der))
+    sol = ", ".join(f"{i + 1}{letras[der.index(i)]}" for i in range(len(pares)))
+    _sol(e(sol))
+    return f'<div class="ex">{_cab(titulo, instr)}<div class="mt"><div>{izq_html}</div><div>{der_html}</div></div></div>'
+
+
+def elegir(preguntas, titulo="¿Qué dirías?", instr="Marca la respuesta correcta."):
+    out, sols = [], []
+    for q, opciones, ok in preguntas:
+        ops = "".join(f'<span><i></i>{"abc"[j]}) {e(o)}</span>' for j, o in enumerate(opciones))
+        out.append(f'<div class="mc"><p>{e(q)}</p><div>{ops}</div></div>')
+        sols.append("abc"[ok])
+    _sol(e(", ".join(f"{i + 1}{s}" for i, s in enumerate(sols))))
+    return f'<div class="ex">{_cab(titulo, instr)}{"".join(out)}</div>'
+
+
+def completar(frases, banco, titulo="Completa la frase", instr="Elige la palabra que falta."):
+    chips = "".join(f"<span>{e(w)}</span>" for w in banco)
+    filas = "".join(f'<li>{e(a)}<span class="gap"></span>{e(b)}</li>' for a, b, _ in frases)
+    _sol(e(", ".join(f"{i + 1} {w}" for i, (_, _, w) in enumerate(frases))))
+    return f'<div class="ex">{_cab(titulo, instr)}<div class="bank">{chips}</div><ol class="fill">{filas}</ol></div>'
+
+
+def ordenar(frases, titulo="Ordena la frase", instr="Escribe las palabras en el orden correcto.", seed=5):
+    rnd = _random.Random(seed)
+    out = []
+    for f in frases:
+        ws = f.rstrip("?.!").split()
+        mez = ws[:]
+        for _ in range(20):
+            rnd.shuffle(mez)
+            if mez != ws:
+                break
+        out.append('<li><div class="bank">' + "".join(f"<span>{e(w)}</span>" for w in mez) + '</div><span class="gap long"></span></li>')
+    _sol(e(" | ".join(frases)))
+    return f'<div class="ex">{_cab(titulo, instr)}<ol class="ord">{"".join(out)}</ol></div>'
+
+
+def vf(afirmaciones, titulo="¿Verdadero o falso?", instr="Marca V o F."):
+    filas = "".join(f'<li><span>{e(a)}</span><b>V</b><b>F</b></li>' for a, _ in afirmaciones)
+    _sol(e(", ".join(f"{i + 1} {'V' if v else 'F'}" for i, (_, v) in enumerate(afirmaciones))))
+    return f'<div class="ex">{_cab(titulo, instr)}<ol class="vf">{filas}</ol></div>'
+
+
+def corregir(frases, titulo="Encuentra el error", instr="Tacha lo que está mal y escribe la frase bien."):
+    filas = "".join(f'<li><s>{e(a)}</s><span class="gap long"></span></li>' for a, _ in frases)
+    _sol(e(" | ".join(b for _, b in frases)))
+    return f'<div class="ex">{_cab(titulo, instr)}<ol class="ord">{filas}</ol></div>'
+
+
+def ficha(campos, titulo="Tu primera ficha", instr="Rellénala con tus datos, en inglés."):
+    filas = "".join(f'<div class="field"><span class="lab">{e(a)}<small>{e(b)}</small></span><span class="line"></span></div>' for a, b in campos)
+    _EJ["n"] += 0
+    return f'<div class="ex">{_cab(titulo, instr)}<div class="form">{filas}</div></div>'
+
+
+def reto(texto):
+    return f'<div class="reto"><span class="rt">Reto de la semana</span><p>{e(texto)}</p></div>'
+
+
+JUEGO = f"""<svg class="pr-ico" viewBox="0 0 34 28" aria-hidden="true">
+  <rect x="3" y="4" width="13" height="13" rx="2.4" fill="{M}" transform="rotate(-10 9.5 10.5)"/>
+  <circle cx="7" cy="8" r="1.3" fill="{JD}"/><circle cx="12" cy="13" r="1.3" fill="{JD}"/><circle cx="9.5" cy="10.5" r="1.3" fill="{JD}"/>
+  <rect x="17" y="9" width="14" height="14" rx="2.4" fill="{H}" transform="rotate(8 24 16)"/>
+  <circle cx="20.5" cy="12.8" r="1.3" fill="#fff"/><circle cx="27.4" cy="19.4" r="1.3" fill="#fff"/><circle cx="20.8" cy="19.6" r="1.3" fill="#fff"/><circle cx="27.2" cy="12.6" r="1.3" fill="#fff"/>
+  <rect x="0" y="26" width="34" height="1.2" rx=".6" fill="{MINT}"/></svg>"""
 
 
 # ---------------------------------------------------------------- montaje

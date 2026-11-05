@@ -10,7 +10,9 @@ Convención de pronunciación (se explica en las páginas 6 y 7 del libro):
   - s- al principio = empieza con s, sin e delante: «s-pík».
   - Las consonantes finales se escriben y se pronuncian siempre.
 """
-from build import (chap_opener, sec, p, frases, vocab, vocab3, oiras, dialogo, truco, caja, datos, lista, audio,
+import build
+from build import (practica_inicio, practica_cab, sopa, unir, elegir, completar, ordenar, vf, corregir, ficha, reto,
+                   chap_opener, sec, p, frases, vocab, vocab3, oiras, dialogo, truco, caja, datos, lista, audio,
                    locales, sonidos, checklist, spot, raw, e, J, JD, M, H, MINT, INK)
 
 TITULO_WEB = "Inglés para valientes"
@@ -580,6 +582,87 @@ def cap10():
             pg("page", b, run), pg("page", c, run)]
 
 
+# ======================================================================= práctica
+def practica(n):
+    practica_inicio(f"Capítulo {n}")
+    run = f"Capítulo {n} | Practica y juega"
+    P = {
+        1: lambda: bloque(practica_cab("Lo básico"),
+                          sopa(["HELLO", "PLEASE", "SORRY", "SLOWLY", "TOILET", "REPEAT"], n=9, seed=11),
+                          unir([("fifteen", "15"), ("fifty", "50"), ("thirteen", "13"), ("thirty", "30")],
+                               "Cuidado con los números", "Une cada número con su cifra. Fíjate en el final: -teen o -ty.", seed=4),
+                          reto("Di «thank you» en voz alta a cinco personas distintas. A la quinta ya no te dará vergüenza.")),
+        2: lambda: bloque(practica_cab("Aeropuerto e inmigración"),
+                          elegir([("El policía te pregunta: «Purpose of visit?»", ["Holiday.", "Hotel.", "Fifteen."], 0),
+                                  ("Te pregunta: «How long you stay?»", ["Yes, please.", "For one month.", "Thank you."], 1),
+                                  ("Tu maleta no sale por la cinta. Dices:", ["I have one suitcase.", "Where is the exit?", "My suitcase didn't arrive."], 2)]),
+                          ficha([("Surname", "Apellidos"), ("First name", "Nombre"), ("Nationality", "Nacionalidad: Spanish"),
+                                 ("Date of birth", "Escribe el mes en letras: 12 MAR 1960")],
+                                "Tu primera ficha", "Así son los formularios de llegada. Practica en casa con tus datos."),
+                          ),
+        3: lambda: bloque(practica_cab("Tu casa"),
+                          completar([("Is it", "?", "furnished"), ("How much is the", "?", "deposit"), ("The air conditioner is", ".", "broken"),
+                                     ("There is a", "in the bathroom.", "leak"), ("How much is the", "per unit?", "electricity")],
+                                    ["broken", "deposit", "electricity", "furnished", "leak"]),
+                          ordenar(["How much per month?", "When can you fix it?"]),
+                          reto("Escribe en una nota del móvil las preguntas para ver un piso. Cuando vayas a ver uno, léelas sin miedo.")),
+        4: lambda: bloque(practica_cab("Dinero"),
+                          elegir([("La pantalla del cajero dice: «Do you want conversion?»", ["Yes", "Without conversion", "Balance"], 1),
+                                  ("En el mercado, el precio te parece caro:", ["Last price?", "OK, I take it.", "Receipt, please."], 0),
+                                  ]),
+                          unir([("two hundred fifty", "250"), ("fifty K", "50.000"), ("one thousand", "1.000"), ("fifteen", "15")],
+                               "¿Cuánto es?", "Une lo que oyes con lo que pagas.", seed=7),
+                          reto("En la próxima tienda, pregunta «How much is this?» aunque veas la etiqueta. Escucha bien la respuesta.")),
+        5: lambda: bloque(practica_cab("Salud"),
+                          unir([("head", "cabeza"), ("knee", "rodilla"), ("throat", "garganta"), ("back", "espalda"), ("ankle", "tobillo")],
+                               "Las partes del cuerpo", "Une cada parte con su nombre.", seed=9),
+                          completar([("I have a", ".", "fever"), ("It", "here.", "hurts"), ("I am", "to penicillin.", "allergic"),
+                                     ("Before or after", "?", "food")], ["allergic", "fever", "food", "hurts"]),
+                          vf([("«Constipated» significa constipada.", False), ("«Pregnant» significa embarazada.", True)])),
+        6: lambda: bloque(practica_cab("Moverte"),
+                          sopa(["LEFT", "RIGHT", "STOP", "METER", "HELMET", "NEAR"], n=9, seed=23),
+                          ordenar(["I'm at the main gate.", "Please wait two minutes."], seed=8),
+                          reto("Pide un coche con una aplicación y, cuando llegues al punto de recogida, escribe en el chat: «I'm here».")),
+        7: lambda: bloque(practica_cab("Comer y comprar"),
+                          unir([("rice", "arroz"), ("chicken", "pollo"), ("pork", "cerdo"), ("fish", "pescado"), ("egg", "huevo")],
+                               "En el mercado", "Une cada alimento con su nombre.", seed=12),
+                          elegir([("No quieres picante:", ["Not spicy, please.", "A little spicy.", "No ice, please."], 0),
+                                  ("Quieres el café con poco azúcar:", ["No bag, thank you.", "Less sugar, please.", "Heat it up, please."], 1)]),
+                          reto("Pide tu próximo café o zumo «less sugar, please». Y fíjate en si te lo traen más dulce o menos que antes.")),
+        8: lambda: bloque(practica_cab("Sola y segura"),
+                          vf([("La policía puede pedirte una transferencia por teléfono.", False),
+                              ("Si te dicen que el templo está cerrado, compruébalo tú misma.", True),
+                              ("Levantar la voz ayuda a resolver un problema en Asia.", False)]),
+                          elegir([("Alguien insiste en venderte algo:", ["I'm lost.", "I'm not interested.", "Call the police!"], 1),
+                                  ("Te han robado el bolso:", ["Someone stole my bag.", "I lost my passport.", "No, thank you."], 0)]),
+                          reto("Hazle una foto al pasaporte y envíatela por correo. Y apunta en papel el teléfono de tu embajada.")),
+        9: lambda: bloque(practica_cab("Hacer amigos"),
+                          corregir([("I have 64 years.", "I'm 64."), ("I have hunger.", "I'm hungry."), ("I am agree.", "I agree.")]),
+                          ficha([("My name is", "Me llamo"), ("I'm from", "Soy de"), ("I live in", "Vivo en")],
+                                "Tu presentación", "Escríbela y apréndetela de memoria. La usarás cien veces."),
+                          reto("Saluda a alguien nuevo y pregúntale «Where are you from?». Lo demás viene solo.")),
+        10: lambda: bloque(practica_cab("Tu inglés y tu móvil"),
+                           vf([("Las frases cortas se traducen mejor que las largas.", True),
+                               ("El modo cámara del traductor sirve para leer menús y carteles.", True),
+                               ("Sin internet nunca se puede usar el traductor.", False)]),
+                           ordenar(["Can you type it here?", "Can you send me a message?"], seed=21),
+                           reto("Grábate con el móvil diciendo tu presentación del capítulo 9. Escúchala mañana. Te vas a sorprender.")),
+    }
+    return [pg("page", P[n](), run, cls="practice", lbl=f"Práctica {n}")]
+
+
+def soluciones():
+    run = "Soluciones"
+    items = build.SOLUCIONES
+    mitad = (len(items) + 1) // 2
+    def bloque_sol(xs):
+        return '<div class="sols">' + "".join(f"<div><b>{e(t)}</b><span>{h}</span></div>" for t, h in xs) + "</div>"
+    a = bloque('<h3>Soluciones</h3>', p('No hagas trampa… o sí: también se aprende mirando.', 'soft'), bloque_sol(items[:mitad]))
+    b = bloque(bloque_sol(items[mitad:]))
+    return [pg("page", a, run, chapter=("·", "Soluciones de los juegos", "Para comprobar tus respuestas"), lbl="Soluciones"),
+            pg("page", b, run, lbl="Soluciones")]
+
+
 # ======================================================================= países
 def paises():
     run = "Cada país, a su manera"
@@ -679,7 +762,12 @@ def indice(caps):
 
 def paginas():
     portada = {"kind": "raw", "body": PORTADA, "lbl": "Portada", "id": "portada"}
-    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + cap1() + cap2() + cap3() + cap4() + cap5() + cap6() + cap7() + cap8() + cap9() + cap10() + paises() + tarjetas() + diccionario()
+    build.SOLUCIONES.clear()
+    caps = [cap1, cap2, cap3, cap4, cap5, cap6, cap7, cap8, cap9, cap10]
+    capitulos = []
+    for i, c in enumerate(caps, start=1):
+        capitulos += c() + practica(i)
+    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + tarjetas() + diccionario() + soluciones()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)
