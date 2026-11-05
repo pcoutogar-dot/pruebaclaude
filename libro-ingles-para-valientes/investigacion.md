@@ -93,3 +93,35 @@ Convenciones elegidas:
   - Tailandia: immigration.go.th y tdac.immigration.go.th.
   - Vietnam: evisa.gov.vn.
   - Filipinas: immigration.gov.ph.
+
+## Segunda ronda: blogs de viaje (noviembre de 2026)
+
+Blogs y guías en español (Viajeros Callejeros, El Rincón de Sele, Lonely Planet España, losviajeros.com, Minube, Sinmapa, viajaravietnam.com) y en inglés (Travelfish, Thailand Starter Kit, SBS Cultural Atlas, Culture Trip, Rough Guides, Frommer's, CDC/NHS, IQAir). De nuevo, casi todo procede de extractos de buscador.
+
+- **Costumbres.**
+  - Tailandia: no tocar la cabeza de nadie; no señalar con los pies; himno a las 8:00 y a las 18:00; no bromear sobre la familia real ni pisar billetes; las mujeres no tocan a los monjes; templos con hombros y rodillas tapados y descalzos; se come con cuchara.
+  - Vietnam: respeto a los mayores; no perder la calma en público; palillos nunca de pie en el arroz; no regalar paraguas, zapatos ni papel negro; sobres rojos «lì xì» en Tết.
+  - Filipinas: «po» con mayores; descalzarse en casas; un «yes» puede ser cortesía; llamar con la palma hacia abajo; cejas levantadas = sí; señalar con los labios.
+- **Vida diaria.**
+  - El mosquito del dengue pica de día. Con fiebre, paracetamol, nunca ibuprofeno ni aspirina (Lonely Planet España).
+  - Calor fuerte de marzo a mayo en Tailandia.
+  - Humo en el norte de Tailandia de febrero a abril.
+  - Agua del grifo no potable.
+  - Baños sin papel y con manguera.
+  - Cruzar despacio y sin pararse en Vietnam.
+  - Bolso cruzado en Saigón.
+  - Tallas grandes de mujer difíciles de encontrar.
+- **Cuidado personal.**
+  - Masaje: «Thai or oil?», más suave o más fuerte; en tailandés, «bao bao» es suave.
+  - Sastres de Hoi An: una o dos pruebas, pedir los arreglos durante la prueba.
+  - Peluquería: precio total antes de empezar y prueba de alergia al tinte.
+- **Fiestas.**
+  - Tailandia: Songkran (13–15 de abril), Loy Krathong (luna llena de noviembre).
+  - Vietnam: Tết (enero o febrero; tiendas cerradas y precios altos), Medio Otoño (septiembre u octubre), lluvias e inundaciones en el centro de septiembre a diciembre.
+  - Filipinas: Navidad desde septiembre, Simbang Gabi (16–24 de diciembre), Sinulog (enero), Semana Santa, tifones de junio a noviembre.
+- **Curiosidades del test final** [comprobar]:
+  - Año tailandés = año occidental + 543.
+  - Tailandia nunca fue colonizada.
+  - Vietnam es el segundo productor mundial de café.
+  - Entre el 30 y el 40 % de los vietnamitas se apellidan Nguyen.
+  - El inglés es oficial en Filipinas.

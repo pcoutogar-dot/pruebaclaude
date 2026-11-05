@@ -79,7 +79,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .cover .perks span { background: #fff; color: var(--jade-deep); font: 700 2.9cqw/1 var(--body); padding: 1.8cqw 2.6cqw; border-radius: 10cqw; }
 .cover .countries { position: absolute; left: 8cqw; bottom: 6.5cqw; font: 700 2.8cqw/1.45 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--mango); }
 .back { background: var(--jade-deep); color: #fff; }
-.back .in { padding: 10cqw 9cqw 8cqw; gap: 4cqw; }
+.back .in { padding: 9cqw 9cqw 7cqw; gap: 3.6cqw; }
 .back h3 { color: var(--mango); font-size: 8cqw; }
 .back p { color: #fff; font-size: 3.6cqw; line-height: 1.5; }
 .back ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2cqw; }
@@ -252,6 +252,31 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .snd b { font: 800 5.4cqw/1 var(--display); color: var(--jade); text-align: center; background: var(--mango-soft); border-radius: 1.6cqw; padding: 1.4cqw 0; }
 .snd p { font-size: 3.15cqw; line-height: 1.35; }
 
+/* costumbres */
+.dd { display: grid; gap: 2.4cqw; }
+.dd > div { border-radius: 2.4cqw; padding: 2.8cqw 3.4cqw; display: grid; gap: 1.2cqw; }
+.dd .yes { background: var(--mint); }
+.dd .no { background: var(--hibiscus-soft); }
+.dd b { font: 800 4.2cqw/1 var(--display); }
+.dd .yes b { color: var(--jade); }
+.dd .no b { color: var(--hibiscus); }
+.dd ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.1cqw; }
+.dd li { font-size: 3.25cqw; line-height: 1.33; padding-left: 5cqw; position: relative; }
+.dd .yes li::before, .dd .no li::before { position: absolute; left: 0; top: 0; font: 800 3.4cqw/1.3 var(--display); }
+.dd .yes li::before { content: "\2713"; color: var(--jade); }
+.dd .no li::before { content: "\2715"; color: var(--hibiscus); }
+
+/* calendario */
+.cal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; }
+.cal > div { background: var(--paper); border: .25cqw solid var(--mint); border-radius: 1.6cqw; padding: 1.3cqw 1.6cqw; display: grid; gap: .6cqw; align-content: start; }
+.cal b { font: 800 3.3cqw/1 var(--display); color: var(--jade); text-transform: uppercase; letter-spacing: .03em; }
+.cal span, .cal-ley span { font-size: 2.45cqw; line-height: 1.2; padding: .6cqw 1cqw; border-radius: .8cqw; }
+.cal-ley { display: flex; gap: 1.6cqw; flex-wrap: wrap; }
+.cal-ley span { font: 700 2.6cqw/1 var(--body); }
+.c-th { background: var(--mint); color: var(--jade-deep); }
+.c-vn { background: var(--hibiscus-soft); color: #7A2343; }
+.c-ph { background: var(--mango-soft); color: #6B4A00; }
+
 /* práctica y juegos */
 .practice { gap: 2cqw; }
 .pr-top { display: grid; grid-template-columns: 1fr 16cqw; gap: 3cqw; align-items: center; margin: -7cqw -8cqw 0; padding: 5.4cqw 8cqw 2.8cqw; background: var(--hibiscus-soft); }
@@ -268,7 +293,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .wsg { display: grid; gap: .5cqw; }
 .wsg span { aspect-ratio: 1.12; display: grid; place-items: center; font: 700 3.1cqw/1 var(--body); background: var(--mint); border-radius: .7cqw; color: var(--ink); }
 .wsg span.on { background: var(--mango); color: var(--jade-deep); }
-.wsg.mini { gap: .25cqw; width: 34cqw; }
+.wsg.mini { gap: .2cqw; width: 27cqw; }
 .wsg.mini span { font-size: 1.7cqw; border-radius: .35cqw; }
 .wsw { display: grid; gap: 1cqw; }
 .wsw span { font: 700 3.2cqw/1 var(--body); letter-spacing: .06em; padding: 1.2cqw 1.8cqw; border: .3cqw solid var(--jade); border-radius: 1.4cqw; text-align: center; color: var(--jade); }
@@ -288,6 +313,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .bank { display: flex; flex-wrap: wrap; gap: 1.2cqw; }
 .bank span { font: 700 3.1cqw/1 var(--body); background: var(--mango-soft); color: var(--jade-deep); padding: 1.3cqw 2cqw; border-radius: 1.4cqw; }
 .fill, .ord, .vf { margin: 0; padding-left: 5cqw; display: grid; gap: 1.6cqw; font-size: 3.35cqw; line-height: 1.5; }
+.vf { gap: .9cqw; line-height: 1.3; }
 .fill li::marker, .ord li::marker, .vf li::marker { font-weight: 700; color: var(--hibiscus); }
 .gap { display: inline-block; width: 20cqw; border-bottom: .35cqw solid var(--ink-soft); margin: 0 1.2cqw; vertical-align: -.4cqw; }
 .gap.long { display: block; width: auto; height: 5.4cqw; margin: .6cqw 0 0; }
@@ -299,7 +325,7 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .reto .rt { position: absolute; top: -2.6cqw; left: 3.4cqw; background: var(--hibiscus); color: #fff; font: 800 2.8cqw/1 var(--display); text-transform: uppercase; letter-spacing: .05em; padding: 1.2cqw 2cqw; border-radius: 1.2cqw; transform: rotate(-2deg); }
 .reto p { font-size: 3.3cqw; line-height: 1.4; }
 .sols { display: grid; gap: 1.1cqw; font-size: 2.9cqw; line-height: 1.35; }
-.sols div { display: grid; grid-template-columns: 30cqw 1fr; gap: 2cqw; border-bottom: .15cqw solid var(--mint); padding-bottom: .9cqw; align-items: start; }
+.sols div { display: grid; grid-template-columns: 26cqw 1fr; gap: 2cqw; border-bottom: .15cqw solid var(--mint); padding-bottom: .9cqw; align-items: start; }
 .sols b { color: var(--jade); }
 
 .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; border-top: 1px solid var(--rule); padding-top: 24px; }
@@ -404,6 +430,16 @@ SPOTS = {
       <g><line x1="26" y1="4.6" x2="26" y2="8" stroke="{INK}" stroke-width=".4"/><ellipse cx="26" cy="13" rx="4.2" ry="5.4" fill="{J}"/><rect x="24.4" y="7.4" width="3.2" height="1.2" fill="{M}"/><rect x="24.4" y="17.6" width="3.2" height="1.2" fill="{M}"/><line x1="26" y1="18.8" x2="26" y2="22" stroke="{M}" stroke-width=".6"/></g>''',
     "isla": f'''<circle cx="9" cy="9" r="5.5" fill="{M}"/><path d="M0 23 C6 21 10 25 17 23 S28 21 34 23 V28 H0 Z" fill="{J}" opacity=".25"/>
       <path d="M8 23.5 C11 17.5 23 17.5 27 23.5 Z" fill="{M}" opacity=".85"/>''' + _palm(19, 10, 1.25, J),
+    "cuidarte": f'''<rect x="0" y="26" width="34" height="1.2" rx=".6" fill="{MINT}"/>
+      <circle cx="7" cy="20.5" r="3.3" fill="none" stroke="{H}" stroke-width="1.5"/><circle cx="14.5" cy="23" r="3.3" fill="none" stroke="{H}" stroke-width="1.5"/>
+      <path d="M9.4 18.2 L24 4.5 M12.6 20.6 L27.5 9" stroke="{JD}" stroke-width="1.7" stroke-linecap="round"/><circle cx="12.3" cy="16.6" r=".9" fill="{M}"/>
+      <rect x="19" y="14" width="13" height="3.4" rx="1.2" fill="{M}"/>
+      <g fill="{M}"><rect x="19.6" y="17" width="1" height="5"/><rect x="21.6" y="17" width="1" height="5"/><rect x="23.6" y="17" width="1" height="5"/><rect x="25.6" y="17" width="1" height="5"/><rect x="27.6" y="17" width="1" height="5"/><rect x="29.6" y="17" width="1" height="5"/></g>''',
+    "calendario": f'''<rect x="0" y="26" width="34" height="1.2" rx=".6" fill="{MINT}"/>
+      <rect x="6" y="5" width="22" height="20" rx="2.2" fill="#fff" stroke="{J}" stroke-width="1"/><rect x="6" y="5" width="22" height="5.5" rx="2.2" fill="{J}"/>
+      <rect x="10" y="2.5" width="1.6" height="5" rx=".8" fill="{JD}"/><rect x="22.4" y="2.5" width="1.6" height="5" rx=".8" fill="{JD}"/>
+      <g fill="{MINT}"><rect x="9" y="13" width="3.4" height="3"/><rect x="15.3" y="13" width="3.4" height="3"/><rect x="9" y="18.6" width="3.4" height="3"/><rect x="21.6" y="18.6" width="3.4" height="3"/></g>
+      <rect x="21.6" y="13" width="3.4" height="3" fill="{H}"/><rect x="15.3" y="18.6" width="3.4" height="3" fill="{M}"/>''',
 }
 
 
@@ -512,6 +548,21 @@ def checklist(items):
     return '<ul class="check">' + "".join(f"<li><span>{e(a)}<small>{e(b)}</small></span></li>" for a, b in items) + "</ul>"
 
 
+def costumbres(haz, evita):
+    h = "".join(f"<li>{e(x)}</li>" for x in haz)
+    v = "".join(f"<li>{e(x)}</li>" for x in evita)
+    return f'<div class="dd"><div class="yes"><b>Haz</b><ul>{h}</ul></div><div class="no"><b>Evita</b><ul>{v}</ul></div></div>'
+
+
+def calendario(meses):
+    celdas = []
+    for mes, eventos in meses:
+        ev = "".join(f'<span class="c-{pais}">{e(t)}</span>' for pais, t in eventos)
+        celdas.append(f'<div><b>{e(mes)}</b>{ev}</div>')
+    ley = '<div class="cal-ley"><span class="c-th">Tailandia</span><span class="c-vn">Vietnam</span><span class="c-ph">Filipinas</span></div>'
+    return ley + '<div class="cal">' + "".join(celdas) + "</div>"
+
+
 def raw(h):
     return h
 
@@ -611,8 +662,9 @@ def unir(pares, titulo="Une con una flecha", instr="Une cada palabra en inglés 
     izq_html = "".join(f'<div class="mt-l"><span class="k">{i + 1}</span>{e(a)}<i></i></div>' for i, (a, _) in enumerate(pares))
     der_html = "".join(f'<div class="mt-r"><i></i><span class="k">{letras[j]}</span>{e(pares[k][1])}</div>' for j, k in enumerate(der))
     sol = ", ".join(f"{i + 1}{letras[der.index(i)]}" for i in range(len(pares)))
+    cab = _cab(titulo, instr)
     _sol(e(sol))
-    return f'<div class="ex">{_cab(titulo, instr)}<div class="mt"><div>{izq_html}</div><div>{der_html}</div></div></div>'
+    return f'<div class="ex">{cab}<div class="mt"><div>{izq_html}</div><div>{der_html}</div></div></div>'
 
 
 def elegir(preguntas, titulo="¿Qué dirías?", instr="Marca la respuesta correcta."):
@@ -621,15 +673,17 @@ def elegir(preguntas, titulo="¿Qué dirías?", instr="Marca la respuesta correc
         ops = "".join(f'<span><i></i>{"abc"[j]}) {e(o)}</span>' for j, o in enumerate(opciones))
         out.append(f'<div class="mc"><p>{e(q)}</p><div>{ops}</div></div>')
         sols.append("abc"[ok])
+    cab = _cab(titulo, instr)
     _sol(e(", ".join(f"{i + 1}{s}" for i, s in enumerate(sols))))
-    return f'<div class="ex">{_cab(titulo, instr)}{"".join(out)}</div>'
+    return f'<div class="ex">{cab}{"".join(out)}</div>'
 
 
 def completar(frases, banco, titulo="Completa la frase", instr="Elige la palabra que falta."):
     chips = "".join(f"<span>{e(w)}</span>" for w in banco)
     filas = "".join(f'<li>{e(a)}<span class="gap"></span>{e(b)}</li>' for a, b, _ in frases)
+    cab = _cab(titulo, instr)
     _sol(e(", ".join(f"{i + 1} {w}" for i, (_, _, w) in enumerate(frases))))
-    return f'<div class="ex">{_cab(titulo, instr)}<div class="bank">{chips}</div><ol class="fill">{filas}</ol></div>'
+    return f'<div class="ex">{cab}<div class="bank">{chips}</div><ol class="fill">{filas}</ol></div>'
 
 
 def ordenar(frases, titulo="Ordena la frase", instr="Escribe las palabras en el orden correcto.", seed=5):
@@ -643,20 +697,23 @@ def ordenar(frases, titulo="Ordena la frase", instr="Escribe las palabras en el 
             if mez != ws:
                 break
         out.append('<li><div class="bank">' + "".join(f"<span>{e(w)}</span>" for w in mez) + '</div><span class="gap long"></span></li>')
+    cab = _cab(titulo, instr)
     _sol(e(" | ".join(frases)))
-    return f'<div class="ex">{_cab(titulo, instr)}<ol class="ord">{"".join(out)}</ol></div>'
+    return f'<div class="ex">{cab}<ol class="ord">{"".join(out)}</ol></div>'
 
 
 def vf(afirmaciones, titulo="¿Verdadero o falso?", instr="Marca V o F."):
     filas = "".join(f'<li><span>{e(a)}</span><b>V</b><b>F</b></li>' for a, _ in afirmaciones)
+    cab = _cab(titulo, instr)
     _sol(e(", ".join(f"{i + 1} {'V' if v else 'F'}" for i, (_, v) in enumerate(afirmaciones))))
-    return f'<div class="ex">{_cab(titulo, instr)}<ol class="vf">{filas}</ol></div>'
+    return f'<div class="ex">{cab}<ol class="vf">{filas}</ol></div>'
 
 
 def corregir(frases, titulo="Encuentra el error", instr="Tacha lo que está mal y escribe la frase bien."):
     filas = "".join(f'<li><s>{e(a)}</s><span class="gap long"></span></li>' for a, _ in frases)
+    cab = _cab(titulo, instr)
     _sol(e(" | ".join(b for _, b in frases)))
-    return f'<div class="ex">{_cab(titulo, instr)}<ol class="ord">{filas}</ol></div>'
+    return f'<div class="ex">{cab}<ol class="ord">{filas}</ol></div>'
 
 
 def ficha(campos, titulo="Tu primera ficha", instr="Rellénala con tus datos, en inglés."):

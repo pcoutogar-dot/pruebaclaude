@@ -11,7 +11,7 @@ Convención de pronunciación (se explica en las páginas 6 y 7 del libro):
   - Las consonantes finales se escriben y se pronuncian siempre.
 """
 import build
-from build import (practica_inicio, practica_cab, sopa, unir, elegir, completar, ordenar, vf, corregir, ficha, reto,
+from build import (costumbres, calendario, practica_inicio, practica_cab, sopa, unir, elegir, completar, ordenar, vf, corregir, ficha, reto,
                    chap_opener, sec, p, frases, vocab, vocab3, oiras, dialogo, truco, caja, datos, lista, audio,
                    locales, sonidos, checklist, spot, raw, e, J, JD, M, H, MINT, INK)
 
@@ -68,14 +68,15 @@ PORTADA = '''<div class="page cover">
 
 CONTRA = '''<div class="page back"><div class="in">
   <h3>No necesitas un inglés perfecto. Necesitas que te entiendan.</h3>
-  <p>Un libro escrito para quien empieza de cero después de los 50 y quiere vivir una temporada en Tailandia, Vietnam o Filipinas sin miedo a abrir la boca.</p>
+  <p>Para quien empieza de cero después de los 50 y quiere vivir en Tailandia, Vietnam o Filipinas sin miedo a abrir la boca.</p>
   <ul>
-    <li>Cientos de frases para el hospital, la casa, el dinero, la calle y los amigos</li>
+    <li>Cientos de frases para el hospital, la casa, el dinero y la calle</li>
     <li>La pronunciación escrita como suena, sin símbolos raros</li>
     <li>El inglés que de verdad oirás allí, explicado</li>
     <li>Audios con código QR y tarjetas para recortar</li>
+    <li>Juegos y ejercicios en cada capítulo, con soluciones</li>
+    <li>Costumbres, fiestas y trucos para vivir allí sin sustos</li>
   </ul>
-  <p>Ábrelo por la página que necesites. Practica en voz alta. Y llévalo en el bolso.</p>
   <div class="bar"><span class="price">Inglés<br>para valientes</span><span class="isbn">Espacio para<br>el código de barras</span></div>
 </div></div>'''
 
@@ -582,6 +583,127 @@ def cap10():
             pg("page", b, run), pg("page", c, run)]
 
 
+# ======================================================================= capítulo 11
+def cap11():
+    run = "Capítulo 11 | Cuidarte"
+    a = chap_opener(11, "Cuidarte", "Looking after yourself | Lúking áfter iorsélf", "cuidarte",
+                    ["Ir a la peluquería y pedir exactamente lo que quieres", "Disfrutar de un masaje a tu medida", "El sastre, el dentista y el óptico"],
+                    "En mi primer masaje tailandés no sabía decir «más suave». Aguanté una hora apretando los dientes y salí como nuevo… y dolorido. Al día siguiente aprendí dos palabras que te regalo: «softer, please». Cuidarse allí es barato y un placer, si sabes pedir lo que quieres.")
+    b = bloque(sec("En la peluquería", "At the hair salon | At de jer salón", "cuidarte"),
+               frases([("How much is a cut and blow-dry?", "Jáu mach is a kat and blóu-drái?", "¿Cuánto cuesta cortar y secar?"),
+                       ("Just a trim, please.", "Dyast a trim, pliis", "Solo cortar las puntas."),
+                       ("Not too short, please.", "Not tuu short, pliis", "No muy corto, por favor."),
+                       ("Can you cover my grey hair?", "Can iú káver mái gréi jer?", "¿Me tapa las canas?"),
+                       ("I like my grey hair.", "Ái láik mái gréi jer", "Me gustan mis canas."),
+                       ("Like this photo, please.", "Láik dis fóutou, pliis", "Como en esta foto, por favor."),
+                       ("Can you do an allergy test first?", "Can iú du an álerdyi test ferst?", "¿Me hace antes la prueba de alergia?")], small=True),
+               truco("Antes de sentarte", "Lleva una foto del corte o del color y pregunta el precio total: lavar y peinar a veces se cobra aparte. Si te tiñes, pide la prueba de alergia."))
+    c = bloque(sec("El masaje", "Massage | Masásh"),
+               oiras("Así lo oirás allí", "Casi siempre te preguntarán esto antes de empezar.",
+                     [("Thai or oil?", "¿Tailandés (con ropa y sin aceite) o con aceite?"), ("Foot massage?", "¿Masaje de pies?"), ("Strong or soft?", "¿Fuerte o suave?")]),
+               frases([("Softer, please.", "Sófter, pliis", "Más suave, por favor."),
+                       ("Stronger, please.", "S-trónguer, pliis", "Más fuerte, por favor."),
+                       ("It hurts.", "It jerts", "Me hace daño."),
+                       ("Not there, please.", "Not der, pliis", "Ahí no, por favor."),
+                       ("I have a bad back.", "Ái jav a bad bak", "Tengo mal la espalda.")], small=True),
+               truco("", "Si tienes la tensión alta, problemas de espalda o de rodillas, o tomas anticoagulantes, dilo antes de empezar. En Tailandia, «bao bao» significa más suave."))
+    d = bloque(sec("Sastre, dentista y óptico", "Tailor, dentist, optician | Téilor, déntist, optíshan"),
+               frases([("Too tight here.", "Tuu táit jíer", "Aquí me queda estrecho."),
+                       ("A little looser, please.", "A lítel lúuser, pliis", "Un poco más ancho, por favor."),
+                       ("The sleeves are too long.", "De sliivs ar tuu long", "Las mangas son demasiado largas."),
+                       ("When is the next fitting?", "Uén is de nékst fíting?", "¿Cuándo es la próxima prueba?"),
+                       ("I need a cleaning.", "Ái niid a klíining", "Necesito una limpieza de boca."),
+                       ("I need new glasses.", "Ái niid niu gláses", "Necesito gafas nuevas.")], small=True),
+               truco("Tu aliado, el sastre", "Los sastres de Hoi An hacen una o dos pruebas: pide todos los arreglos en la prueba, no cuando ya te lo has llevado. Y como en Asia cuesta encontrar tallas grandes de mujer, el sastre te hace la ropa a tu medida."))
+    return [pg("page", a[1], run, cls="opener", chapter=(11, "Cuidarte", "Peluquería, masaje, sastre, dentista"), lbl="Capítulo 11"),
+            pg("page", b, run), pg("page", c, run), pg("page", d, run)]
+
+
+# ======================================================================= costumbres, vivir allí y fiestas
+def costumbres_paises():
+    run = "Cada país, a su manera"
+    t = bloque(sec("Costumbres en Tailandia", "Lo que conviene saber para quedar bien", "pagoda"),
+               costumbres(["Saluda con el wai: palmas juntas y una pequeña inclinación.",
+                           "En los templos, tapa hombros y rodillas, y descálzate.",
+                           "Cuando suene el himno (a las 8:00 y a las 18:00), quédate quieta.",
+                           "Mantén la calma: «jai yen», corazón fresco."],
+                          ["Tocar la cabeza de nadie, ni siquiera la de un niño.",
+                           "Señalar con los pies o subirlos a un mueble.",
+                           "Bromear sobre la familia real o pisar un billete.",
+                           "Si eres mujer, tocar a un monje."]),
+               p('<b>Curioso:</b> se come con cuchara. El tenedor sirve para empujar la comida hacia ella.', 'soft'))
+    v = bloque(sec("Costumbres en Vietnam", "Respeto a los mayores y calma ante todo", "farolillos"),
+               costumbres(["Saluda primero a las personas mayores.",
+                           "Cruza la calle despacio y sin pararte: las motos te esquivan.",
+                           "En las pagodas, tapa hombros y rodillas, y quítate el sombrero.",
+                           "Lleva el bolso cruzado, con la cremallera hacia ti."],
+                          ["Dejar los palillos de pie en el arroz: recuerda al incienso de los difuntos.",
+                           "Enfadarte o criticar a alguien en público.",
+                           "Regatear en tiendas con precio marcado.",
+                           "Regalar paraguas, zapatos o papel de envolver negro."]),
+               p('<b>Curioso:</b> en Tết, el Año Nuevo, se regalan sobres rojos con billetes nuevos. Se llaman «lì xì».', 'soft'))
+    f = bloque(sec("Costumbres en Filipinas", "Cercanía, cortesía y mucha sonrisa", "isla"),
+               costumbres(["Añade «po» al hablar con personas mayores: «Salamat po».",
+                           "Descálzate al entrar en una casa.",
+                           "Confirma los planes: a veces un «yes» es solo cortesía.",
+                           "Para llamar a alguien, mueve la mano con la palma hacia abajo."],
+                          ["Avergonzar a alguien en público, ni en broma.",
+                           "Llamar con el dedo y la palma hacia arriba: así se llama a los perros.",
+                           "Enfadarte con un camarero.",
+                           "Llegar tarde a una cita oficial: el «Filipino time» es solo para fiestas."]),
+               p('<b>Curioso:</b> levantar las cejas significa «sí» u «hola», y mucha gente señala con los labios.', 'soft'))
+    return [pg("page", t, run, lbl="Costumbres"), pg("page", v, run, lbl="Costumbres"), pg("page", f, run, lbl="Costumbres")]
+
+
+def vivir_alli():
+    run = "Cada país, a su manera"
+    body = bloque(sec("Vivir allí sin sustos", "Lo que nadie te cuenta antes de ir", "farmacia"),
+                  lista(["<b>El mosquito del dengue pica de día.</b> Ponte repelente desde por la mañana, después de la crema solar. Si tienes fiebre, toma solo paracetamol, nunca ibuprofeno ni aspirina, y ve al médico.",
+                         "<b>De marzo a mayo el calor llega a 40 °C.</b> Bebe antes de tener sed y descansa a mediodía, sobre todo si tomas pastillas para la tensión.",
+                         "<b>No bebas agua del grifo.</b> Compra agua con el precinto intacto.",
+                         "<b>Lleva pañuelos de papel.</b> Muchos baños no tienen papel, sino una manguerita. El papel usado va a la papelera.",
+                         "<b>En el norte de Tailandia hay humo</b> de febrero a abril. Mira la calidad del aire en una aplicación."]),
+                  frases([("Is there toilet paper?", "Is der tóilet péiper?", "¿Hay papel higiénico?"),
+                          ("Is this water safe to drink?", "Is dis uóter séif tu drink?", "¿Se puede beber esta agua?"),
+                          ("Do you have mosquito repellent?", "Du iú jav moskíitou ripélent?", "¿Tiene repelente de mosquitos?")], small=True))
+    return [pg("page", body, run, lbl="Vivir allí")]
+
+
+def fiestas():
+    run = "Cada país, a su manera"
+    body = bloque(sec("Fiestas y estaciones", "Fechas aproximadas: muchas cambian cada año con la luna", "calendario"),
+                  calendario([("Enero", [("vn", "Tết: enero o febrero"), ("ph", "Sinulog en Cebú")]),
+                              ("Febrero", [("vn", "Tết"), ("th", "Humo en el norte")]),
+                              ("Marzo", [("th", "Empieza el calor fuerte"), ("ph", "Semana Santa: marzo o abril")]),
+                              ("Abril", [("th", "Songkran, del 13 al 15"), ("ph", "Calor seco")]),
+                              ("Mayo", [("th", "Llegan las lluvias")]),
+                              ("Junio", [("ph", "Lluvias y tifones hasta noviembre"), ("vn", "Lluvias en el sur")]),
+                              ("Julio", [("th", "Lluvias"), ("ph", "Tifones")]),
+                              ("Agosto", [("ph", "Tifones"), ("th", "Lluvias")]),
+                              ("Septiembre", [("ph", "Empieza la Navidad"), ("vn", "Fiesta del Medio Otoño")]),
+                              ("Octubre", [("vn", "Inundaciones en Hoi An y Da Nang"), ("th", "Terminan las lluvias")]),
+                              ("Noviembre", [("th", "Loy Krathong, luna llena"), ("th", "Empieza la mejor época")]),
+                              ("Diciembre", [("ph", "Misas del Simbang Gabi, del 16 al 24"), ("vn", "Lluvias en el centro")])]),
+                  truco("", "En Tết muchas tiendas cierran varios días y los precios suben. Saca dinero antes."))
+    return [pg("page", body, run, chapter=("·", "Fiestas y estaciones", "El calendario del año en los tres países"), lbl="Fiestas")]
+
+
+def test_final():
+    practica_inicio("Test final")
+    body = bloque(practica_cab("¿Estás lista?", "Diez preguntas de cultura y curiosidades"),
+                  vf([("En Tailandia, el año 2026 es el año 2569.", True),
+                      ("En Tailandia es educado acariciar la cabeza de un niño.", False),
+                      ("Tailandia nunca fue una colonia europea.", True),
+                      ("Vietnam es el segundo productor de café del mundo.", True),
+                      ("Casi un tercio de los vietnamitas se apellida Nguyen.", True),
+                      ("En Vietnam, dejar los palillos de pie en el arroz da buena suerte.", False),
+                      ("El inglés es lengua oficial de Filipinas.", True),
+                      ("En Filipinas, la Navidad empieza en septiembre.", True),
+                      ("El mosquito del dengue solo pica de noche.", False),
+                      ("Si tienes dengue, lo mejor es tomar ibuprofeno.", False)], "Verdadero o falso", "Marca V o F. Si aciertas siete, ya puedes hacer las maletas."))
+    return [pg("page", body, "Test final", cls="practice", chapter=("·", "Test final: ¿estás lista?", "Diez preguntas de cultura y curiosidades"), lbl="Test final")]
+
+
 # ======================================================================= práctica
 def practica(n):
     practica_inicio(f"Capítulo {n}")
@@ -641,6 +763,12 @@ def practica(n):
                           ficha([("My name is", "Me llamo"), ("I'm from", "Soy de"), ("I live in", "Vivo en")],
                                 "Tu presentación", "Escríbela y apréndetela de memoria. La usarás cien veces."),
                           reto("Saluda a alguien nuevo y pregúntale «Where are you from?». Lo demás viene solo.")),
+        11: lambda: bloque(practica_cab("Cuidarte"),
+                           unir([("trim", "cortar las puntas"), ("softer", "más suave"), ("tight", "estrecho"), ("fitting", "prueba de ropa"), ("cleaning", "limpieza")],
+                                seed=14),
+                           elegir([("La masajista aprieta demasiado:", ["Stronger, please.", "Softer, please.", "One hour, please."], 1),
+                                   ("En la peluquería solo quieres las puntas:", ["Just a trim, please.", "Cover my grey hair.", "Not there, please."], 0)]),
+                           reto("Pide en tu próxima peluquería «just a trim, please». Y si te gustan tus canas, dilo con orgullo: «I like my grey hair».")),
         10: lambda: bloque(practica_cab("Tu inglés y tu móvil"),
                            vf([("Las frases cortas se traducen mejor que las largas.", True),
                                ("El modo cámara del traductor sirve para leer menús y carteles.", True),
@@ -654,13 +782,14 @@ def practica(n):
 def soluciones():
     run = "Soluciones"
     items = build.SOLUCIONES
-    mitad = (len(items) + 1) // 2
+    tercio = (len(items) + 2) // 3
     def bloque_sol(xs):
         return '<div class="sols">' + "".join(f"<div><b>{e(t)}</b><span>{h}</span></div>" for t, h in xs) + "</div>"
-    a = bloque('<h3>Soluciones</h3>', p('No hagas trampa… o sí: también se aprende mirando.', 'soft'), bloque_sol(items[:mitad]))
-    b = bloque(bloque_sol(items[mitad:]))
+    a = bloque('<h3>Soluciones</h3>', p('No hagas trampa… o sí: también se aprende mirando.', 'soft'), bloque_sol(items[:tercio - 1]))
+    b = bloque(bloque_sol(items[tercio - 1:2 * tercio]))
+    c = bloque(bloque_sol(items[2 * tercio:]))
     return [pg("page", a, run, chapter=("·", "Soluciones de los juegos", "Para comprobar tus respuestas"), lbl="Soluciones"),
-            pg("page", b, run, lbl="Soluciones")]
+            pg("page", b, run, lbl="Soluciones"), pg("page", c, run, lbl="Soluciones")]
 
 
 # ======================================================================= países
@@ -755,19 +884,20 @@ def indice(caps):
     for num, (n, titulo, sub) in caps:
         extra = ' class="extra"' if n == "·" else ""
         nn = "" if n == "·" else n
-        items.append(f'<li{extra}><span class="n">{nn}</span><span class="t">{e(titulo)}<small>{e(sub)}</small></span><span class="p">{num}</span></li>')
-    return bloque('<h3>Qué vas a aprender</h3>', p('Cada capítulo es una situación real. Ábrelo por donde lo necesites.', 'soft'),
+        sm = "" if n == "·" else f"<small>{e(sub)}</small>"
+        items.append(f'<li{extra}><span class="n">{nn}</span><span class="t">{e(titulo)}{sm}</span><span class="p">{num}</span></li>')
+    return bloque('<h3>Qué vas a aprender</h3>',
                   f'<div class="toc"><ol>{"".join(items)}</ol></div>')
 
 
 def paginas():
     portada = {"kind": "raw", "body": PORTADA, "lbl": "Portada", "id": "portada"}
     build.SOLUCIONES.clear()
-    caps = [cap1, cap2, cap3, cap4, cap5, cap6, cap7, cap8, cap9, cap10]
+    caps = [cap1, cap2, cap3, cap4, cap5, cap6, cap7, cap8, cap9, cap10, cap11]
     capitulos = []
     for i, c in enumerate(caps, start=1):
         capitulos += c() + practica(i)
-    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + tarjetas() + diccionario() + soluciones()
+    cuerpo = carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + costumbres_paises() + vivir_alli() + fiestas() + tarjetas() + diccionario() + test_final() + soluciones()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)

@@ -1,6 +1,6 @@
 # Inglés para valientes
 
-Libro de inglés de supervivencia (64 páginas, 6 × 9 pulgadas) para hispanohablantes de más de 50 años que se van a vivir a Tailandia, Vietnam o Filipinas.
+Libro de inglés de supervivencia (88 páginas, 6 × 9 pulgadas) para hispanohablantes de más de 50 años que se van a vivir a Tailandia, Vietnam o Filipinas.
 
 ## Archivos
 
@@ -33,7 +33,7 @@ node pdf.js --pdf
 
 ## Antes de imprimir
 
-1. En `build.py`, cambia `DOMINIO = "TU-DOMINIO.com"` por tu dominio y vuelve a generar el libro. Los QR apuntan a `tu-dominio/audio/<número>`: el 0 es la bienvenida y del 1 al 10, un número por capítulo.
+1. En `build.py`, cambia `DOMINIO = "TU-DOMINIO.com"` por tu dominio y vuelve a generar el libro. Los QR apuntan a `tu-dominio/audio/<número>`: el 0 es la bienvenida y del 1 al 11, un número por capítulo.
 2. En `contenido.py`, sustituye `[Tu nombre]` (aparece en la carta al lector).
 3. Revisa las anécdotas «Me pasó a mí» (una al principio de cada capítulo, en `contenido.py`): son borradores en tu voz. Cámbialas por lo que te pasó de verdad o quita las que no encajen. Cuando estén listas, pon `BORRADOR = False` en `build.py` para quitar la etiqueta de la vista previa (en el PDF no aparece).
 4. Pide que revisen la pronunciación y las palabras en tailandés y vietnamita (ver `investigacion.md`).
