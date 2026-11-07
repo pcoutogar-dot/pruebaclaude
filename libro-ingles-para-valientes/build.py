@@ -278,6 +278,35 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .c-vn { background: var(--hibiscus-soft); color: #7A2343; }
 .c-ph { background: var(--mango-soft); color: #6B4A00; }
 
+/* cuaderno */
+.cover.cw { background: var(--mango); color: var(--jade-deep); }
+.cover.cw .kicker { color: var(--jade-deep); }
+.cover.cw .countries { color: var(--mango); }
+.cover.cw h2 { color: var(--jade-deep); }
+.cover.cw h2 span { color: var(--hibiscus); }
+.cover.cw .sub { color: var(--jade-deep); }
+.cover.cw .perks span { background: var(--jade-deep); color: #fff; }
+.rep { display: grid; grid-template-columns: 15cqw 1fr; gap: 3cqw; align-items: center; background: var(--mint); border-radius: 2cqw; padding: 2.2cqw 3cqw; }
+.rep svg { width: 15cqw; height: 15cqw; background: #fff; border-radius: .8cqw; padding: .6cqw; box-sizing: border-box; }
+.rep > div { display: grid; gap: .8cqw; min-width: 0; }
+.rep b { font: 800 4cqw/1.1 var(--display); color: var(--hibiscus); }
+.rep p { font-size: 2.85cqw; line-height: 1.35; }
+.rep code { font: 700 2.6cqw/1 var(--body); color: var(--jade-deep); }
+.ticks { display: flex; gap: 4cqw; font-size: 3cqw; color: var(--ink-soft); }
+.ticks span { display: inline-flex; align-items: center; gap: 1.4cqw; }
+.ticks i { width: 3.6cqw; height: 3.6cqw; border: .45cqw solid var(--jade); border-radius: .9cqw; }
+.ex-n.ear { background: var(--hibiscus); font-size: 3.6cqw; }
+.diploma { margin-top: 2cqw; border: .8cqw double var(--jade); border-radius: 2cqw; padding: 7cqw 6cqw 6cqw; display: grid; gap: 3.2cqw; text-align: center; position: relative; }
+.diploma .k { font: 700 2.6cqw/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--hibiscus); }
+.diploma h3 { font-size: 8.4cqw; }
+.diploma p { font-size: 3.5cqw; }
+.diploma .ln { border-bottom: .35cqw solid var(--ink-soft); height: 7cqw; margin: 0 4cqw; }
+.diploma .sello { position: absolute; right: -3cqw; top: -5cqw; width: 22cqw; height: 22cqw; border-radius: 50%; background: var(--mango); color: var(--jade-deep); display: grid; place-items: center; font: 800 3.2cqw/1.1 var(--display); text-transform: uppercase; transform: rotate(-12deg); box-shadow: 0 0 0 1.2cqw #fff, 0 0 0 1.6cqw var(--mango); }
+.diploma .firma { display: grid; grid-template-columns: 1fr 1fr; gap: 6cqw; margin-top: 3cqw; text-align: left; font-size: 2.8cqw; color: var(--ink-soft); }
+.diploma .firma span { border-top: .3cqw solid var(--ink-soft); padding-top: 1cqw; }
+.promo { display: grid; grid-template-columns: 1fr 26cqw; gap: 4cqw; align-items: center; }
+.promo svg { width: 26cqw; height: 22cqw; }
+
 /* créditos y notas */
 .credpage { justify-content: flex-end; }
 .cred { display: grid; gap: 2.6cqw; }
@@ -288,10 +317,10 @@ body { background: var(--bg); color: var(--fg); font-family: var(--body); }
 .lines .l-say { border-left: .2cqw solid var(--mint); }
 
 /* práctica y juegos */
-.practice { gap: 2cqw; }
-.pr-top { display: grid; grid-template-columns: 1fr 16cqw; gap: 3cqw; align-items: center; margin: -7cqw -8cqw 0; padding: 5.4cqw 8cqw 2.8cqw; background: var(--hibiscus-soft); }
+.practice { gap: 1.5cqw; }
+.pr-top { display: grid; grid-template-columns: 1fr 16cqw; gap: 3cqw; align-items: center; margin: -7cqw -8cqw 0; padding: 4.6cqw 8cqw 2.2cqw; background: var(--hibiscus-soft); }
 .pr-top .pr-k { font: 700 2.5cqw/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--hibiscus); }
-.pr-top h3 { margin-top: 1.2cqw; font-size: 6.4cqw; }
+.pr-top h3 { margin-top: .9cqw; font-size: 6.4cqw; }
 .pr-top small { display: block; font: italic 400 3cqw/1.3 var(--body); color: var(--ink-soft); margin-top: .8cqw; }
 .pr-ico { width: 16cqw; height: 13cqw; }
 .ex { display: grid; gap: 1.2cqw; }
@@ -595,13 +624,16 @@ DOCTORA = f'''<svg viewBox="0 0 44 44" aria-hidden="true">
 import random as _random
 
 SOLUCIONES = []          # (titulo, html) en orden de aparición
-_EJ = {"n": 0, "cap": ""}
+_EJ = {"n": 0, "cap": "", "ref": ""}
 
 
-def practica_inicio(cap):
-    """Llamar antes de los ejercicios de un capítulo: numera y agrupa sus soluciones."""
+def practica_inicio(cap, ref=None):
+    """Llamar antes de los ejercicios de un capítulo: numera y agrupa sus soluciones.
+    `ref` es el subtítulo por defecto de sus páginas (p. ej. dónde está la teoría en el libro)."""
     _EJ["n"] = 0
     _EJ["cap"] = cap
+    if ref is not None:
+        _EJ["ref"] = ref
 
 
 def _num():
@@ -617,8 +649,9 @@ def _cab(titulo, instr):
     return f'<div class="ex-h"><span class="ex-n">{_num()}</span><div><b>{e(titulo)}</b><span>{e(instr)}</span></div></div>'
 
 
-def practica_cab(titulo="Practica y juega", sub=""):
-    return (f'<div class="pr-top"><div><span class="pr-k">Practica y juega</span><h3>{e(titulo)}</h3>'
+def practica_cab(titulo="Practica y juega", sub="", k="Practica y juega"):
+    sub = sub or _EJ["ref"]
+    return (f'<div class="pr-top"><div><span class="pr-k">{e(k)}</span><h3>{e(titulo)}</h3>'
             f'{f"<small>{e(sub)}</small>" if sub else ""}</div>{JUEGO}</div>')
 
 
@@ -733,6 +766,12 @@ def ficha(campos, titulo="Tu primera ficha", instr="Rellénala con tus datos, en
     return f'<div class="ex">{cab}<div class="form">{filas}</div></div>'
 
 
+def escucha(pista, texto="Escucha las frases del capítulo y repítelas en voz alta. Marca una casilla cada vez que lo hagas."):
+    """Bloque sin número ni solución: escuchar el audio del capítulo y repetir."""
+    return (f'<div class="rep">{qr_svg(pista)}<div><b>Escucha y repite</b><p>{e(texto)} <code>{DOMINIO}/audio/{pista}</code></p>'
+            f'<div class="ticks"><span><i></i>1.ª vez</span><span><i></i>2.ª vez</span><span><i></i>3.ª vez</span></div></div></div>')
+
+
 def reto(texto):
     return f'<div class="reto"><span class="rt">Reto de la semana</span><p>{e(texto)}</p></div>'
 
@@ -774,6 +813,9 @@ def montar(paginas, titulo_web, intro_html, notas_html):
 if __name__ == "__main__":
     sys.path.insert(0, str(AQUI))
     import contenido  # noqa: E402
-    salida = montar(contenido.paginas(), contenido.TITULO_WEB, contenido.INTRO, contenido.NOTAS)
-    (AQUI / "libro.html").write_text(salida, encoding="utf8")
-    print("libro.html:", len(contenido.paginas()), "páginas")
+    libro = contenido.paginas()
+    (AQUI / "libro.html").write_text(montar(libro, contenido.TITULO_WEB, contenido.INTRO, contenido.NOTAS), encoding="utf8")
+    print("libro.html:", len(libro), "páginas")
+    cuaderno = contenido.cuaderno()
+    (AQUI / "cuaderno.html").write_text(montar(cuaderno, contenido.TITULO_CUADERNO, contenido.INTRO_CUADERNO, contenido.NOTAS), encoding="utf8")
+    print("cuaderno.html:", len(cuaderno), "páginas")

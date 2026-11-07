@@ -11,11 +11,13 @@ Convención de pronunciación (se explica en las páginas 6 y 7 del libro):
   - Las consonantes finales se escriben y se pronuncian siempre.
 """
 import build
-from build import (costumbres, calendario, practica_inicio, practica_cab, sopa, unir, elegir, completar, ordenar, vf, corregir, ficha, reto,
+from build import (escucha, costumbres, calendario, practica_inicio, practica_cab, sopa, unir, elegir, completar, ordenar, vf, corregir, ficha, reto,
                    chap_opener, sec, p, frases, vocab, vocab3, oiras, dialogo, truco, caja, datos, lista, audio,
                    locales, sonidos, checklist, spot, raw, e, J, JD, M, H, MINT, INK)
 
 TITULO_WEB = "Inglés para valientes"
+TITULO_CUADERNO = "Cuaderno de ejercicios"
+CUADERNO = "Cuaderno de ejercicios"
 LIBRO = "Inglés para valientes"
 
 
@@ -73,12 +75,87 @@ CONTRA = '''<div class="page back"><div class="in">
     <li>Cientos de frases para el hospital, la casa, el dinero y la calle</li>
     <li>La pronunciación escrita como suena, sin símbolos raros</li>
     <li>El inglés que de verdad oirás allí, explicado</li>
-    <li>Audios con código QR y tarjetas para recortar</li>
-    <li>Juegos y ejercicios en cada capítulo, con soluciones</li>
+    <li>Audios con código QR para escuchar cada frase</li>
+    <li>Tarjetas, diccionario y páginas para tus notas</li>
     <li>Costumbres, fiestas y trucos para vivir allí sin sustos</li>
   </ul>
   <div class="bar"><span class="price">Inglés<br>para valientes</span><span class="isbn">Espacio para<br>el código de barras</span></div>
 </div></div>'''
+
+
+# ======================================================================= cuaderno: portada y contraportada
+PORTADA_CUADERNO = (PORTADA
+    .replace('<div class="page cover">', '<div class="page cover cw">')
+    .replace('<circle cx="70" cy="110" r="21" fill="#F4B63F"/>', '<circle cx="70" cy="110" r="21" fill="#FFFFFF"/>')
+    .replace('font-size="4.3" fill="#0A403A">Hello!</text>', 'font-size="3.7" fill="#0A403A">Let\'s go!</text>')
+    .replace('Inglés desde cero | Después de los 50', 'Cuaderno de ejercicios')
+    .replace('Lo que necesitas decir y entender para vivir tranquila en el Sudeste Asiático.', 'Juegos, retos y práctica para soltarte a hablar. Con todas las soluciones.')
+    .replace('<span>Con audios</span><span>Pronunciación fácil</span><span>Letra grande</span>', '<span>Sopas de letras</span><span>Retos de la semana</span><span>Con soluciones</span>'))
+
+CONTRA_CUADERNO = '''<div class="page back"><div class="in">
+  <h3>Leer está bien. Practicar es lo que te suelta.</h3>
+  <p>El compañero de «Inglés para valientes»: diez minutos al día, un lápiz y ganas de jugar.</p>
+  <ul>
+    <li>Dos páginas de juegos por capítulo: sopas de letras, unir, completar y «¿qué dirías?»</li>
+    <li>Un reto de la semana para practicar en la calle</li>
+    <li>Audios para escuchar y repetir</li>
+    <li>Test final y certificado de valiente</li>
+    <li>Todas las soluciones al final</li>
+  </ul>
+  <p>Funciona con el libro o por su cuenta: las instrucciones están en español.</p>
+  <div class="bar"><span class="price">Cuaderno<br>de ejercicios</span><span class="isbn">Espacio para<br>el código de barras</span></div>
+</div></div>'''
+
+
+def creditos_cuaderno():
+    body = bloque('<div class="cred">'
+                  '<p><b>Inglés para valientes<br>Cuaderno de ejercicios</b><br>Juegos, retos y práctica para soltarte a hablar.</p>'
+                  '<p>Primera edición, 2026.<br>© <span class="ph">[Tu nombre]</span>, 2026. Todos los derechos reservados.</p>'
+                  '<p>Texto, diseño e ilustraciones: <span class="ph">[Tu nombre]</span>.<br>Audios: <span class="ph">TU-DOMINIO.com</span>.</p>'
+                  '<p>Ninguna parte de este cuaderno puede reproducirse sin permiso por escrito, salvo citas breves. Puedes fotocopiar las páginas de ejercicios para tu uso personal.</p>'
+                  '<p>Acompaña al libro «Inglés para valientes», pero puede usarse por separado.</p>'
+                  '<p>ISBN: <span class="ph">[pendiente]</span><br>Impreso bajo demanda.</p>'
+                  '</div>')
+    return [pg("page", body, CUADERNO, cls="credpage", lbl="Créditos")]
+
+
+def como_usar_cuaderno():
+    body = bloque('<h3>Cómo usar este cuaderno</h3>',
+                  p('Cada capítulo del libro «Inglés para valientes» tiene aquí dos páginas de práctica. Arriba de cada una verás en qué página del libro está la teoría, por si quieres repasarla.'),
+                  p('Si no tienes el libro, no pasa nada: las instrucciones están en español y todas las soluciones, al final.'),
+                  lista(["<b>Una página al día.</b> Diez minutos bastan. Mejor poco y a menudo que mucho de golpe.",
+                         "<b>Usa lápiz.</b> Así puedes borrar y repetir los juegos dentro de unas semanas.",
+                         "<b>Lee en voz alta</b> todo lo que escribas, aunque estés sola en casa.",
+                         "<b>Escucha y repite.</b> Cada capítulo tiene su audio: márcalo cada vez que lo escuches.",
+                         "<b>Los retos de la semana son lo más importante:</b> el inglés se aprende en la calle."]),
+                  '<div class="promise"><span>Al final te espera un test</span><span>y tu certificado de valiente.</span></div>')
+    return [pg("page", body, CUADERNO, lbl="Cómo usar el cuaderno")]
+
+
+def certificado():
+    body = bloque('<div class="diploma"><span class="k">Inglés para valientes</span><h3>Certificado de valiente</h3>'
+                  '<p>Este certificado reconoce que</p><div class="ln"></div>'
+                  '<p>se ha atrevido a hablar inglés en</p><div class="ln"></div>'
+                  '<p>y ha demostrado que nunca es tarde para empezar.</p>'
+                  '<div class="firma"><span>Fecha</span><span>Firma</span></div>'
+                  '<div class="sello">Valiente<br>2026</div></div>',
+                  p('Rellénalo cuando termines el cuaderno. Y hazle una foto para mandársela a quien te animó a viajar.', 'soft'))
+    return [pg("page", body, CUADERNO, lbl="Certificado")]
+
+
+def promo_cuaderno():
+    body = bloque('<div class="promo"><div><span class="pr-k" style="font:700 2.6cqw/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--hibiscus)">Sigue practicando</span>'
+                  '<h3 style="margin-top:1.6cqw">¿Quieres soltarte de verdad?</h3></div>' + build.JUEGO.replace('class="pr-ico"', 'class="pr-ico"') + '</div>',
+                  p('Este libro tiene un compañero: el <b>Cuaderno de ejercicios</b> de «Inglés para valientes». Está hecho para practicar todo lo que has leído aquí, capítulo a capítulo, a tu ritmo.'),
+                  lista(["Dos páginas de juegos por capítulo: sopas de letras, unir con flechas, completar frases y «¿qué dirías?».",
+                         "Un reto de la semana para practicar en la calle.",
+                         "Audios para escuchar y repetir.",
+                         "Un test final con curiosidades de los tres países.",
+                         "Tu certificado de valiente al terminar.",
+                         "Todas las soluciones, para comprobar tú misma."]),
+                  '<div class="promise"><span>Leer está bien.</span><span>Practicar es lo que te suelta.</span></div>',
+                  p('Búscalo como «Inglés para valientes. Cuaderno de ejercicios».', 'soft'))
+    return [pg("page", body, LIBRO, lbl="El cuaderno")]
 
 
 # ======================================================================= créditos y notas
@@ -106,12 +183,12 @@ def contactos():
     return [pg("page", body, LIBRO, lbl="Mis teléfonos")]
 
 
-def notas():
+def notas(run=LIBRO):
     body = bloque('<h3>Mis frases</h3>',
                   p('Las que oigas por la calle, las que te enseñe una vecina, las que te hayan salvado el día. Apúntalas aquí: son las que mejor se aprenden.', 'soft'),
                   '<div class="legend"><span>Frase</span><span>Cómo suena</span></div>',
                   '<div class="lines">' + ''.join('<div><span class="l-en"></span><span class="l-say"></span></div>' for _ in range(11)) + '</div>')
-    return [pg("page", body, LIBRO, lbl="Mis frases")]
+    return [pg("page", body, run, lbl="Mis frases")]
 
 
 # ======================================================================= carta
@@ -178,7 +255,7 @@ def como_usar():
 
 
 # ======================================================================= pronunciación
-def pronunciacion():
+def pronunciacion(run=LIBRO):
     a = bloque('<h3>Cómo leer la pronunciación</h3>',
                p('Todo lo que está en amarillo se lee como en español. Solo hay unas pocas reglas, y son siempre las mismas en todo el libro.'),
                sonidos([("á", "La tilde marca la sílaba fuerte. Respétala siempre: es lo que más ayuda a que te entiendan."),
@@ -193,7 +270,7 @@ def pronunciacion():
                caja("2. Cuidado con 15 y 50", p('<b>Fifteen</b> (15) es «fiftíin», con la fuerza al final. <b>Fifty</b> (50) es «fífti», con la fuerza al principio. Si dudas, di las cifras sueltas: «uán fáiv» (1 5) o enseña los dedos. Con el dinero, pide siempre que te lo escriban.')),
                caja("3. Habla despacio, no fuerte", p('Allí el inglés también es una lengua extranjera para casi todos. Las frases cortas y lentas se entienden mejor que las largas y rápidas. Una sonrisa abre más puertas que la gramática.')),
                truco("Can you write it, please?", "«Can iú ráit it, pliis?» Es la frase más útil del libro: pide que te lo escriban y lo traduces con calma en el móvil."))
-    return [pg("page", a, LIBRO, lbl="Pronunciación"), pg("page", b, LIBRO, lbl="Pronunciación")]
+    return [pg("page", a, run, lbl="Pronunciación"), pg("page", b, run, lbl="Pronunciación")]
 
 
 # ======================================================================= capítulo 1
@@ -812,17 +889,103 @@ def practica(n):
     return [pg("page", P[n](), run, cls="practice", lbl=f"Práctica {n}")]
 
 
+def practica_b(n):
+    """Segunda página de ejercicios del capítulo n (sigue la numeración de la primera)."""
+    run = f"Capítulo {n} | Practica y juega"
+    P = {
+        1: lambda: bloque(practica_cab("Lo básico", k="Practica y juega | Segunda ronda"),
+                          elegir([("Quieres que te lo repitan:", ["Can you repeat, please?", "See you tomorrow.", "No problem."], 0),
+                                  ("No has entendido nada:", ["I'm fine, thank you.", "I don't understand.", "You're welcome."], 1),
+]),
+                          completar([("Good", ".", "morning"), ("Thank you very", ".", "much"), ("Nice to", "you.", "meet"), ("See you", ".", "tomorrow")],
+                                    ["meet", "morning", "much", "tomorrow"]),
+                          escucha(1)),
+        2: lambda: bloque(practica_cab("Aeropuerto e inmigración", k="Practica y juega | Segunda ronda"),
+                          unir([("gate", "puerta de embarque"), ("flight", "vuelo"), ("suitcase", "maleta"), ("exit", "salida"), ("delayed", "con retraso")],
+                               "Palabras del aeropuerto", "Une cada palabra con su significado.", seed=31),
+                          ordenar(["Where is gate twelve?", "My suitcase didn't arrive."], seed=32),
+                          escucha(2)),
+        3: lambda: bloque(practica_cab("Tu casa", k="Practica y juega | Segunda ronda"),
+                          elegir([("No sale agua caliente:", ["There is no hot water.", "There is a leak.", "Is it furnished?"], 0),
+                                  ("Se ha ido la luz:", ["The toilet is blocked.", "The power is off.", "Can I see it today?"], 1),
+]),
+                          unir([("rent", "alquiler"), ("landlord", "propietario"), ("refund", "devolución"), ("notice", "preaviso"), ("key card", "tarjeta de la puerta")],
+                               "El contrato", "Une cada palabra con su significado.", seed=33),
+                          escucha(3)),
+        4: lambda: bloque(practica_cab("Dinero", k="Practica y juega | Segunda ronda"),
+                          sopa(["CASH", "CARD", "CHANGE", "PRICE", "RECEIPT", "MONEY"], n=9, seed=34),
+                          completar([("Can I pay", "card?", "by"), ("Do you have", "?", "change"), ("Can I have a", "?", "receipt")],
+                                    ["by", "change", "receipt"]),
+                          reto("Pregunta «Can I pay by card?» antes de pagar, aunque sepas la respuesta.")),
+        5: lambda: bloque(practica_cab("Salud", k="Practica y juega | Segunda ronda"),
+                          elegir([("En la farmacia, tienes tos:", ["I need something for a cough.", "I have a headache.", "I feel dizzy."], 0),
+                                  ("Estás mareada:", ["I have a fever.", "I feel dizzy.", "It hurts here."], 1),
+]),
+                          corregir([("I am constipated. (si quieres decir resfriada)", "I have a cold."), ("I am embarrassed. (si quieres decir embarazada)", "I am pregnant.")],
+                                   "Cuidado con los falsos amigos"),
+                          escucha(5)),
+        6: lambda: bloque(practica_cab("Moverte", k="Practica y juega | Segunda ronda"),
+                          unir([("left", "izquierda"), ("right", "derecha"), ("straight on", "todo recto"), ("near", "cerca"), ("far", "lejos")],
+                               "Las direcciones", "Une cada palabra con su significado.", seed=36),
+                          elegir([("El taxista no pone el taxímetro:", ["Meter, please.", "Turn left.", "I'm coming."], 0),
+                                  ("Quieres bajarte aquí:", ["Where are you?", "Stop here, please.", "Is it far?"], 1),
+]),
+                          escucha(6)),
+        7: lambda: bloque(practica_cab("Comer y comprar", k="Practica y juega | Segunda ronda"),
+                          sopa(["RICE", "SPICY", "SUGAR", "WATER", "BILL", "MENU"], n=9, seed=37),
+                          completar([("Not", ", please.", "spicy"), ("Less", ", please.", "sugar"), ("No", ", please.", "ice")],
+                                    ["ice", "spicy", "sugar"]),
+                          reto("Pide la cuenta en inglés en tu próximo café: «The bill, please».")),
+        8: lambda: bloque(practica_cab("Sola y segura", k="Practica y juega | Segunda ronda"),
+                          unir([("stole", "robó"), ("lost", "perdido"), ("embassy", "embajada"), ("report", "denuncia"), ("help", "ayuda")],
+                               "Si te pasa algo", "Une cada palabra con su significado.", seed=38),
+                          ordenar(["Please leave me alone.", "I want to make a police report."], seed=39),
+                          escucha(8)),
+        9: lambda: bloque(practica_cab("Hacer amigos", k="Practica y juega | Segunda ronda"),
+                          elegir([("Te preguntan: «Where are you from?»", ["Six months.", "I'm from Spain.", "Me too!"], 1),
+                                  ("Te preguntan: «How long have you been here?»", ["Two months.", "At the café.", "I'm retired."], 0),
+                                  ("Te preguntan: «Would you like a coffee?»", ["See you there!", "Yes, please!", "Really?"], 1)]),
+                          completar([("Where are you", "?", "from"), ("Me", "!", "too"), ("See you", "!", "there"), ("Can I have your", "?", "number")],
+                                    ["from", "number", "there", "too"]),
+                          escucha(9)),
+        10: lambda: bloque(practica_cab("Tu inglés y tu móvil", k="Practica y juega | Segunda ronda"),
+                           unir([("Grab", "moverte"), ("Google Maps", "orientarte"), ("LINE", "hablar en Tailandia"), ("Zalo", "hablar en Vietnam"), ("GCash", "pagar en Filipinas")],
+                                "Cada aplicación, para qué", "Une cada aplicación con su uso.", seed=40),
+                           elegir([("El conductor te llama y no le entiendes:", ["Can you send me a message?", "Can I walk?", "Me too!"], 0),
+                                   ("Quieres que te lo escriban en el móvil:", ["Can you speak Spanish?", "Can you type it here?", "Slowly, please."], 1)]),
+                           escucha(10)),
+        11: lambda: bloque(practica_cab("Cuidarte", k="Practica y juega | Segunda ronda"),
+                           sopa(["TRIM", "SOFTER", "TIGHT", "HAIR", "BACK", "GLASSES"], n=9, seed=41),
+                           ordenar(["Can you cover my grey hair?"], seed=42),
+                           escucha(11)),
+    }
+    return [pg("page", P[n](), run, cls="practice", lbl=f"Práctica {n}, segunda ronda")]
+
+
 def soluciones():
     run = "Soluciones"
     items = build.SOLUCIONES
-    tercio = (len(items) + 2) // 3
+    def peso(h):
+        return 31 if "wsg" in h else (11 if len(h) > 60 else 8)
     def bloque_sol(xs):
         return '<div class="sols">' + "".join(f"<div><b>{e(t)}</b><span>{h}</span></div>" for t, h in xs) + "</div>"
-    a = bloque('<h3>Soluciones</h3>', p('No hagas trampa… o sí: también se aprende mirando.', 'soft'), bloque_sol(items[:tercio - 1]))
-    b = bloque(bloque_sol(items[tercio - 1:2 * tercio]))
-    c = bloque(bloque_sol(items[2 * tercio:]))
-    return [pg("page", a, run, chapter=("·", "Soluciones de los juegos", "Para comprobar tus respuestas"), lbl="Soluciones"),
-            pg("page", b, run, lbl="Soluciones"), pg("page", c, run, lbl="Soluciones")]
+    paginas_sol, actual, carga, limite = [], [], 0, 106
+    for it in items:
+        w = peso(it[1])
+        if actual and carga + w > limite:
+            paginas_sol.append(actual)
+            actual, carga, limite = [], 0, 111
+        actual.append(it)
+        carga += w
+    paginas_sol.append(actual)
+    out = []
+    for i, xs in enumerate(paginas_sol):
+        if i == 0:
+            body = bloque('<h3>Soluciones</h3>', p('No hagas trampa… o sí: también se aprende mirando.', 'soft'), bloque_sol(xs))
+            out.append(pg("page", body, run, chapter=("·", "Soluciones", "Para comprobar tus respuestas"), lbl="Soluciones"))
+        else:
+            out.append(pg("page", bloque_sol(xs), run, lbl="Soluciones"))
+    return out
 
 
 # ======================================================================= países
@@ -936,9 +1099,9 @@ def paginas():
     build.SOLUCIONES.clear()
     caps = [cap1, cap2, cap3, cap4, cap5, cap6, cap7, cap8, cap9, cap10, cap11]
     capitulos = []
-    for i, c in enumerate(caps, start=1):
-        capitulos += c() + practica(i)
-    cuerpo = creditos() + carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + costumbres_paises() + vivir_alli() + fiestas() + tarjetas() + diccionario() + test_final() + soluciones() + contactos() + notas()
+    for c in caps:
+        capitulos += c()
+    cuerpo = creditos() + carta() + no_eres_la_unica() + [None] + como_usar() + pronunciacion() + capitulos + paises() + costumbres_paises() + vivir_alli() + fiestas() + tarjetas() + diccionario() + contactos() + notas() + promo_cuaderno()
     todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA, "lbl": "Contraportada"}]
     caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
     k = todas.index(None)
@@ -947,6 +1110,49 @@ def paginas():
         if x.get("chapter") and not x.get("id"):
             x["id"] = f"p{i + 1}"
     return todas
+
+
+def cuaderno():
+    """El cuaderno de ejercicios: un producto aparte que remite a las páginas del libro."""
+    libro = paginas()
+    pag_cap = {x["chapter"][0]: i for i, x in enumerate(libro, start=1) if x.get("chapter") and isinstance(x["chapter"][0], int)}
+    build.SOLUCIONES.clear()
+    ejercicios = []
+    for n in range(1, 12):
+        practica_inicio(f"Capítulo {n}", f"Repasa el capítulo {n} del libro, página {pag_cap[n]}")
+        a = practica(n)
+        a[0]["chapter"] = (n, CAP_TITULOS[n - 1], "Dos páginas de práctica")
+        ejercicios += a + practica_b(n)
+    portada = {"kind": "raw", "body": PORTADA_CUADERNO, "lbl": "Portada", "id": "portada"}
+    cuerpo = creditos_cuaderno() + [None] + como_usar_cuaderno() + pronunciacion(CUADERNO)[:1] + ejercicios + test_final() + soluciones() + certificado() + notas(CUADERNO)
+    todas = [portada] + cuerpo + [{"kind": "raw", "body": CONTRA_CUADERNO, "lbl": "Contraportada"}]
+    if len(todas) % 2:
+        todas.insert(-1, notas(CUADERNO)[0])
+    caps = [(i + 1, x["chapter"]) for i, x in enumerate(todas) if x and x.get("chapter")]
+    k = todas.index(None)
+    todas[k] = pg("page", bloque('<h3>Contenido</h3>', f'<div class="toc"><ol>{"".join(_toc_items(caps))}</ol></div>'), CUADERNO, lbl="Contenido", id="indice")
+    return todas
+
+
+CAP_TITULOS = ["Lo básico", "Aeropuerto e inmigración", "Tu casa", "Dinero", "Salud", "Moverte",
+               "Comer y comprar", "Sola y segura", "Hacer amigos", "Tu inglés y tu móvil", "Cuidarte"]
+
+
+def _toc_items(caps):
+    items = []
+    for num, (n, titulo, sub) in caps:
+        extra = ' class="extra"' if n == "·" else ""
+        nn = "" if n == "·" else n
+        sm = "" if n == "·" else f"<small>{e(sub)}</small>"
+        items.append(f'<li{extra}><span class="n">{nn}</span><span class="t">{e(titulo)}{sm}</span><span class="p">{num}</span></li>')
+    return items
+
+
+INTRO_CUADERNO = '''<header class="intro">
+  <span class="eyebrow">Cuaderno de ejercicios | 6 × 9 pulgadas (15,2 × 22,9 cm)</span>
+  <h1>Inglés para valientes: Cuaderno de ejercicios</h1>
+  <p>El compañero del libro: dos páginas de juegos por capítulo, audios para escuchar y repetir, retos de la semana, test final, soluciones y certificado.</p>
+</header>'''
 
 
 INTRO = '''<header class="intro">

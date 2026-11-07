@@ -1,13 +1,14 @@
 // Comprueba que ninguna página se desborde y genera libro.pdf (6 x 9 pulgadas, listo para imprenta).
-// Uso: node pdf.js            -> solo comprobación
-//      node pdf.js --pdf      -> comprobación + PDF
+// Uso: node pdf.js [libro|cuaderno]            -> solo comprobación
+//      node pdf.js [libro|cuaderno] --pdf      -> comprobación + PDF completo + PDF interior (sin cubiertas)
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
 (async () => {
   const dir = __dirname;
-  const body = fs.readFileSync(path.join(dir, 'libro.html'), 'utf8');
+  const name = ['libro', 'cuaderno'].includes(process.argv[2]) ? process.argv[2] : 'libro';
+  const body = fs.readFileSync(path.join(dir, `${name}.html`), 'utf8');
   const html = '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body style="margin:0">' + body + '</body></html>';
   const browser = await chromium.launch();
@@ -20,7 +21,7 @@ const path = require('path');
       .map((el, i) => ({ n: i + 1, px: el.scrollHeight - el.clientHeight }))
       .filter(o => o.px > 0));
     const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    console.log(`${width}px: ${over.length ? 'DESBORDAN ' + over.map(o => `p${o.n}(+${o.px}px)`).join(' ') : 'todo cabe'}${wide ? ' | SCROLL HORIZONTAL' : ''}`);
+    console.log(`${name} ${width}px: ${over.length ? 'DESBORDAN ' + over.map(o => `p${o.n}(+${o.px}px)`).join(' ') : 'todo cabe'}${wide ? ' | SCROLL HORIZONTAL' : ''}`);
     bad += over.length + (wide ? 1 : 0);
     await page.close();
   }
@@ -29,11 +30,11 @@ const path = require('path');
     await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready);
     await page.emulateMedia({ media: 'print' });
-    await page.pdf({ path: path.join(dir, 'libro.pdf'), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
-    console.log('libro.pdf generado');
+    await page.pdf({ path: path.join(dir, `${name}.pdf`), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
+    console.log(`${name}.pdf generado`);
     await page.evaluate(() => document.querySelectorAll('.page.cover, .page.back').forEach(el => el.closest('.slot').remove()));
-    await page.pdf({ path: path.join(dir, 'libro-interior.pdf'), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
-    console.log('libro-interior.pdf generado (sin cubiertas, para Amazon KDP)');
+    await page.pdf({ path: path.join(dir, `${name}-interior.pdf`), width: '6in', height: '9in', printBackground: true, preferCSSPageSize: true });
+    console.log(`${name}-interior.pdf generado (sin cubiertas, para Amazon KDP)`);
   }
   if (process.argv.includes('--shots')) {
     const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
