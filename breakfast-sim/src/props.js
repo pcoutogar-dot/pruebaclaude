@@ -112,15 +112,16 @@ export function makeBoard() {
 }
 
 // ---------- Aguacate (medio, con hueso) ----------
-export const AVO = [[0, 0], [0.22, 0.02], [0.38, 0.12], [0.44, 0.3], [0.42, 0.48], [0.34, 0.66],
-  [0.24, 0.84], [0.13, 0.97], [0, 1.02]];
+// perfil gordito, de pera redonda (más cartoon)
+export const AVO = [[0, 0], [0.24, 0.015], [0.39, 0.1], [0.45, 0.26], [0.44, 0.44], [0.37, 0.62],
+  [0.27, 0.8], [0.17, 0.93], [0.08, 1.0], [0, 1.02]];
 
 export function makeAvocadoHalf() {
   const g = new THREE.Group();
   const inner = new THREE.Group();
   const skin = mesh(
     lathe(AVO, 48, 0, Math.PI),
-    std('#3f5a26', 1, { ...real('avocado_skin', [2, 2]), side: THREE.DoubleSide, normalScale: new THREE.Vector2(1.4, 1.4) }),
+    std('#4b7a2c', 1, { ...real('avocado_skin', [2, 2]), side: THREE.DoubleSide, normalScale: new THREE.Vector2(0.6, 0.6) }),
   );
   inner.add(skin);
   // cara del corte
@@ -133,8 +134,8 @@ export function makeAvocadoHalf() {
   fg.rotateY(-Math.PI / 2);
   const flesh = mesh(fg, std('#fff', 0.45, { map: avocadoFleshTexture() }));
   inner.add(flesh);
-  const pit = mesh(new THREE.SphereGeometry(0.17, 32, 24), std('#7b4a2b', 0.35));
-  pit.scale.set(0.75, 1.05, 1);
+  const pit = mesh(new THREE.SphereGeometry(0.19, 32, 24), std('#a5673a', 0.35));
+  pit.scale.set(0.85, 1.0, 1.05);
   pit.position.set(0, 0.33, 0);
   inner.add(pit);
   inner.rotation.z = -Math.PI / 2;

@@ -116,6 +116,14 @@ Reglas de los procesos:
 - **Chispitas** al completar un paso y monedas al ir a trabajar.
 - **Utensilios con inercia**: cuchillo, hervidor y jarra van hacia el dedo con suavidad, nunca a saltos.
 
+## 3 quinquies. Miel, accidentes y orientación
+
+- **Miel con física de miel**: el hilo va con retraso respecto a la mano (viscosidad), se enrosca si te quedas quieto, se afina si vas rápido y sigue cayendo un momento al levantar. Lo caído se extiende despacio. Si apuntas fuera, mancha la tabla o la encimera.
+- **Cosas que se vuelcan**: el vaso de zumo y el jarrón son objetos sueltos. El dedo (o el utensilio) ocupa sitio: si pasas por encima, los tumbas. El zumo se derrama; al recoger el vaso queda de pie, vacío.
+- **Cuchara**: remueve y extiende el yogur dejando el surco del remolino (ya no echa cucharadas).
+- **La mesa es el punto de partida**: cada cosa lleva una etiqueta flotante; tocas lo que quieras preparar. Un botón 🏠 vuelve a la mesa.
+- **Qué gesto toca**: la manita guía lleva escrito el gesto (Desliza, Mantén pulsado, Gira, Tira…). Para coger algo, un anillo se cierra bajo el dedo mientras mantienes.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

@@ -47,13 +47,14 @@ export class Toast {
     }
     this.bounds = { minX, minY, w: maxX - minX, h: maxY - minY };
 
-    const depth = kind === 'sourdough' ? 0.1 : 0.08;
+    // rebanada gordita y de bordes redondos (más cartoon)
+    const depth = kind === 'sourdough' ? 0.13 : 0.11;
     const geo = new THREE.ExtrudeGeometry(shape, {
       depth,
       bevelEnabled: true,
-      bevelThickness: 0.03,
-      bevelSize: 0.03,
-      bevelSegments: 4,
+      bevelThickness: 0.045,
+      bevelSize: 0.045,
+      bevelSegments: 8,
       curveSegments: 32,
     });
     const uv = geo.attributes.uv;
@@ -61,8 +62,8 @@ export class Toast {
       uv.setXY(i, (uv.getX(i) - minX) / this.bounds.w, (uv.getY(i) - minY) / this.bounds.h);
     }
     geo.rotateX(-Math.PI / 2);
-    geo.translate(0, 0.03, 0);
-    this.topY = depth + 0.06;
+    geo.translate(0, 0.045, 0);
+    this.topY = depth + 0.09;
 
     this.cColor = canvas(CW);
     this.cHeight = canvas(HW);
@@ -81,7 +82,7 @@ export class Toast {
       roughness: 1,
     });
     const crust = (this.crustMat = new THREE.MeshStandardMaterial({
-      color: kind === 'sourdough' ? '#b07a45' : '#d4a26a',
+      color: kind === 'sourdough' ? '#c98d4e' : '#e0ad6c',
       roughness: 0.85,
     }));
     this.crustRaw = new THREE.Color(crust.color);
@@ -123,7 +124,7 @@ export class Toast {
     const k = HW / CW;
     const sour = this.kind === 'sourdough';
 
-    c.fillStyle = sour ? '#9a5a26' : '#c98a4b';
+    c.fillStyle = sour ? '#c98d4e' : '#e0ad6c';
     c.fillRect(0, 0, CW, CW);
     hh.fillStyle = '#808080';
     hh.fillRect(0, 0, HW, HW);
@@ -133,48 +134,50 @@ export class Toast {
     c.save();
     this.pathOn(c, CW);
     c.clip();
-    // miga tostada: centro claro, bordes dorados
+    // miga cartoon: color limpio y cálido, casi plano
     const g = c.createRadialGradient(CW / 2, CW / 2, 40, CW / 2, CW / 2, CW * 0.6);
     if (sour) {
-      // miga cruda: el jugador la tuesta a su gusto
-      g.addColorStop(0, '#f1e0bf');
-      g.addColorStop(0.6, '#ead3a6');
-      g.addColorStop(1, '#dcbd88');
+      g.addColorStop(0, '#fbe9bd');
+      g.addColorStop(1, '#f3d79c');
     } else {
-      g.addColorStop(0, '#fbf3e3');
-      g.addColorStop(0.7, '#f6ead2');
-      g.addColorStop(1, '#efdcbc');
+      g.addColorStop(0, '#fff6e2');
+      g.addColorStop(1, '#fae8c4');
     }
     c.fillStyle = g;
     c.fillRect(0, 0, CW, CW);
-    // tostado hacia el borde
-    for (const [lw, a] of [[60, 0.04], [26, 0.08]]) {
-      this.pathOn(c, CW);
-      c.lineWidth = lw;
-      c.strokeStyle = sour ? `rgba(150,85,30,${a})` : `rgba(170,120,60,${a})`;
-      c.stroke();
-    }
-    // alveolos de la miga (masa madre = alveolos grandes e irregulares)
+    // alveolos: pocos, redonditos y bien dibujados
     hh.save();
     this.pathOn(hh, HW);
     hh.clip();
-    const n = sour ? 340 : 900;
+    const n = sour ? 46 : 70;
     for (let i = 0; i < n; i++) {
-      const big = sour && r() < 0.18;
-      const rad = big ? 9 + r() * 20 : sour ? 2 + r() * 6 : 1 + r() * 2.2;
-      const px = r() * CW, py = r() * CW, rot = r() * 3, ex = 0.5 + r() * 0.6;
-      c.fillStyle = sour ? 'rgba(170,120,60,0.5)' : 'rgba(200,175,130,0.4)';
+      const big = sour && i < 12;
+      const rad = big ? 16 + r() * 20 : sour ? 5 + r() * 8 : 2.5 + r() * 3.5;
+      const px = CW * (0.08 + r() * 0.84), py = CW * (0.08 + r() * 0.84), rot = r() * 3, ex = 0.6 + r() * 0.4;
+      c.fillStyle = sour ? '#e2b877' : '#edd3a4';
       c.beginPath();
       c.ellipse(px, py, rad, rad * ex, rot, 0, 7);
       c.fill();
-      c.fillStyle = sour ? 'rgba(255,235,190,0.35)' : 'rgba(255,250,235,0.5)';
+      // sombrita arriba y brillo abajo: da volumen sin ensuciar
+      c.fillStyle = sour ? 'rgba(190,140,80,0.55)' : 'rgba(210,175,125,0.5)';
       c.beginPath();
-      c.ellipse(px - rad * 0.25, py - rad * 0.25, rad * 0.5, rad * ex * 0.4, rot, 0, 7);
+      c.ellipse(px, py - rad * ex * 0.25, rad * 0.8, rad * ex * 0.55, rot, 0, 7);
       c.fill();
-      hh.fillStyle = 'rgba(20,20,20,0.7)';
+      c.fillStyle = sour ? '#e2b877' : '#edd3a4';
+      c.beginPath();
+      c.ellipse(px, py + rad * ex * 0.12, rad * 0.78, rad * ex * 0.6, rot, 0, 7);
+      c.fill();
+      hh.fillStyle = 'rgba(20,20,20,0.6)';
       hh.beginPath();
       hh.ellipse(px * k, py * k, rad * k, rad * ex * k, rot, 0, 7);
       hh.fill();
+    }
+    // corteza: un borde dorado bien marcado, como dibujado
+    for (const [lw, col] of [[46, sour ? 'rgba(214,160,96,0.45)' : 'rgba(232,190,130,0.45)'], [20, sour ? '#c98d4e' : '#e0ad6c']]) {
+      this.pathOn(c, CW);
+      c.lineWidth = lw;
+      c.strokeStyle = col;
+      c.stroke();
     }
     hh.restore();
     c.restore();
@@ -267,7 +270,7 @@ export class Toast {
     const x0 = u0 * CW, y0 = (1 - v0) * CW, x1 = u1 * CW, y1 = (1 - v1) * CW;
     const d = Math.hypot(x1 - x0, y1 - y0);
     if (spread === 'honey') {
-      this.drizzle(x0, y0, x1, y1);
+      this.drizzle(x0, y0, x1, y1, amount);
       this.dirty = true;
       return;
     }
@@ -296,12 +299,29 @@ export class Toast {
     ro.restore();
   }
 
-  drizzle(x0, y0, x1, y1) {
+  // la miel recién caída se va extendiendo despacio (charquito)
+  honeyPool(u, v, r, a) {
+    const x = u * CW, y = (1 - v) * CW, k = HW / CW;
+    this.clipAll((c, hh, ro) => {
+      const g = c.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(222,150,36,${a})`);
+      g.addColorStop(1, 'rgba(222,150,36,0)');
+      c.fillStyle = g;
+      c.fillRect(x - r, y - r, r * 2, r * 2);
+      ro.fillStyle = `rgba(30,30,30,${a * 1.5})`;
+      ro.beginPath();
+      ro.arc(x * k, y * k, r * k * 0.8, 0, 7);
+      ro.fill();
+    });
+    this.dirty = true;
+  }
+
+  drizzle(x0, y0, x1, y1, amount = 1) {
     const k = HW / CW;
     this.clipAll((c, hh, ro) => {
       c.lineCap = hh.lineCap = ro.lineCap = 'round';
-      const w = 7 + Math.random() * 3;
-      c.strokeStyle = 'rgba(214,138,30,0.75)';
+      const w = (7 + Math.random() * 3) * amount;
+      c.strokeStyle = 'rgba(224,140,22,0.92)';
       c.lineWidth = w;
       c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
       c.strokeStyle = 'rgba(255,226,150,0.6)';

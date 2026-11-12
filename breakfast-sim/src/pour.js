@@ -44,6 +44,7 @@ export class PourSurface {
     this.p = [];
     this.over = 0;
     this.decor.getContext('2d').clearRect(0, 0, S, S);
+    if (this.g) this.g.getContext('2d').clearRect(0, 0, 256, 256);
     this.dirty = true;
     this.render();
   }
@@ -69,9 +70,11 @@ export class PourSurface {
   snapshot() {
     const d = this.decor.getContext('2d').getImageData(0, 0, S, S);
     const p = this.p.map((q) => ({ ...q }));
+    const g = this.g ? this.g.getContext('2d').getImageData(0, 0, 256, 256) : null;
     return () => {
       this.p = p;
       this.decor.getContext('2d').putImageData(d, 0, 0);
+      if (g) this.g.getContext('2d').putImageData(g, 0, 0);
       this.dirty = true;
     };
   }
@@ -187,18 +190,57 @@ export class PourSurface {
     this.dirty = true;
   }
 
-  drizzle(uv0, uv1, color = 'rgba(226,150,38,0.9)') {
+  // surco de la cuchara: remueve lo espeso y deja la marca del remolino
+  groove(uv0, uv1) {
+    const [x0, y0] = this.px(uv0), [x1, y1] = this.px(uv1);
+    // solo donde hay algo que remover
+    let near = false;
+    for (const q of this.p) {
+      if (Math.abs(q.x - x1) < 26 && Math.abs(q.y - y1) < 26) {
+        near = true;
+        break;
+      }
+    }
+    if (!near) return false;
+    this.smear(uv0, uv1);
+    if (!this.g) this.g = canvas(256);
+    const c = this.g.getContext('2d'), k = 256 / S;
+    c.lineCap = 'round';
+    c.shadowColor = 'rgba(0,0,0,0.5)';
+    c.shadowBlur = 3;
+    c.strokeStyle = 'rgba(0,0,0,0.45)';
+    c.lineWidth = 9;
+    c.beginPath();
+    c.moveTo(x0 * k, y0 * k);
+    c.lineTo(x1 * k, y1 * k);
+    c.stroke();
+    this.dirty = true;
+    return true;
+  }
+
+  honeyPool(uv, r, a) {
+    const [x, y] = this.px(uv);
+    const c = this.decor.getContext('2d');
+    const g = c.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(226,150,38,${a})`);
+    g.addColorStop(1, 'rgba(226,150,38,0)');
+    c.fillStyle = g;
+    c.fillRect(x - r, y - r, r * 2, r * 2);
+    this.dirty = true;
+  }
+
+  drizzle(uv0, uv1, color = 'rgba(226,150,38,0.9)', width = 5) {
     const [x0, y0] = this.px(uv0), [x1, y1] = this.px(uv1);
     const c = this.decor.getContext('2d');
     c.lineCap = 'round';
     c.strokeStyle = color;
-    c.lineWidth = 5;
+    c.lineWidth = width;
     c.beginPath();
     c.moveTo(x0, y0);
     c.lineTo(x1, y1);
     c.stroke();
     c.strokeStyle = 'rgba(255,240,200,0.6)';
-    c.lineWidth = 1.5;
+    c.lineWidth = Math.max(1, width * 0.3);
     c.beginPath();
     c.moveTo(x0 - 1, y0 - 1);
     c.lineTo(x1 - 1, y1 - 1);
@@ -234,6 +276,12 @@ export class PourSurface {
       c.arc(q.x, q.y, q.r, 0, 7);
       c.fill();
     }
+    // surcos de la cuchara: una sombrita suave bajo la decoración
+    if (this.g) {
+      c.globalAlpha = 0.3;
+      c.drawImage(this.g, 0, 0, S, S);
+      c.globalAlpha = 1;
+    }
     c.drawImage(this.decor, 0, 0);
     this.texture.needsUpdate = true;
     if (this.h) {
@@ -252,6 +300,7 @@ export class PourSurface {
         const r = q.r * 1.7 * k;
         x.drawImage(this.blob, q.x * k - r, q.y * k - r, r * 2, r * 2);
       }
+      if (this.g) x.drawImage(this.g, 0, 0); // los surcos hunden el relieve
       this.heightTexture.needsUpdate = true;
     }
   }

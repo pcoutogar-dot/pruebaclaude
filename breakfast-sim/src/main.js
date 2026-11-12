@@ -19,6 +19,7 @@ import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets } from './fx.js';
 import { jelly, updateJelly, burst } from './juice.js';
+import { Honey, honeyMat } from './honey.js';
 import { noiseBump } from './textures.js';
 import * as TG from './texgen.js';
 import { real } from './real.js';
@@ -203,7 +204,6 @@ physics.static(new CANNON.Box(new CANNON.Vec3(0.55, 0.035, 0.85)), 4.0, 0.032, 0
   physics.follow(it.board, new CANNON.Box(new CANNON.Vec3(0.92, 0.04, 0.6)), new THREE.Vector3(0, 0.035, 0));
   physics.follow(it.mug, new CANNON.Cylinder(0.38, 0.36, 0.76, 16), new THREE.Vector3(0, 0.38, 0));
   physics.follow(it.bowl, new CANNON.Cylinder(0.56, 0.3, 0.4, 16), new THREE.Vector3(0, 0.2, 0));
-  physics.follow(it.juice, new CANNON.Cylinder(0.26, 0.22, 0.85, 12), new THREE.Vector3(0, 0.42, 0));
   physics.follow(it.ricottaPot, new CANNON.Cylinder(0.22, 0.2, 0.2, 12), new THREE.Vector3(0, 0.1, 0));
 }
 
@@ -361,6 +361,41 @@ const bowlOver = (() => {
   };
 })();
 
+// ---------- Miel ----------
+const honey = new Honey(scene);
+let honeySess = null;
+const honeyPools = [];
+const DOWN = new THREE.Vector3(0, -1, 0);
+function surfTopY(info) {
+  const s = sets[mood], v = new THREE.Vector3();
+  return info.kind === 'toast' ? s.toast.group.getWorldPosition(v).y + s.toast.topY : s.ysurf.getWorldPosition(v).y + 0.03;
+}
+// dónde cae la miel: en la tostada, en el yogur… o fuera (mancha la tabla o la encimera)
+function honeyDeposit(a, b, w) {
+  const hs = honeySess, s = sets[mood];
+  if (!hs) return;
+  ray.set(new THREE.Vector3(b.x, b.y + 1, b.z), DOWN);
+  const h = ray.intersectObject(hs.info.surface, false)[0];
+  if (h && h.uv && (hs.info.kind !== 'toast' || h.face.normal.y > 0.5)) {
+    const uv = h.uv.clone();
+    const prev = hs.prevUV && hs.prevUV.distanceTo(uv) < 0.15 ? hs.prevUV : uv;
+    if (hs.info.kind === 'toast') s.toast.paint(prev.x, prev.y, uv.x, uv.y, 'honey', w * 1.7);
+    else s.yogurt.drizzle(prev, uv, undefined, 5 * w + 1.5);
+    hs.prevUV = uv;
+    if (clock.elapsedTime - (hs.poolAt || 0) > 0.05) {
+      hs.poolAt = clock.elapsedTime;
+      honeyPools.push({ kind: hs.info.kind, uv, age: 0 });
+    }
+    return h.point.y;
+  }
+  hs.prevUV = null;
+  const below = ray.intersectObjects([s.items.board || s.items.towel, s.bowl].filter(Boolean), true)[0];
+  const y = below ? below.point.y + 0.004 : 0.012;
+  honey.spill(b, y);
+  return y;
+}
+
+const spoonGoal = { pos: null };
 const spoon = new THREE.Group();
 {
   const wood = new THREE.MeshStandardMaterial({ color: '#c9a27a', roughness: 0.55 });
@@ -417,6 +452,116 @@ function applyLayout(p) {
     o.position.x = x;
     o.position.z = z;
     o.rotation.y = ry;
+    const it = o.userData.phys;
+    if (it) {
+      it.body.position.set(x, y, z);
+      it.body.quaternion.setFromEuler(0, ry, 0);
+      it.body.velocity.set(0, 0, 0);
+      it.body.angularVelocity.set(0, 0, 0);
+      it.home.set(x, y, z);
+      it.body.wakeUp();
+    }
+  }
+}
+
+// ---------- Cosas que se pueden volcar sin querer ----------
+// El vaso de zumo y el jarrón son objetos sueltos: un golpe (del dedo, del
+// cuchillo, de algo que lances) los tumba. Al recogerlos quedan de pie.
+const tippables = [];
+function makeTippable(key, h, shape, mass, onSpill) {
+  const items = sets.golden.items, o = items[key];
+  const holder = new THREE.Group();
+  holder.position.copy(o.position);
+  holder.position.y += h;
+  holder.rotation.y = o.rotation.y;
+  o.parent.add(holder);
+  holder.add(o);
+  o.position.set(0, -h, 0);
+  o.rotation.y = 0;
+  const e = homes.get(o);
+  if (e) {
+    e.o = holder;
+    e.land[3] += h;
+    e.port[3] += h;
+    homes.set(holder, e);
+  }
+  items[key] = holder;
+  const it = physics.add(holder, [[shape]], { mass, home: holder.position.clone(), angularDamping: 0.35 });
+  const t = { key, holder, inner: o, it, tipped: false, onSpill };
+  holder.userData.tip = t;
+  tippables.push(t);
+  return t;
+}
+const juicePuddle = new THREE.Mesh(new THREE.CircleGeometry(0.55, 36), (() => {
+  const m = new THREE.MeshStandardMaterial({ color: '#f6a43a', roughness: 0.08, transparent: true, opacity: 0.85 });
+  m.defines = { NO_MATTE: '' };
+  return m;
+})());
+juicePuddle.rotation.x = -Math.PI / 2;
+juicePuddle.visible = false;
+sets.golden.group.add(juicePuddle);
+const juiceTip = makeTippable('juice', 0.44, new CANNON.Cylinder(0.26, 0.22, 0.86, 12), 0.5, (t) => {
+  if (t.empty) return;
+  t.empty = true;
+  t.inner.children[1].visible = false; // el zumo ya no está en el vaso…
+  const p = t.holder.position;
+  juicePuddle.position.set(p.x, 0.013, p.z);
+  juicePuddle.scale.setScalar(0.2);
+  juicePuddle.visible = true; // …está en la encimera
+  droplets.splash(new THREE.Vector3(p.x, 0.2, p.z), '#f6a43a', 14, 2.2, 0.02);
+  sfx.plop(1.2, 0.5);
+  say('¡Ups! 🍊', 'Se ha volcado el zumo. Mantén el dedo encima para recogerlo');
+});
+makeTippable('daisies', 0.25, new CANNON.Cylinder(0.12, 0.17, 0.5, 12), 0.35, () => {
+  sfx.plop(1, 0.8);
+  say('¡Ay, las flores! 🌼', 'Mantén el dedo encima para ponerlas de pie');
+});
+function resetTippables() {
+  for (const t of tippables) {
+    const b = t.it.body, h = t.it.home;
+    b.position.set(h.x, h.y, h.z);
+    b.quaternion.setFromEuler(0, t.holder.rotation.y, 0);
+    b.velocity.set(0, 0, 0);
+    b.angularVelocity.set(0, 0, 0);
+    t.tipped = false;
+    t.empty = false;
+  }
+  juiceTip.inner.children[1].visible = true;
+  juicePuddle.visible = false;
+}
+const tipUp = new THREE.Vector3();
+function updateTippables(dt) {
+  for (const t of tippables) {
+    const tip = tipUp.set(0, 1, 0).applyQuaternion(t.holder.quaternion).y < 0.5;
+    if (tip && !t.tipped) {
+      t.tipped = true;
+      t.onSpill?.(t);
+    } else if (!tip && !t.it.held) t.tipped = false;
+  }
+  if (juicePuddle.visible && juicePuddle.scale.x < 1) juicePuddle.scale.setScalar(Math.min(1, juicePuddle.scale.x + dt * 0.9));
+}
+// el dedo (o el utensilio que llevas) ocupa sitio en el mundo
+const fingerBody = new CANNON.Body({ mass: 0, type: CANNON.Body.KINEMATIC, material: physics.mat });
+fingerBody.addShape(new CANNON.Sphere(0.14));
+fingerBody.allowSleep = false; // si se duerme, deja de moverse y no empuja nada
+fingerBody.position.set(0, -50, 0);
+physics.world.addBody(fingerBody);
+let fingerGoal = null;
+function updateFinger(dt) {
+  const p = fingerBody.position;
+  if (!fingerGoal) {
+    fingerBody.velocity.set(0, 0, 0);
+    p.set(0, -50, 0);
+  } else if (p.y < -10) p.set(fingerGoal.x, fingerGoal.y, fingerGoal.z);
+  else {
+    const k = 1 / Math.max(dt, 0.016), c = (v) => Math.max(-12, Math.min(12, v));
+    fingerBody.velocity.set(c((fingerGoal.x - p.x) * k), 0, c((fingerGoal.z - p.z) * k));
+    fingerBody.wakeUp();
+    // lo que está en reposo "duerme": se despierta si el dedo pasa cerca
+    for (const it of physics.items) {
+      const q = it.body.position;
+      if (Math.abs(q.x - p.x) < 0.7 && Math.abs(q.z - p.z) < 0.7) it.body.wakeUp();
+    }
   }
 }
 
@@ -427,7 +572,7 @@ const T = (id, icon, label, type, hint, extra = {}) => ({ id, icon, label, type,
 const H = {
   heat: 'Mantén el dedo sobre el pan para tostarlo. Muévelo para dorarlo a tu gusto… ¡o quémalo!',
   spread: 'Unta a tu manera: despacio deja grumos, rápido una capa fina. Las vetas siguen tu dedo.',
-  honey: 'Desliza para dejar caer un hilo de miel.',
+  honey: 'Mantén pulsado y mueve: la miel cae en hilo, con retraso. Quieto se enrosca; rápido se afina. Ojo, que fuera mancha.',
   place: 'Toca para colocar y arrastra para moverlo. Puedes apilar unas cosas sobre otras.',
   orient: 'Toca para colocar y arrastra para girarla. ¿Abanico, espiral, en fila?',
   sprinkle: 'Desliza para espolvorear donde quieras.',
@@ -477,7 +622,7 @@ const STATIONS = {
         T('avocado', '🥑', 'Aguacate', 'spread', 'Carga el cuchillo en el medio aguacate y úntalo: despacio deja tropezones, rápido queda cremoso.',
           { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
         T('ricotta', '🤍', 'Ricotta', 'spread', 'Carga el cuchillo en el tarro de ricotta y úntala a tu manera.'),
-        T('honey', '🍯', 'Miel', 'spread', H.honey),
+        T('honey', '🍯', 'Miel', 'honeydrip', H.honey),
         T('yogurtPourT', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para echar yogur del tarro encima. Sí, en la tostada también.'),
         ...TOPPINGS,
       ],
@@ -487,8 +632,8 @@ const STATIONS = {
     {
       id: 'bowl', label: 'Bol', icon: '🥣', surface: 'bowl', width: 1.7, tools: [
         T('yogurtPour', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para verter el yogur del tarro: cae espeso y se va plegando. Muévete para repartirlo.'),
-        T('yogurt', '🥄', 'Cuchara', 'spoon', 'Toca para echar una cucharada. Arrastra para extender el yogur con el dorso de la cuchara.'),
-        T('drizzle', '🍯', 'Miel', 'drizzle', H.honey),
+        T('spoonSwirl', '🥄', 'Cuchara', 'spoon', 'Arrastra la cuchara por el yogur para removerlo, extenderlo y dibujar remolinos.'),
+        T('drizzle', '🍯', 'Miel', 'honeydrip', H.honey),
         ...TOPPINGS,
       ],
     },
@@ -506,7 +651,7 @@ const STATIONS = {
         },
       ],
     },
-    { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Tu desayuno. Arrastra para mirarlo desde otro ángulo.' },
+    { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Toca lo que quieras preparar. Cuando esté a tu gusto, a trabajar.' },
   ],
   cutre: [
     {
@@ -520,7 +665,7 @@ const STATIONS = {
         T('instant', '🥄', 'Soluble', 'instant', 'Toca la taza: agua del grifo caliente y una cucharada de soluble. Ya está. Sin ritual.'),
       ],
     },
-    { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Tu desayuno. Arrastra para mirarlo desde otro ángulo.' },
+    { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Toca lo que quieras preparar. Cuando esté a tu gusto, a trabajar.' },
   ],
 };
 for (const list of Object.values(STATIONS)) for (const st of list) st.stepIdx = 0;
@@ -622,11 +767,16 @@ function gestureFor(t) {
   if (!t) return null;
   if (t.id === 'toasterUse') return toasterProc.state === 'in' ? 'dragDown' : toasterProc.done ? null : 'tap';
   if (GESTURE[t.id]) return GESTURE[t.id];
-  return { spread: 'zigzag', heat: 'hold', place: 'tap', sprinkle: 'swipeH', jarpour: 'hold', spoon: 'tap', smear: 'swipeV', dust: 'swipeH', drizzle: 'zigzag' }[t.type] || null;
+  return { spread: 'zigzag', heat: 'hold', place: 'tap', sprinkle: 'swipeH', jarpour: 'hold', honeydrip: 'hold', spoon: 'zigzag', smear: 'swipeV', dust: 'swipeH', drizzle: 'zigzag' }[t.type] || null;
 }
+const GESTURE_TXT = {
+  swipeH: 'Desliza', swipeV: 'Desliza', dragDown: 'Arrastra', dragUp: 'Tira', zigzag: 'Unta',
+  circle: 'Gira', holdCircle: 'Mantén y gira', hold: 'Mantén pulsado', tap: 'Toca',
+};
 const ghost = { el: null, kind: null, t: 0, wait: 0.8, idle: 0, cycles: 0 };
 function ghostFor(kind) {
   ghost.kind = kind;
+  $('ghostTxt').textContent = (tool?.type === 'spoon' && kind ? 'Remueve' : GESTURE_TXT[kind]) || '';
   ghost.t = 0;
   ghost.cycles = 0;
 }
@@ -698,8 +848,47 @@ function navigate(dir) {
   selectStation(list[i]);
   sfx.plop(0.5, 1.5);
 }
+// En la mesa, cada cosa lleva su etiqueta: tocas lo que quieras preparar
+const tableStation = () => STATIONS[mood].find((st) => st.id === 'table');
+function hubAnchor(st) {
+  const s = sets[mood];
+  return { avocado: s.items.avo, toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[st.id];
+}
+function renderHub() {
+  const hub = $('hub');
+  hub.innerHTML = '';
+  for (const st of STATIONS[mood]) {
+    if (st.id === 'table') continue;
+    const b = document.createElement('button');
+    b.className = 'hubtag';
+    b.innerHTML = `<span>${st.icon}</span>${st.label}`;
+    b.onclick = () => {
+      selectStation(st);
+      sfx.plop(0.5, 1.5);
+    };
+    b._st = st;
+    hub.appendChild(b);
+  }
+}
+const hubV = new THREE.Vector3();
+function updateHub() {
+  const hub = $('hub'), show = station.id === 'table' && !tween;
+  hub.classList.toggle('on', show);
+  if (!show) return;
+  for (const b of hub.children) {
+    const o = hubAnchor(b._st);
+    o.getWorldPosition(hubV);
+    hubV.y += b._st.id === 'avocado' ? 0.75 : b._st.id === 'toast' ? 0.3 : 0.95;
+    hubV.project(camera);
+    const x = THREE.MathUtils.clamp(((hubV.x + 1) / 2) * innerWidth, 64, innerWidth - 64);
+    const y = THREE.MathUtils.clamp(((1 - hubV.y) / 2) * innerHeight, 170, innerHeight - 250);
+    b.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+  }
+}
+
 function renderNav() {
   const list = STATIONS[mood], i = stationIndex();
+  $('homeBtn').hidden = station.id === 'table';
   $('whereName').textContent = `${station.icon} ${station.label}`;
   $('whereDots').innerHTML = list.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
   $('navPrev').hidden = i <= 0;
@@ -729,7 +918,8 @@ function applyMood(m) {
   document.body.dataset.mood = m;
   document.querySelectorAll('#mood button').forEach((b) => b.classList.toggle('on', b.dataset.mood === m));
   undo.length = 0;
-  selectStation(STATIONS[m][0]);
+  renderHub();
+  selectStation(tableStation());
 }
 
 let msgTimer;
@@ -809,6 +999,8 @@ $('work').addEventListener('click', () => {
     avoPrep.reset();
     coffeeProc.reset();
     toasterProc.reset();
+    resetTippables();
+    honey.spills.clear();
     {
       const h = toasterProc.getHome();
       sets.golden.toast.group.position.copy(h.pos);
@@ -823,12 +1015,16 @@ $('work').addEventListener('click', () => {
     day++;
     minutes = 7 * 60 + 30;
     tick();
-    selectStation(STATIONS[mood][0]);
+    selectStation(tableStation());
     fade.classList.remove('on');
   }, 900);
 });
 $('fridgeBtn').addEventListener('click', () => shop.open('fridge'));
 $('navPrev').addEventListener('click', () => navigate(-1));
+$('homeBtn').addEventListener('click', () => {
+  selectStation(tableStation());
+  sfx.plop(0.5, 1.2);
+});
 $('navNext').addEventListener('click', () => navigate(1));
 const soundBtn = $('sound');
 soundBtn.addEventListener('click', () => {
@@ -936,6 +1132,7 @@ function startGrab(it) {
   physics.grab(it);
   drag = { kind: 'grab', it };
   sfx.plop(0.8, 1.3);
+  hint.textContent = '✋ Lo tienes. Suéltalo donde quieras… o lánzalo con un gesto.';
 }
 
 let flick = null;
@@ -949,7 +1146,13 @@ el.addEventListener('pointerdown', (e) => {
   lastY = e.clientY;
   pendingGrab = null;
   const grabbable = mood === 'golden' ? physItemAt(e) : null;
-  if (grabbable) pendingGrab = { it: grabbable, t: clock.elapsedTime, x: e.clientX, y: e.clientY, e };
+  if (grabbable) {
+    pendingGrab = { it: grabbable, t: clock.elapsedTime, x: e.clientX, y: e.clientY, e };
+    // anillo que se cierra: "mantén para coger"
+    const ring = $('holdRing');
+    ring.style.left = `${e.clientX}px`;
+    ring.style.top = `${e.clientY}px`;
+  }
   handleDown(e);
   // si ningún gesto usa este toque, se coge el objeto al instante
   if (!grabbable && drag?.kind === 'orbit') tapWobble(e);
@@ -1029,6 +1232,17 @@ function handleDown(e) {
         moveKnife(h.point);
         return;
       }
+    } else if (tool.type === 'honeydrip') {
+      // la miel se puede empezar a echar en cualquier sitio (también fuera, sin querer)
+      const y = surfTopY(info), pt = procCtx.planePoint(e, y);
+      if (pt) {
+        if (!pay()) return;
+        undo.push(info.kind === 'toast' ? s.toast.snapshot() : s.yogurt.snapshot());
+        honeySess = { info, prevUV: null };
+        honey.start(pt, y, honeyDeposit);
+        drag = { kind: 'honey', y };
+        return;
+      }
     } else if (tool.type === 'jarpour') {
       const h = hitSurface(e, info);
       if (h) {
@@ -1040,11 +1254,9 @@ function handleDown(e) {
     } else if (tool.type === 'spoon') {
       const h = hitSurface(e, info);
       if (h) {
-        if (!pay()) return;
         undo.push(s.yogurt.snapshot());
-        drag = { kind: 'spoon', uv: h.uv.clone(), x: e.clientX, y: e.clientY, spread: false, info };
-        spoon.visible = true;
-        spoon.position.copy(h.point).add(new THREE.Vector3(0, 0.25, 0));
+        drag = { kind: 'spoon', uv: h.uv.clone(), info };
+        spoonGoal.pos = h.point.clone();
         return;
       }
     } else if (tool.type === 'place') {
@@ -1112,6 +1324,8 @@ el.addEventListener('pointermove', (e) => {
   if (pendingGrab && Math.hypot(e.clientX - pendingGrab.x, e.clientY - pendingGrab.y) > 12) pendingGrab = null;
   if (!drag) return;
   const s = sets[mood];
+  // el dedo/utensilio ocupa sitio: puede volcar cosas sin querer
+  fingerGoal = ['orbit', 'grab', 'proc'].includes(drag.kind) ? null : procCtx.planePoint(e, 0.55);
   switch (drag.kind) {
     case 'grab': {
       const p = procCtx.planePoint(e, grabY(drag.it));
@@ -1137,16 +1351,17 @@ el.addEventListener('pointermove', (e) => {
       }
       break;
     }
+    case 'honey': {
+      const pt = procCtx.planePoint(e, drag.y);
+      if (pt) honey.setTarget(pt);
+      break;
+    }
     case 'spoon': {
       const h = hitSurface(e, drag.info);
       if (!h) break;
-      if (!drag.spread && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) drag.spread = true;
-      if (drag.spread) {
-        s.yogurt.smear(drag.uv, h.uv);
-        sfx.scrape(drag.uv.distanceTo(h.uv) * 0.4);
-        spoon.rotation.z = 0.5;
-      }
-      spoon.position.copy(h.point).add(new THREE.Vector3(0, drag.spread ? 0.06 : 0.25, 0));
+      // el dorso de la cuchara remueve el yogur y deja el surco
+      if (s.yogurt.groove(drag.uv, h.uv)) sfx.scrape(drag.uv.distanceTo(h.uv) * 0.4);
+      spoonGoal.pos = h.point.clone();
       drag.uv = h.uv.clone();
       break;
     }
@@ -1217,6 +1432,7 @@ el.addEventListener('pointermove', (e) => {
       break;
     }
     case 'orbit':
+      if (station.id !== 'table') break; // solo se gira la vista en la mesa
       yawT = THREE.MathUtils.clamp(yawT - dx * 0.004, -0.45, 0.45);
       pitchT = THREE.MathUtils.clamp(pitchT + dy * 0.003, -0.25, 0.2);
       break;
@@ -1234,20 +1450,21 @@ const up = (e) => {
   ghost.idle = 0;
   pendingGrab = null;
   if (drag?.kind === 'proc') drag.proc.up(drag.step, e, procCtx);
-  if (drag?.kind === 'grab') physics.release(drag.it);
-  if (drag?.kind === 'spoon') {
-    if (!drag.spread) {
-      // cucharada: el pegote cae y se asienta
-      const s = sets[mood], uv = drag.uv;
-      spoon.userData.dip = 1;
-      setTimeout(() => {
-        s.yogurt.dollop(uv);
-        jelly(s.bowl, 0.4);
-        sfx.plop(0.9, 0.7);
-      }, 120);
+  if (drag?.kind === 'grab') {
+    physics.release(drag.it);
+    // al recoger algo volcado, lo dejas de pie
+    const t = drag.it.mesh.userData.tip;
+    if (t) {
+      const b = drag.it.body;
+      b.quaternion.set(0, 0, 0, 1);
+      b.angularVelocity.set(0, 0, 0);
+      b.velocity.scale(0.3, b.velocity);
     }
-    spoon.rotation.z = 0;
+    renderUI();
   }
+  if (drag?.kind === 'honey') honey.release();
+  if (drag?.kind === 'spoon') spoonGoal.pos = null;
+  fingerGoal = null;
   drag = null;
   sfx.stop();
 };
@@ -1379,7 +1596,9 @@ function loop() {
     const p = procCtx.planePoint(g.e, grabY(g.it));
     if (p) physics.holdTo(g.it, p, time);
   }
+  updateFinger(dt);
   physics.step(dt);
+  if (mood === 'golden') updateTippables(dt);
   updateJelly(dt);
   updateKnife(dt);
   droplets.update(dt);
@@ -1427,16 +1646,40 @@ function loop() {
       say('¡A rebosar! 🥣', 'Sigue si quieres… se sale por el borde');
     }
   }
-  // cuchara: visible con la herramienta de yogur; hace "dip" al soltar la cucharada
-  const spoonOn = station.id === 'bowl' && tool?.id === 'yogurt';
+  // cuchara: descansa junto al bol; al usarla va hacia el dedo con suavidad
+  const spoonOn = station.id === 'bowl' && tool?.id === 'spoonSwirl';
   if (!spoonOn) spoon.visible = false;
-  else if (!spoon.visible) {
-    spoon.visible = true;
-    spoon.position.copy(s.bowl.getWorldPosition(new THREE.Vector3())).add(new THREE.Vector3(0.25, 0.6, 0.2));
+  else {
+    const rest = s.bowl.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(portrait ? -0.9 : 0.9, 0.05, 0.1));
+    const goal = spoonGoal.pos ? spoonGoal.pos.clone().add(new THREE.Vector3(0, 0.04, 0)) : rest;
+    if (!spoon.visible) {
+      spoon.visible = true;
+      spoon.position.copy(goal);
+    }
+    spoon.position.lerp(goal, 1 - Math.exp(-dt * 16));
+    spoon.rotation.z += ((spoonGoal.pos ? 0.45 : 0) - spoon.rotation.z) * Math.min(1, dt * 10);
   }
-  spoon.userData.dip = (spoon.userData.dip || 0) * Math.exp(-dt * 6);
-  spoon.rotation.x = spoon.userData.dip * 0.9;
-  spoon.userData.load.visible = spoon.userData.dip < 0.3;
+  spoon.userData.load.visible = false;
+  // miel: el hilo sigue cayendo aunque sueltes; lo caído se extiende despacio
+  honey.update(dt);
+  for (let i = honeyPools.length - 1; i >= 0; i--) {
+    const q = honeyPools[i];
+    q.age += dt;
+    if (q.kind === 'toast') s.toast.honeyPool(q.uv.x, q.uv.y, 10 + q.age * 14, 0.05);
+    else if (s.yogurt) s.yogurt.honeyPool(q.uv, 6 + q.age * 8, 0.03);
+    if (q.age > 1.4) honeyPools.splice(i, 1);
+  }
+  const honeyOn = tool?.type === 'honeydrip' && (station.id === 'toast' || station.id === 'bowl');
+  if (!honeyOn && !honey.running) honey.dipper.visible = false;
+  else if (!honey.running) {
+    const o = station.id === 'toast' ? s.toast.group : s.bowl;
+    const rest = o.getWorldPosition(new THREE.Vector3()).setY(0.5).add(new THREE.Vector3(0.2, 0, 1.0));
+    if (!honey.dipper.visible) {
+      honey.dipper.visible = true;
+      honey.dipper.position.copy(rest);
+    }
+    honey.dipper.position.lerp(rest, 1 - Math.exp(-dt * 6));
+  }
   if (mood === 'golden') {
     const inCoffee = station.id === 'coffee';
     // la taza viaja a la zona de preparación mientras haces el café
@@ -1455,7 +1698,7 @@ function loop() {
     const inner = s.items.avo.children[0];
     if (inner) {
       inner.children[2].visible = !avoPrep.pitless;
-      inner.children[0].material.color.set(avoPrep.peeled ? '#93bd4e' : '#344a20');
+      inner.children[0].material.color.set(avoPrep.peeled ? '#b9dc66' : '#4b7a2c');
     }
   }
   if (instantAnim) {
@@ -1558,6 +1801,8 @@ function loop() {
   }
 
   updateGhost(dt);
+  updateHub();
+  $('holdRing').classList.toggle('on', !!pendingGrab);
   composer.render();
   requestAnimationFrame(loop);
 }
@@ -1565,6 +1810,10 @@ loop();
 
 window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
+  honeySpills: () => honey.spills.children.length,
+  finger: () => [fingerBody.position.x, fingerBody.position.y, fingerBody.position.z].map((v) => v.toFixed(2)).join(',') + ' goal ' + (fingerGoal ? fingerGoal.toArray().map((v) => v.toFixed(2)).join(',') : 'null') + ' drag ' + (drag ? drag.kind : 'none'),
+  juicePos: () => juiceTip.holder.position.toArray().map((v) => v.toFixed(2)).join(','),
+  tipped: () => tippables.filter((t) => t.tipped).map((t) => t.key).join(',') || 'nada',
   get station() { return station; },
   settled: () => !tween && cur.target.distanceTo(want.target) < 0.01 && Math.abs(cur.fov - want.fov) < 0.1,
 };

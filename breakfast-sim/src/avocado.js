@@ -24,15 +24,15 @@ const lathe = (pts, segs, a, b, sx = 1) =>
 // piel escaneada de un aguacate real (Poly Haven), teñida verde oscuro
 const skinTex = real('avocado_skin', [2, 3]);
 const skinMat = new THREE.MeshStandardMaterial({
-  color: '#3f5a26', map: skinTex.map, normalMap: skinTex.normalMap, roughnessMap: skinTex.roughnessMap,
-  roughness: 1, side: THREE.DoubleSide, normalScale: new THREE.Vector2(1.4, 1.4),
+  color: '#4b7a2c', map: skinTex.map, normalMap: skinTex.normalMap, roughnessMap: skinTex.roughnessMap,
+  roughness: 1, side: THREE.DoubleSide, normalScale: new THREE.Vector2(0.6, 0.6),
 });
 // por dentro, la piel del aguacate es verde clarito
 skinMat.onBeforeCompile = (sh) => {
   sh.fragmentShader = sh.fragmentShader.replace('#include <color_fragment>',
     '#include <color_fragment>\n if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.55, 0.68, 0.28);');
 };
-const underMat = new THREE.MeshStandardMaterial({ color: '#93bd4e', roughness: 0.45 });
+const underMat = new THREE.MeshStandardMaterial({ color: '#b9dc66', roughness: 0.45 });
 const fleshTex = avocadoFleshTexture();
 const hollowTex = avocadoFleshTexture(true);
 const sliceMat = new THREE.MeshStandardMaterial({ color: '#6f9a3a', roughness: 0.5 });
@@ -57,8 +57,13 @@ function half(withPit) {
   inner.add(face);
   let pit = null;
   if (withPit) {
-    pit = new THREE.Mesh(new THREE.SphereGeometry(0.17, 32, 24), new THREE.MeshStandardMaterial({ color: '#7b4a2b', roughness: 0.3 }));
-    pit.scale.set(0.75, 1.05, 1);
+    pit = new THREE.Mesh(new THREE.SphereGeometry(0.19, 32, 24), new THREE.MeshStandardMaterial({ color: '#a5673a', roughness: 0.3 }));
+    pit.scale.set(0.85, 1.0, 1.05);
+    // brillito de dibujo animado
+    const shine = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), new THREE.MeshBasicMaterial({ color: '#f0d2ae', transparent: true, opacity: 0.85 }));
+    shine.scale.set(1, 0.6, 1.5);
+    shine.position.set(-0.13, 0.07, 0.08);
+    pit.add(shine);
     pit.position.set(0, 0.36, 0);
     pit.castShadow = true;
     pit.userData.pit = true;
@@ -119,7 +124,7 @@ export class AvocadoPrep {
     pit.visible = true;
     pit.position.set(0, 0.36, 0);
     pit.quaternion.identity();
-    pit.scale.set(0.75, 1.05, 1);
+    pit.scale.set(0.85, 1.0, 1.05);
     // el aguacate entero es un objeto físico: se puede coger y lanzar
     if (this.item) this.physics.remove(this.item);
     this.holder.position.copy(this.homeC());

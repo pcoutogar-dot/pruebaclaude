@@ -14,10 +14,10 @@ function makeToaster() {
   band.position.y = 0.1;
   const slotMat = M('#2a211c', 0.9);
   const glowMat = M('#3a1a0c', 0.9, { emissive: '#ff5a1a', emissiveIntensity: 0 });
-  const slots = [-0.17, 0.17].map((z) => {
-    const s = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.02, 0.09), slotMat);
+  const slots = [-0.16, 0.16].map((z) => {
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.02, 0.15), slotMat);
     s.position.set(0, 0.625, z);
-    const glow = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.015, 0.06), glowMat);
+    const glow = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.015, 0.12), glowMat);
     glow.position.set(0, 0.628, z);
     g.add(s, glow);
     return s;
@@ -63,7 +63,7 @@ export class ToasterProc {
 
   // centro de la tostada según lo metida que esté (0 = asomando, 1 = dentro)
   slotPos(depth) {
-    const top = this.obj.localToWorld(new THREE.Vector3(0, 0.62, -0.17));
+    const top = this.obj.localToWorld(new THREE.Vector3(0, 0.62, -0.16));
     return top.add(new THREE.Vector3(0, 0.42 - depth * 0.6, 0));
   }
 
