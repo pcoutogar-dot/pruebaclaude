@@ -18,6 +18,7 @@ import { ToasterProc } from './toaster.js';
 import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets } from './fx.js';
+import { jelly, updateJelly, burst } from './juice.js';
 import { noiseBump } from './textures.js';
 import * as TG from './texgen.js';
 import { real } from './real.js';
@@ -234,7 +235,9 @@ for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 8.0, -1.1], ['#f6a33
   sets.golden.group.add(o);
   physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone() });
 }
-physics.onImpact = (v) => sfx.plop(Math.min(1.4, v / 14), 0.55 + Math.random() * 0.2);
+// golpes blanditos: lo ligero suena agudo, lo pesado más grave
+physics.onImpact = (v, it) => sfx.plop(Math.min(1.1, v / 18), (it.body.mass < 0.2 ? 1.15 : 0.6) + Math.random() * 0.2);
+physics.onRespawn = () => sfx.boing(1.3);
 
 // ---------- Cuchillo que se carga y cuchara de yogur ----------
 // Para untar: primero cargas el cuchillo en la fuente (tarrina, tarro, aguacate)
@@ -265,11 +268,22 @@ function updateKnifeBlob() {
   blob.scale.set(1.3 * a + 0.2, 0.3 * a + 0.05, 0.7 * a + 0.1);
 }
 // el cuchillo sigue al dedo: la punta de la hoja queda bajo el dedo
+// (va hacia su sitio con suavidad: ver updateKnife)
+const knifeGoal = { pos: null, ry: 0, k: null };
 function moveKnife(point, dir) {
   const k = sets[mood].items.knife;
-  if (dir && dir.lengthSq() > 1e-5) k.rotation.y = -Math.atan2(dir.z, dir.x);
-  const fwd = new THREE.Vector3(Math.cos(k.rotation.y), 0, -Math.sin(k.rotation.y));
-  k.position.set(point.x - fwd.x * 0.6, point.y + 0.01, point.z - fwd.z * 0.6);
+  if (knifeGoal.k !== k || !knifeGoal.pos) knifeGoal.ry = k.rotation.y;
+  knifeGoal.k = k;
+  if (dir && dir.lengthSq() > 1e-5) knifeGoal.ry = -Math.atan2(dir.z, dir.x);
+  const fwd = new THREE.Vector3(Math.cos(knifeGoal.ry), 0, -Math.sin(knifeGoal.ry));
+  knifeGoal.pos = new THREE.Vector3(point.x - fwd.x * 0.6, point.y + 0.01, point.z - fwd.z * 0.6);
+}
+function updateKnife(dt) {
+  const k = knifeGoal.k;
+  if (!k || !knifeGoal.pos) return;
+  k.position.lerp(knifeGoal.pos, 1 - Math.exp(-dt * 20));
+  const d = ((knifeGoal.ry - k.rotation.y + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+  k.rotation.y += d * (1 - Math.exp(-dt * 12));
 }
 
 // tarro de yogur para verter (origen en el borde por donde cae)
@@ -708,6 +722,7 @@ function selectStation(st) {
 
 function applyMood(m) {
   mood = m;
+  knifeGoal.pos = null;
   room.setMood(m, renderer);
   sets.golden.group.visible = m === 'golden';
   sets.cutre.group.visible = m === 'cutre';
@@ -775,6 +790,10 @@ $('work').addEventListener('click', () => {
   const base = onTime ? 30 : 15;
   const mimo = Math.min(20, usedToday.size * 2);
   shop.earn(base + mimo);
+  {
+    const r = $('work').getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top, ['🪙', '✨', '💛'], 10);
+  }
   say(`Día ${day} · +${base + mimo} 🪙`, `${onTime ? 'Llegaste a tiempo ☀️' : 'Llegaste tarde… 🏃'} (+${base}) · mimo +${mimo}`);
   fade.classList.add('on');
   setTimeout(() => {
@@ -863,19 +882,45 @@ function hitSurface(e, info, { withPlaced = false, exclude = null } = {}) {
 
 const ROUND = new Set(['blueberry', 'raspberry', 'tomato']);
 
-function pop(obj) {
-  obj.userData.s = obj.scale.x;
-  obj.scale.setScalar(0.001);
-  anims.push({ obj, t0: clock.elapsedTime, dur: 0.35 });
+// Lo que colocas cae desde un poquito arriba, se aplasta al aterrizar y rebota
+// como gelatina. Se anima la pieza interior, así puedes seguir arrastrándola.
+function pop(obj, { quiet = false, delay = 0 } = {}) {
+  const c = obj.children[0];
+  anims.push({ c, y0: c.position.y, s0: c.scale.clone(), t: -delay, quiet, landed: false });
+  c.scale.setScalar(0.001);
+}
+// cada cosa que colocas seguida sube una notita de la escala
+let combo = 0, comboAt = -10;
+function landNote(vol = 1) {
+  if (clock.elapsedTime - comboAt > 2.2) combo = 0;
+  comboAt = clock.elapsedTime;
+  sfx.note(combo++, vol);
 }
 
-function placeAt(holder, h, kind, sprinkle = false) {
+function placeAt(holder, h, kind, sprinkle = false, opts) {
   const o = makePlaced(kind, sprinkle);
   o.position.copy(holder.worldToLocal(h.point.clone()));
   o.rotation.y = Math.random() * Math.PI * 2;
   holder.add(o);
-  pop(o);
+  pop(o, opts);
   return o;
+}
+
+// tocar cualquier cosa de la cocina la hace temblar un poquito (boing)
+function wobblables() {
+  const skip = new Set(['board', 'toast', 'napkin', 'steam', 'towel']);
+  const list = Object.entries(sets[mood].items).filter(([k]) => !skip.has(k)).map(([, o]) => o);
+  if (mood === 'golden') list.push(toasterProc.obj, coffeeProc.grinder);
+  return list.filter((o) => o.visible);
+}
+function tapWobble(e) {
+  const list = wobblables();
+  const h = cast(e, list);
+  let o = h?.object;
+  while (o && !list.includes(o)) o = o.parent;
+  if (!o) return;
+  jelly(o, 0.8);
+  sfx.boing(0.85 + Math.random() * 0.5);
 }
 
 // ---------- Coger y lanzar (mantén el dedo sobre un objeto suelto) ----------
@@ -907,6 +952,7 @@ el.addEventListener('pointerdown', (e) => {
   if (grabbable) pendingGrab = { it: grabbable, t: clock.elapsedTime, x: e.clientX, y: e.clientY, e };
   handleDown(e);
   // si ningún gesto usa este toque, se coge el objeto al instante
+  if (!grabbable && drag?.kind === 'orbit') tapWobble(e);
   if (grabbable && drag?.kind === 'orbit') {
     pendingGrab = null;
     startGrab(grabbable);
@@ -968,6 +1014,7 @@ function handleDown(e) {
           knifeLoad.amount = 0;
         }
         drag = { kind: 'load', src };
+        jelly(src, 0.35);
         moveKnife(hs.point);
         return;
       }
@@ -1016,7 +1063,6 @@ function handleDown(e) {
           o.removeFromParent();
           refund();
         });
-        sfx.plop();
         drag = { kind: tool.orient ? 'orient' : 'move', obj: o, info, start: h.point.clone() };
         return;
       }
@@ -1051,7 +1097,7 @@ function handleDown(e) {
 function sprinkleAt(d, h) {
   const n = 2 + ((Math.random() * 3) | 0);
   for (let i = 0; i < n; i++) {
-    const o = placeAt(d.info.holder, h, tool.id, true);
+    const o = placeAt(d.info.holder, h, tool.id, true, { quiet: i > 0, delay: i * 0.04 });
     o.position.x += (Math.random() - 0.5) * 0.14;
     o.position.z += (Math.random() - 0.5) * 0.14;
     o.rotation.x = (Math.random() - 0.5) * 0.6;
@@ -1196,6 +1242,7 @@ const up = (e) => {
       spoon.userData.dip = 1;
       setTimeout(() => {
         s.yogurt.dollop(uv);
+        jelly(s.bowl, 0.4);
         sfx.plop(0.9, 0.7);
       }, 120);
     }
@@ -1210,7 +1257,16 @@ const procCtx = {
   sfx,
   time: 0,
   cast: (e, objs) => cast(e, objs),
-  chime: () => sfx.chime(),
+  // logro: campanita + chispitas sobre lo que estás preparando
+  chime: () => {
+    sfx.chime();
+    const o = focusObject();
+    if (o) {
+      const p = procCtx.screenOf(o.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.4, 0)));
+      burst(p.x, p.y);
+    }
+  },
+  wobble: (o, k) => jelly(o, k),
   say: (a, b) => say(a, b),
   planePoint: (e, y) => {
     ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
@@ -1324,6 +1380,8 @@ function loop() {
     if (p) physics.holdTo(g.it, p, time);
   }
   physics.step(dt);
+  updateJelly(dt);
+  updateKnife(dt);
   droplets.update(dt);
   if (s.yogurt) {
     s.yogurt.relax(dt);
@@ -1475,10 +1533,28 @@ function loop() {
   room.update(time);
 
   for (let i = anims.length - 1; i >= 0; i--) {
-    const a = anims[i];
-    const t = THREE.MathUtils.clamp((time - a.t0) / a.dur, 0, 1);
-    a.obj.scale.setScalar(Math.max(0.001, easeOutBack(t)) * a.obj.userData.s);
-    if (t === 1) anims.splice(i, 1);
+    const a = anims[i], FALL = 0.17;
+    a.t += dt;
+    if (a.t < 0) continue;
+    if (a.t < FALL) {
+      // cae
+      const f = a.t / FALL;
+      a.c.position.y = a.y0 + 0.3 * (1 - f * f);
+      a.c.scale.copy(a.s0).multiplyScalar(Math.min(1, 0.4 + f * 1.2));
+    } else {
+      // aterriza: se aplasta y rebota
+      if (!a.landed) {
+        a.landed = true;
+        if (!a.quiet) landNote();
+      }
+      const tt = a.t - FALL, q = 0.3 * Math.exp(-9 * tt) * Math.cos(21 * tt);
+      a.c.position.y = a.y0;
+      a.c.scale.set(a.s0.x * (1 + 0.6 * q), a.s0.y * (1 - q), a.s0.z * (1 + 0.6 * q));
+      if (tt > 0.6) {
+        a.c.scale.copy(a.s0);
+        anims.splice(i, 1);
+      }
+    }
   }
 
   updateGhost(dt);

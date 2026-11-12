@@ -107,6 +107,15 @@ Reglas de los procesos:
 - **Yogur a cucharadas**: cada toque deja un pegote espeso con volumen que se asienta despacio; arrastrar lo extiende con el dorso de la cuchara.
 - **Agua**: ondas en la superficie del café donde cae el chorro y gotitas que salpican (también al verter fuera).
 
+## 3 quater. Tacto "cuqui" (game feel)
+
+- **Todo es un poco de gelatina**: lo que colocas cae desde un poquito arriba, se aplasta al aterrizar y rebota; lo que golpea algo se aplasta y vuelve con un muelle.
+- **Coger con muelle**: el objeto sigue al dedo con un pelín de retraso y balanceo, y se estira un poco al cogerlo.
+- **Tocar por tocar**: cualquier objeto de la cocina (taza, bol, planta, tostadora…) hace "boing" si lo tocas.
+- **Escala musical**: cada cosa que colocas seguida sube una nota; colocar cinco arándanos suena a melodía.
+- **Chispitas** al completar un paso y monedas al ir a trabajar.
+- **Utensilios con inercia**: cuchillo, hervidor y jarra van hacia el dedo con suavidad, nunca a saltos.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

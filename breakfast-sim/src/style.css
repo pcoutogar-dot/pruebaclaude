@@ -252,3 +252,15 @@ body.late #time { color: #c0563a; }
   .where { top: max(10px, env(safe-area-inset-top)); }
   .nav { top: 38%; }
 }
+
+/* ---------- Chispitas ---------- */
+.burst {
+  position: fixed; pointer-events: none; font-size: 18px; opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: burst 0.95s cubic-bezier(.2, .8, .3, 1) forwards;
+}
+@keyframes burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15) rotate(var(--r)); }
+}

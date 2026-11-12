@@ -3,7 +3,7 @@
 import * as CANNON from 'cannon-es';
 import * as THREE from 'three';
 
-const G = -70; // gravedad algo suave: realista sin sentirse brusca
+const G = -58; // gravedad suave: las cosas caen con calma, sin brusquedad
 
 export class Physics {
   constructor() {
@@ -11,7 +11,7 @@ export class Physics {
     this.world.allowSleep = true;
     this.world.broadphase = new CANNON.SAPBroadphase(this.world);
     this.mat = new CANNON.Material('def');
-    this.world.addContactMaterial(new CANNON.ContactMaterial(this.mat, this.mat, { friction: 0.45, restitution: 0.28 }));
+    this.world.addContactMaterial(new CANNON.ContactMaterial(this.mat, this.mat, { friction: 0.5, restitution: 0.36 }));
     this.items = []; // { mesh, body, home, onImpact, squash }
     this.kinematic = []; // cuerpos que siguen a un objeto de la escena (tablas, tazas...)
     this.onImpact = null;
@@ -51,12 +51,12 @@ export class Physics {
     body.quaternion.copy(mesh.quaternion);
     body.sleepSpeedLimit = 0.3;
     this.world.addBody(body);
-    const it = { mesh, body, home, grabbable, squash: 0, baseScale: mesh.scale.clone(), lastHit: 0 };
+    const it = { mesh, body, home, grabbable, sq: 0, sqV: 0, baseScale: mesh.scale.clone(), lastHit: 0 };
     body.addEventListener('collide', (e) => {
       const v = Math.abs(e.contact.getImpactVelocityAlongNormal());
       if (v > 2.5 && performance.now() - it.lastHit > 90) {
         it.lastHit = performance.now();
-        it.squash = Math.min(1, v / 25);
+        it.sqV += Math.min(v, 22) * 0.4; // se aplasta y rebota como gelatina
         this.onImpact?.(v, it);
       }
     });
@@ -75,6 +75,7 @@ export class Physics {
   grab(it) {
     it.held = true;
     it.hist = [];
+    it.sqV -= 5; // se estira un poquito al cogerlo
     it.body.wakeUp();
   }
 
@@ -106,9 +107,12 @@ export class Physics {
     for (const it of this.items) {
       if (it.held && it.target) {
         const b = it.body, t = it.target;
-        const k = 16;
-        b.velocity.set((t.x - b.position.x) * k, (t.y - b.position.y) * k, (t.z - b.position.z) * k);
-        b.angularVelocity.scale(0.86, b.angularVelocity);
+        // muelle blandito: sigue al dedo con un pelín de retraso y balanceo
+        const k = 190, c = 17, v = b.velocity;
+        v.x += ((t.x - b.position.x) * k - v.x * c) * dt;
+        v.y += ((t.y - b.position.y) * k - v.y * c - G) * dt;
+        v.z += ((t.z - b.position.z) * k - v.z * c) * dt;
+        b.angularVelocity.scale(0.9, b.angularVelocity);
         b.wakeUp();
       }
     }
@@ -117,11 +121,19 @@ export class Physics {
       it.mesh.position.copy(it.body.position);
       it.mesh.quaternion.copy(it.body.quaternion);
       // pequeño "aplastamiento" al golpear: blandito pero sin exagerar
-      if (it.squash > 0.001) {
-        const s = it.squash;
-        it.mesh.scale.set(it.baseScale.x * (1 + 0.1 * s), it.baseScale.y * (1 - 0.14 * s), it.baseScale.z * (1 + 0.1 * s));
-        it.squash *= Math.exp(-dt * 14);
-      } else it.mesh.scale.copy(it.baseScale);
+      if (Math.abs(it.sq) > 0.002 || Math.abs(it.sqV) > 0.03) {
+        const n = Math.max(1, Math.ceil(dt / 0.02)), h = dt / n;
+        for (let i = 0; i < n; i++) {
+          it.sqV += (-300 * it.sq - 13 * it.sqV) * h;
+          it.sq += it.sqV * h;
+        }
+        it.sq = Math.max(-0.22, Math.min(0.26, it.sq));
+        const s = it.sq;
+        it.mesh.scale.set(it.baseScale.x * (1 + 0.55 * s), it.baseScale.y * (1 - s), it.baseScale.z * (1 + 0.55 * s));
+      } else {
+        it.sq = it.sqV = 0;
+        it.mesh.scale.copy(it.baseScale);
+      }
       // si se cae al suelo o sale volando, vuelve a su sitio con un "plop"
       if (it.home && !it.held && (it.body.position.y < -2.4 || it.body.position.z > 3)) {
         it.lost = (it.lost || 0) + dt;
@@ -137,7 +149,9 @@ export class Physics {
     it.body.angularVelocity.set(0, 0, 0);
     it.body.quaternion.set(0, 0, 0, 1);
     it.lost = 0;
+    it.sqV -= 6; // reaparece con un "pop"
     it.body.wakeUp();
+    this.onRespawn?.(it);
   }
 
   meshes() {

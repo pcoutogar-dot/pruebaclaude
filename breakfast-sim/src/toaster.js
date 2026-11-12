@@ -112,6 +112,7 @@ export class ToasterProc {
     this.obj.userData.lever.position.y = 0.5;
     this.obj.userData.glowMat.emissiveIntensity = 0;
     ctx.sfx.plop(1.2, 1.6);
+    ctx.wobble?.(this.obj, 0.9);
     this.flyTo('popped', 1.1, true);
   }
 
@@ -146,6 +147,8 @@ export class ToasterProc {
         this.anim = null;
         this.state = a.next;
         if (a.next === 'popped') ctx?.chime();
+        // aterriza blandito
+        ctx?.wobble?.(a.next === 'in' ? this.obj : this.getToast().group, a.next === 'in' ? 0.5 : 0.9);
       }
     }
     if (this.state === 'toasting') {

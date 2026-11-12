@@ -73,6 +73,42 @@ export class Sfx {
     });
   }
 
+  // notitas de marimba: cada cosa que colocas sube un escalón de la escala
+  note(i = 0, vol = 1) {
+    if (!this.ctx || !this.on) return;
+    const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
+    const f = scale[i % scale.length] * (i >= scale.length ? 2 : 1);
+    const ctx = this.ctx, t = ctx.currentTime;
+    for (const [mult, g0, dec] of [[1, 0.09, 0.45], [4, 0.02, 0.12]]) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f * mult;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(g0 * vol, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dec);
+      o.connect(g).connect(ctx.destination);
+      o.start(t);
+      o.stop(t + dec + 0.05);
+    }
+  }
+
+  // "boing" blandito al tocar algo
+  boing(pitch = 1) {
+    if (!this.ctx || !this.on) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(260 * pitch, t);
+    o.frequency.exponentialRampToValueAtTime(420 * pitch, t + 0.07);
+    o.frequency.exponentialRampToValueAtTime(300 * pitch, t + 0.22);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.09, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+    o.connect(g).connect(ctx.destination);
+    o.start(t);
+    o.stop(t + 0.3);
+  }
+
   plop(vol = 1, pitch = 1) {
     if (!this.ctx || !this.on) return;
     const ctx = this.ctx, t = ctx.currentTime;

@@ -347,12 +347,14 @@ export class CoffeeProc {
       // a una altura que no choca con la taza ni con el filtro
       const y = step === 'brew' ? MUG_TOP + 0.8 : MUG_TOP + 0.55;
       const p = ctx.planePoint(e, y);
-      if (p) this.tool.position.copy(p);
+      if (p) this.toolGoal = p; // el utensilio va hacia el dedo con suavidad (ver update)
     }
   }
 
   up() {
     this.holding = false;
+    this.toolGoal = null;
+    this.arrived = false;
     this.center = null;
     // al soltar el hervidor (si ya hay café), el filtro se retira
     if (this.brewReady && !this.brewed) this.brewed = true;
@@ -365,7 +367,12 @@ export class CoffeeProc {
     this.layout(step);
     this.water.visible = this.milkStream.visible = false;
 
-    if (step === 'brew' && this.holding && !this.brewed) {
+    // hervidor y jarra siguen al dedo con un poco de inercia; no vierten hasta llegar
+    if (this.holding && this.toolGoal && this.tool) {
+      this.tool.position.lerp(this.toolGoal, 1 - Math.exp(-dt * 14));
+      if (this.tool.position.distanceTo(this.toolGoal) < 0.15) this.arrived = true;
+    }
+    if (step === 'brew' && this.holding && this.arrived && !this.brewed) {
       const tip = this.kettle.position;
       this.kettle.rotation.z += (-0.55 - this.kettle.rotation.z) * 0.2;
       const onDripper = Math.hypot(tip.x - p.x, tip.z - p.z) < 0.3;
@@ -426,7 +433,7 @@ export class CoffeeProc {
       } else ctx.sfx.sizzle(false);
     }
 
-    if (step === 'art' && this.holding) {
+    if (step === 'art' && this.holding && this.arrived) {
       const tip = this.pitcher.position;
       this.pitcher.rotation.z += (-0.7 - this.pitcher.rotation.z) * 0.2;
       const local = this.coffee.worldToLocal(tip.clone().setY(this.coffee.getWorldPosition(new THREE.Vector3()).y));

@@ -229,6 +229,7 @@ export class AvocadoPrep {
         this.holder.quaternion.identity();
         this.holder.scale.setScalar(1);
         this.state = 'cut';
+        ctx.wobble?.(this.group, 0.6);
         ctx.sfx.stop();
         ctx.sfx.plop();
         this.pose();
@@ -238,6 +239,7 @@ export class AvocadoPrep {
       this.pose();
       if (this.openT >= 1) {
         this.state = 'open';
+        ctx.wobble?.(this.group, 0.5);
         ctx.sfx.plop();
       }
     } else if (step === 'pit' && this.pitDrag) {
