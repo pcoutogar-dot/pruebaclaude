@@ -223,10 +223,13 @@ export class AvocadoPrep {
     this.last = [e.clientX, e.clientY];
     const d = Math.hypot(dx, dy);
     if (step === 'cut' && this.state === 'whole') {
-      if (this.homing || !this.atHome() || !ctx.cast(e, this.targets())) return;
+      if (this.homing || !this.atHome()) return;
+      // tolerante: basta con pasar cerca del aguacate, no hay que acertar justo encima
+      const c = ctx.screenOf(this.holder.getWorldPosition(new THREE.Vector3()));
+      if (Math.hypot(e.clientX - c.x, e.clientY - c.y) > Math.min(innerWidth, innerHeight) * 0.3) return;
       this.cutLen += d;
       ctx.sfx.scrape(d * 0.0015);
-      if (this.cutLen > 110) {
+      if (this.cutLen > 70) {
         // al cortarlo deja de ser un objeto suelto
         this.physics.remove(this.item);
         this.item = null;

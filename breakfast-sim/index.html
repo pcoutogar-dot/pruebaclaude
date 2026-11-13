@@ -5,49 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#f3e5d3" />
   <title>Breakfast Simulator</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" />
 </head>
 <body data-mood="golden">
   <div id="app"></div>
   <div id="vignette"></div>
 
+  <!-- arriba: solo la hora y la nevera -->
   <header id="hud">
-    <div class="pill clock"><span class="sun">☀︎</span><span id="time">07:32</span><span class="muted">· salida 08:15</span></div>
-    <button class="pill fridge" id="fridgeBtn">🧊 <span class="coin">🪙 <span data-coins>30</span></span></button>
+    <div class="badge clock"><i>⏰</i><b id="time">07:30</b></div>
+    <button id="homeBtn" class="badge back" hidden>‹ Mesa</button>
+    <span class="grow"></span>
     <div class="seg" id="mood">
-      <button data-mood="cutre">Piso compartido</button>
-      <button data-mood="golden" class="on">Mañana dorada</button>
+      <button data-mood="cutre" aria-label="Piso compartido">🏚️</button>
+      <button data-mood="golden" class="on" aria-label="Mañana dorada">🌅</button>
     </div>
+    <button class="badge coins" id="fridgeBtn" aria-label="Abrir la nevera"><i>🧊</i><b><span data-coins>30</span> 🪙</b></button>
   </header>
 
   <div id="msg"></div>
-
-  <!-- navegación por la cocina -->
-  <div id="where" class="pill where"><b id="whereName">Aguacate</b><span id="whereDots"></span></div>
-  <button id="navPrev" class="nav prev" aria-label="Estación anterior">‹</button>
-  <button id="navNext" class="nav next" aria-label="Estación siguiente">›</button>
   <div id="ghost" aria-hidden="true">👆<small id="ghostTxt"></small></div>
   <div id="hub"></div>
-  <button id="homeBtn" class="nav home" aria-label="Volver a la mesa" hidden>🏠</button>
   <div id="holdRing" aria-hidden="true"></div>
 
+  <!-- abajo: mascota con pista, botones pequeños y la fila de herramientas -->
   <footer id="bottom">
-    <div class="card">
-      <nav class="tabs" id="tabs"></nav>
-      <div class="steps" id="steps"></div>
-      <div id="hint"></div>
-      <div class="tools" id="tools"></div>
-      <div class="row actions">
-        <button id="undo">↶ Deshacer</button>
-        <button id="reset">Empezar de nuevo</button>
-        <button id="work" class="primary">💼 Ir a trabajar</button>
-        <button id="sound" aria-label="Sonido">♪</button>
+    <div class="side">
+      <button id="tosti" class="tosti" aria-label="Ver la pista"><i></i></button>
+      <div id="bubble"><span id="steps"></span><span id="hint"></span></div>
+      <span class="grow"></span>
+      <div id="menu">
+        <button id="sound" class="round" aria-label="Sonido">♪</button>
+        <button id="reset" class="round" aria-label="Empezar de nuevo">↺</button>
       </div>
+      <button id="more" class="round" aria-label="Más opciones">⋯</button>
+      <button id="undo" class="round" aria-label="Deshacer">↶</button>
     </div>
+    <div class="tools" id="tools"></div>
+    <button id="work" class="big">💼 Ir a trabajar</button>
   </footer>
 
   <div id="shop" class="sheet">
     <div class="sheet-card">
-      <header><b>Tu nevera</b><span class="pill coin">🪙 <span data-coins>30</span></span><button id="shopClose" aria-label="Cerrar">✕</button></header>
+      <header><b>Tu nevera</b><span class="badge coins"><b><span data-coins>30</span> 🪙</b></span><button id="shopClose" class="round" aria-label="Cerrar">✕</button></header>
       <nav class="tabs" id="shopTabs"></nav>
       <div class="grid" id="shopGrid"></div>
     </div>

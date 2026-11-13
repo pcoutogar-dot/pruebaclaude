@@ -692,38 +692,23 @@ function focusObject() {
 
 // ---------- UI ----------
 const $ = (id) => document.getElementById(id);
-const hint = $('hint'), tabs = $('tabs'), tools = $('tools'), fade = $('fade'), msg = $('msg');
+const hint = $('hint'), tools = $('tools'), fade = $('fade'), msg = $('msg');
+// la pista sale en un globo junto a Tosti y se esconde sola: no tapa el juego
+let hintTimer;
+function showHint(text, ms = 5000) {
+  if (text !== undefined) hint.textContent = text;
+  $('bubble').classList.add('show');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => $('bubble').classList.remove('show'), ms);
+}
 const sfx = new Sfx();
 
 function renderUI() {
-  tabs.innerHTML = '';
-  for (const st of STATIONS[mood]) {
-    const b = document.createElement('button');
-    b.className = 'tab' + (st === station ? ' on' : '');
-    b.innerHTML = `<span>${st.icon}</span>${st.label}`;
-    b.onclick = () => selectStation(st);
-    tabs.appendChild(b);
-  }
-  // pasos del proceso (1 Cortar · 2 Abrir · ...)
+  // pasos del proceso: puntitos + nombre del paso
   const steps = $('steps');
-  steps.innerHTML = '';
-  steps.style.display = station.steps ? '' : 'none';
-  if (station.steps) {
-    const open = firstOpenStep(station);
-    station.steps.forEach((st, i) => {
-      const b = document.createElement('button');
-      const done = st.done();
-      b.className = 'step' + (i === station.stepIdx ? ' on' : '') + (done ? ' done' : '') + (i > open ? ' locked' : '');
-      b.innerHTML = `<i>${done ? '✓' : i + 1}</i>${st.label}`;
-      b.onclick = () => {
-        if (i > open) return;
-        station.stepIdx = i;
-        tool = st.tools[0];
-        renderUI();
-      };
-      steps.appendChild(b);
-    });
-  }
+  steps.innerHTML = station.steps
+    ? station.steps.map((st, i) => `<i class="${i === station.stepIdx ? 'on' : st.done() ? 'done' : ''}"></i>`).join('') + `<em>${curStep().label}</em>`
+    : '';
   tools.innerHTML = '';
   const list = curTools();
   for (const t of list) {
@@ -731,7 +716,7 @@ function renderUI() {
     const q = t.qty ? t.qty() : shop.qty(t);
     const locked = t.lock?.();
     b.className = 'chip' + (t === tool ? ' on' : '') + (q === 0 ? ' empty' : '') + (locked ? ' locked' : '');
-    b.innerHTML = `<span>${locked ? '🔒' : t.icon}</span>${t.label}${q === null || q === undefined ? '' : `<b class="qty">${q}</b>`}`;
+    b.innerHTML = `<span>${locked ? '🔒' : t.icon}</span><em>${t.label}</em>${q === null || q === undefined ? '' : `<b class="qty">${q}</b>`}`;
     b.onclick = () => {
       if (locked) {
         say('Aún no', locked);
@@ -751,7 +736,9 @@ function renderUI() {
   const table = station.id === 'table';
   $('work').style.display = table ? '' : 'none';
   $('reset').style.display = table ? 'none' : '';
-  hint.textContent = tool ? tool.hint : station.hint;
+  const text = tool ? tool.hint : station.hint;
+  if (text !== hint.textContent || steps.innerHTML !== renderUI.lastSteps) showHint(text);
+  renderUI.lastSteps = steps.innerHTML;
   if (uiReady) renderNav();
   ghostSoon();
 }
@@ -887,15 +874,7 @@ function updateHub() {
 }
 
 function renderNav() {
-  const list = STATIONS[mood], i = stationIndex();
   $('homeBtn').hidden = station.id === 'table';
-  $('whereName').textContent = `${station.icon} ${station.label}`;
-  $('whereDots').innerHTML = list.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
-  $('navPrev').hidden = i <= 0;
-  $('navNext').hidden = i >= list.length - 1;
-  // si ya has terminado lo de esta estación, la flecha "siguiente" late para invitarte
-  const finished = station.steps ? station.steps.slice(0, -1).every((x) => x.done()) && !station.steps[station.steps.length - 1].tools.length : false;
-  $('navNext').classList.toggle('pulse', finished || (station.steps && station.steps.every((x, k) => k === station.steps.length - 1 || x.done()) && station.stepIdx === station.steps.length - 1));
 }
 
 function selectStation(st) {
@@ -1020,12 +999,16 @@ $('work').addEventListener('click', () => {
   }, 900);
 });
 $('fridgeBtn').addEventListener('click', () => shop.open('fridge'));
-$('navPrev').addEventListener('click', () => navigate(-1));
 $('homeBtn').addEventListener('click', () => {
   selectStation(tableStation());
   sfx.plop(0.5, 1.2);
 });
-$('navNext').addEventListener('click', () => navigate(1));
+$('more').addEventListener('click', () => $('menu').classList.toggle('open'));
+$('tosti').addEventListener('click', () => {
+  // Tosti enseña otra vez la pista y el gesto
+  showHint();
+  ghostFor(gestureFor(tool));
+});
 const soundBtn = $('sound');
 soundBtn.addEventListener('click', () => {
   sfx.on = !sfx.on;
@@ -1132,16 +1115,84 @@ function startGrab(it) {
   physics.grab(it);
   drag = { kind: 'grab', it };
   sfx.plop(0.8, 1.3);
-  hint.textContent = '✋ Lo tienes. Suéltalo donde quieras… o lánzalo con un gesto.';
+  showHint('✋ Lo tienes. Suéltalo donde quieras… o lánzalo con un gesto.');
 }
 
-let flick = null;
+// ---------- Un dedo interactúa · dos dedos mueven la vista ----------
+// Con dos dedos arrastras la encimera; pellizcando acercas o alejas. Un dedo
+// nunca mueve la cámara: siempre actúa sobre lo que tocas.
+const touches = new Map();
+const free = { pan: new THREE.Vector3(), zoom: 1 };
+let pan = null, panLock = false, goTap = null;
+function touchMid() {
+  const [a, b] = [...touches.values()];
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) };
+}
+function clampFree() {
+  // la vista no se sale de la encimera
+  const t = want.base || want.target;
+  free.pan.x = THREE.MathUtils.clamp(free.pan.x, -3.6 - t.x, 8.6 - t.x);
+  free.pan.z = THREE.MathUtils.clamp(free.pan.z, -1.4 - t.z, 2.2 - t.z);
+  free.zoom = THREE.MathUtils.clamp(free.zoom, 0.5, 2);
+}
+function panBy(x0, y0, x1, y1) {
+  const a = procCtx.planePoint({ clientX: x0, clientY: y0 }, 0), b = procCtx.planePoint({ clientX: x1, clientY: y1 }, 0);
+  if (a && b) free.pan.add(a.sub(b));
+  clampFree();
+}
+// ¿a qué zona pertenece lo que tocas? (tocar algo de otra zona te lleva a ella)
+function ownerAt(e) {
+  const s = sets[mood];
+  const groups = mood === 'golden'
+    ? { avocado: [avoPrep.holder, prepBoard], toast: [s.toast.group, s.items.board, toasterProc.obj], bowl: [s.bowl], coffee: [s.mug, coffeeProc.grinder] }
+    : { toast: [s.toast.group, s.items.towel, s.items.tub], coffee: [s.mug] };
+  const all = Object.values(groups).flat().filter((o) => o.visible);
+  const h = cast(e, all);
+  if (!h) return null;
+  for (const [id, list] of Object.entries(groups)) {
+    for (const root of list) {
+      let o = h.object;
+      while (o) {
+        if (o === root) return STATIONS[mood].find((st) => st.id === id);
+        o = o.parent;
+      }
+    }
+  }
+  return null;
+}
+el.addEventListener('wheel', (e) => {
+  // ordenador: rueda/trackpad mueve la vista; Ctrl + rueda (o pellizco) acerca
+  e.preventDefault();
+  if (e.ctrlKey) free.zoom *= Math.exp(e.deltaY * 0.01);
+  else panBy(0, 0, -e.deltaX, -e.deltaY);
+  clampFree();
+}, { passive: false });
+
 el.addEventListener('pointerdown', (e) => {
   sfx.ensure();
-  flick = { x: e.clientX, y: e.clientY, t: performance.now() };
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  try {
+    el.setPointerCapture(e.pointerId);
+  } catch {}
+  if (touches.size >= 2) {
+    // segundo dedo: se cancela lo que hacía el primero y pasas a mover la vista
+    if (touches.size === 2) {
+      if (drag) up(null);
+      goTap = null;
+      pan = touchMid();
+      panLock = true;
+      $('bubble').classList.remove('show');
+    }
+    return;
+  }
+  if (panLock) return;
   ghost.kind = null;
   ghost.idle = 0;
-  el.setPointerCapture(e.pointerId);
+  const owner = ownerAt(e);
+  if (owner && owner !== station) {
+    goTap = { st: owner, x: e.clientX, y: e.clientY, t: performance.now() };
+    return;
+  }
   lastX = e.clientX;
   lastY = e.clientY;
   pendingGrab = null;
@@ -1318,6 +1369,20 @@ function sprinkleAt(d, h) {
 }
 
 el.addEventListener('pointermove', (e) => {
+  const tp = touches.get(e.pointerId);
+  if (tp) {
+    tp.x = e.clientX;
+    tp.y = e.clientY;
+  }
+  if (pan && touches.size >= 2) {
+    const m = touchMid();
+    panBy(pan.x, pan.y, m.x, m.y);
+    if (m.d > 10 && pan.d > 10) free.zoom *= pan.d / m.d;
+    clampFree();
+    pan = m;
+    return;
+  }
+  if (panLock) return;
   const dx = e.clientX - lastX, dy = e.clientY - lastY;
   lastX = e.clientX;
   lastY = e.clientY;
@@ -1432,19 +1497,27 @@ el.addEventListener('pointermove', (e) => {
       break;
     }
     case 'orbit':
-      if (station.id !== 'table') break; // solo se gira la vista en la mesa
-      yawT = THREE.MathUtils.clamp(yawT - dx * 0.004, -0.45, 0.45);
-      pitchT = THREE.MathUtils.clamp(pitchT + dy * 0.003, -0.25, 0.2);
-      break;
+      break; // un dedo en vacío no hace nada: la vista se mueve con dos
   }
 });
 const up = (e) => {
-  // deslizar rápido en horizontal sobre una zona vacía = cambiar de estación
-  if (drag?.kind === 'orbit' && flick && e) {
-    const dx = e.clientX - flick.x, dy = e.clientY - flick.y, dtm = performance.now() - flick.t;
-    if (dtm < 600 && Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) {
-      yawT = pitchT = 0;
-      navigate(dx < 0 ? 1 : -1);
+  if (e) {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pan = null;
+    if (touches.size === 0 && panLock) {
+      panLock = false;
+      return;
+    }
+    if (panLock) return;
+    // toque corto sobre algo de otra zona: vas allí
+    if (goTap) {
+      const g = goTap;
+      goTap = null;
+      if (Math.hypot(e.clientX - g.x, e.clientY - g.y) < 14 && performance.now() - g.t < 500) {
+        selectStation(g.st);
+        sfx.plop(0.5, 1.5);
+      }
+      return;
     }
   }
   ghost.idle = 0;
@@ -1511,6 +1584,13 @@ let tween = null, lastFocus = undefined;
 const fovFor = (width, dist, a) => THREE.MathUtils.radToDeg(2 * Math.atan(width / 2 / dist / a));
 
 function computeView() {
+  computeBase();
+  // encima del encuadre de la zona va lo que tú hayas movido con dos dedos
+  want.base = want.target.clone();
+  want.target.add(free.pan);
+  want.dist *= free.zoom;
+}
+function computeBase() {
   const a = innerWidth / innerHeight, p = a < 0.9, tight = a > 1.8;
   const f = focusObject();
   if (!f) {
@@ -1522,7 +1602,6 @@ function computeView() {
       want.fov = fovFor(3.9, 9, a);
     } else if (tight) {
       want.dist = 7.4;
-      want.target.x += 1.3;
       want.fov = 30;
     } else {
       want.dist = 8.6;
@@ -1539,10 +1618,10 @@ function computeView() {
   want.dist = 5;
   if (p) {
     want.fov = fovFor(w, 5, a);
-    want.target.z += w * 0.28; // deja el objeto por encima de la tarjeta inferior
+    want.target.z += w * 0.12; // deja sitio a la fila de herramientas
   } else if (tight) {
     want.fov = fovFor(w * 1.9, 5, a);
-    want.target.x += w * 0.45; // deja hueco a la tarjeta de la derecha
+    want.target.z += w * 0.1;
   } else {
     want.fov = Math.max(26, fovFor(w * 1.7, 5, a));
     want.target.z += w * 0.2;
@@ -1739,8 +1818,12 @@ function loop() {
   const focusNow = focusObject();
   if (focusNow !== lastFocus) {
     lastFocus = focusNow;
+    // al ir a otra zona, la vista vuelve a su encuadre
+    want.target.sub(free.pan);
+    want.dist /= free.zoom;
+    free.pan.set(0, 0, 0);
+    free.zoom = 1;
     tween = { t: 0, from: { target: cur.target.clone(), dir: cur.dir.clone(), dist: cur.dist, fov: cur.fov } };
-    yawT = pitchT = 0;
   }
   if (tween) {
     tween.t = Math.min(1, tween.t + dt / 1.3);
@@ -1752,7 +1835,7 @@ function loop() {
     cur.fov = f.fov + (want.fov - f.fov) * e;
     if (tween.t >= 1) tween = null;
   } else {
-    const k = 1 - Math.exp(-dt * 3);
+    const k = 1 - Math.exp(-dt * (pan ? 30 : 6)); // con dos dedos la vista va pegada a la mano
     cur.target.lerp(want.target, k);
     cur.dir.lerp(want.dir, k).normalize();
     cur.dist += (want.dist - cur.dist) * k;
@@ -1810,6 +1893,7 @@ loop();
 
 window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
+  free,
   honeySpills: () => honey.spills.children.length,
   finger: () => [fingerBody.position.x, fingerBody.position.y, fingerBody.position.z].map((v) => v.toFixed(2)).join(',') + ' goal ' + (fingerGoal ? fingerGoal.toArray().map((v) => v.toFixed(2)).join(',') : 'null') + ' drag ' + (drag ? drag.kind : 'none'),
   juicePos: () => juiceTip.holder.position.toArray().map((v) => v.toFixed(2)).join(','),

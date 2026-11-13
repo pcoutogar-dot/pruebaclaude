@@ -124,6 +124,13 @@ Reglas de los procesos:
 - **La mesa es el punto de partida**: cada cosa lleva una etiqueta flotante; tocas lo que quieras preparar. Un botón 🏠 vuelve a la mesa.
 - **Qué gesto toca**: la manita guía lleva escrito el gesto (Desliza, Mantén pulsado, Gira, Tira…). Para coger algo, un anillo se cierra bajo el dedo mientras mantienes.
 
+## 3 sexies. Controles e interfaz
+
+- **Un dedo = interactuar.** Siempre actúa sobre lo que tocas (cortar, untar, coger…). Nunca mueve la cámara.
+- **Dos dedos = mover la vista** por la encimera; pellizcar acerca o aleja. (Ordenador: rueda o trackpad; Ctrl + rueda para el zoom.)
+- **Tocar un objeto de otra zona te lleva a ella** (el bol, la taza, la tostadora, el aguacate). En la mesa, además, hay etiquetas.
+- **Interfaz mínima, de pegatinas**: arriba la hora y la nevera; abajo Tosti (la tostada que da pistas en un globo que se esconde solo), deshacer, un menú de tres puntos y una fila de herramientas redondas. Sin pestañas ni tarjetas que tapen el desayuno.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:
