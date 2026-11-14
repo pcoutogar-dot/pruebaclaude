@@ -116,12 +116,12 @@ export function buildRoom(scene) {
   const sunDir = new THREE.Vector3(-1, 0.5, -0.22).normalize();
   sun.position.copy(sunDir).multiplyScalar(16);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 6, bottom: -4, near: 2, far: 30 });
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   sun.shadow.radius = 6;
-  sun.shadow.intensity = 0.72; // sombras suaves, nunca negras
+  sun.shadow.intensity = 0.6; // sombras definidas pero claras, de dibujo
   scene.add(sun);
   scene.add(sun.target);
 

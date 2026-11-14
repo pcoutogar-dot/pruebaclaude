@@ -269,8 +269,8 @@ export class Toast {
   paint(u0, v0, u1, v1, spread, amount = 1) {
     const x0 = u0 * CW, y0 = (1 - v0) * CW, x1 = u1 * CW, y1 = (1 - v1) * CW;
     const d = Math.hypot(x1 - x0, y1 - y0);
-    if (spread === 'honey') {
-      this.drizzle(x0, y0, x1, y1, amount);
+    if (spread === 'honey' || spread === 'oil') {
+      this.drizzle(x0, y0, x1, y1, amount, spread === 'oil');
       this.dirty = true;
       return;
     }
@@ -300,12 +300,13 @@ export class Toast {
   }
 
   // la miel recién caída se va extendiendo despacio (charquito)
-  honeyPool(u, v, r, a) {
+  honeyPool(u, v, r, a, oil = false) {
     const x = u * CW, y = (1 - v) * CW, k = HW / CW;
     this.clipAll((c, hh, ro) => {
       const g = c.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `rgba(222,150,36,${a})`);
-      g.addColorStop(1, 'rgba(222,150,36,0)');
+      const rgb = oil ? '176,150,40' : '222,150,36'; // el aceite empapa el pan y lo oscurece
+      g.addColorStop(0, `rgba(${rgb},${a})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
       c.fillStyle = g;
       c.fillRect(x - r, y - r, r * 2, r * 2);
       ro.fillStyle = `rgba(30,30,30,${a * 1.5})`;
@@ -316,12 +317,12 @@ export class Toast {
     this.dirty = true;
   }
 
-  drizzle(x0, y0, x1, y1, amount = 1) {
+  drizzle(x0, y0, x1, y1, amount = 1, oil = false) {
     const k = HW / CW;
     this.clipAll((c, hh, ro) => {
       c.lineCap = hh.lineCap = ro.lineCap = 'round';
       const w = (7 + Math.random() * 3) * amount;
-      c.strokeStyle = 'rgba(224,140,22,0.92)';
+      c.strokeStyle = oil ? 'rgba(190,168,40,0.6)' : 'rgba(224,140,22,0.92)';
       c.lineWidth = w;
       c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
       c.strokeStyle = 'rgba(255,226,150,0.6)';

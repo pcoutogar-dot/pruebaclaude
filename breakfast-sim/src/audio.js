@@ -25,6 +25,7 @@ export class Sfx {
     }
     const src = ctx.createBufferSource();
     src.buffer = buf;
+    this.noise = buf;
     src.loop = true;
     this.filter = ctx.createBiquadFilter();
     this.filter.type = 'bandpass';
@@ -107,6 +108,30 @@ export class Sfx {
     o.connect(g).connect(ctx.destination);
     o.start(t);
     o.stop(t + 0.3);
+  }
+
+  // cristal roto: golpe de ruido agudo + tintineos
+  crash() {
+    if (!this.ctx || !this.on) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const n = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = this.noise;
+    hp.type = 'highpass';
+    hp.frequency.value = 3500;
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    n.connect(hp).connect(g).connect(ctx.destination);
+    n.start(t);
+    n.stop(t + 0.4);
+    [2637, 3520, 4186, 3136, 4699].forEach((f, i) => {
+      const o = ctx.createOscillator(), og = ctx.createGain(), tt = t + 0.03 + i * 0.045 + Math.random() * 0.03;
+      o.frequency.value = f * (0.95 + Math.random() * 0.1);
+      og.gain.setValueAtTime(0.05, tt);
+      og.gain.exponentialRampToValueAtTime(0.0001, tt + 0.25);
+      o.connect(og).connect(ctx.destination);
+      o.start(tt);
+      o.stop(tt + 0.3);
+    });
   }
 
   plop(vol = 1, pitch = 1) {

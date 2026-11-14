@@ -217,7 +217,15 @@ export const PLACE = {
   },
 };
 
+const cocoMat = new THREE.MeshStandardMaterial({ color: '#fbf6ea', roughness: 0.8, side: THREE.DoubleSide });
 export const SPRINKLE = {
+  // lascas de coco: tiras finas y curvadas
+  coco: () => {
+    const o = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.012 + Math.random() * 0.01, 8, 1, true, 0, 1.6 + Math.random()), cocoMat);
+    o.rotation.set(Math.PI / 2 + (Math.random() - 0.5) * 0.5, Math.random() * 3, Math.random() * 3);
+    o.position.y = 0.012;
+    return o;
+  },
   chili: () => {
     const o = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.008, 0.02 * v(0.5)), mat.chili);
     o.position.y = 0.006;

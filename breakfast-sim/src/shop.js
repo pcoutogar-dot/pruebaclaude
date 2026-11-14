@@ -26,6 +26,9 @@ export const ITEMS = {
   cinnamon: { name: 'Canela', pack: 20, price: 2, thumb: () => jar('#9a5a2c', '#7a4a24') },
   beans: { name: 'Café de especialidad', pack: 6, price: 6, scope: true, thumb: () => jar('#4a2c1a', '#b98a5c') },
   instant: { name: 'Café soluble', pack: 20, price: 1, scope: true, thumb: () => P.makeInstantJar() },
+  oil: { name: 'Aceite de oliva', pack: 8, price: 7, scope: true, thumb: () => jar('#b9a83a', '#56692f') },
+  acai: { name: 'Açaí', pack: 3, price: 9, scope: true, thumb: () => jar('#6a2c70', '#e9d2c4') },
+  coco: { name: 'Coco en lascas', pack: 20, price: 3, thumb: () => cluster('coco', 14, true) },
   butter: { name: 'Margarina', pack: 20, price: 1, scope: true, thumb: () => P.makeButterTub() },
 };
 
@@ -35,6 +38,7 @@ export const TOOL_ITEM = {
   egg: 'egg', radish: 'radish', tomato: 'tomato', sprouts: 'sprouts', chili: 'chili', sesame: 'sesame',
   yogurt: 'yogurt', yogurtPour: 'yogurt', yogurtPourT: 'yogurt', blueberry: 'blueberry', raspberry: 'raspberry', strawberry: 'strawberry',
   banana: 'banana', granola: 'granola', mint: 'mint', cinnamon: 'cinnamon', butter: 'butter',
+  oil: 'oil', oilBowl: 'oil', acaiPour: 'acai', coco: 'coco',
 };
 
 // Cocina y vajilla (permanentes) y premium (dinero real, vía StoreKit en iOS)

@@ -131,6 +131,15 @@ Reglas de los procesos:
 - **Tocar un objeto de otra zona te lleva a ella** (el bol, la taza, la tostadora, el aguacate). En la mesa, además, hay etiquetas.
 - **Interfaz mínima, de pegatinas**: arriba la hora y la nevera; abajo Tosti (la tostada que da pistas en un globo que se esconde solo), deshacer, un menú de tres puntos y una fila de herramientas redondas. Sin pestañas ni tarjetas que tapen el desayuno.
 
+## 3 septies. Açaí, aceite, accidentes y foto
+
+- **Açaí bowl** (estética): base morada intensa y espesa, casi mate, con dos tonos de batido; encima, la decoración en filas ordenadas (plátano, fresa, arándanos, granola, coco en lascas) y un hilo de miel. Es el plato más "de foto" del juego.
+- **Aceite de oliva**: botella que se inclina al verter. Cae fino y casi recto, se corta enseguida y empapa el pan (lo oscurece) extendiéndose más que la miel.
+- **Cuchillo**: se carga rascando de verdad. Deja hoyitos en la carne del aguacate y en la margarina (la tarrina se destapa), y baja el montón de ricotta. El primer contacto con el pan deja el pegote; luego se extiende.
+- **Derrames**: el zumo sale por la boca del vaso y corre por la encimera en esa dirección, se frena y queda en charco; si llega al borde, gotea. Un golpe fuerte rompe el vaso en trozos (vuelve al día siguiente).
+- **Modo foto** 📷: encuadre 4:5 (Instagram), vista de lado o cenital (flat-lay), cuatro filtros, firma con el día. Compartir abre la hoja de compartir del móvil; donde no esté disponible, se guarda manteniendo pulsada la foto.
+- **Rendimiento**: sin postproceso, sombras definidas de 1024, cristal sin refracción y resolución que baja sola si no se llega a 40 fps.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

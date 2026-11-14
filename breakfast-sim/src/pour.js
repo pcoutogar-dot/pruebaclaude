@@ -124,12 +124,18 @@ export class PourSurface {
   }
 
   // chorro espeso desde el tarro: cae continuo y se pliega, luego se asienta
-  ribbon(uv, dt) {
+  ribbon(uv, dt, col = null) {
     const [x, y] = this.px(uv);
     const n = Math.round(dt * 380);
     for (let i = 0; i < n && this.room(); i++) {
       const a = Math.random() * 6.283, d = Math.random() * 10;
-      this.p.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, r: 14 + Math.random() * 6, age: 0, cx: x, cy: y });
+      const q = { x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, r: 14 + Math.random() * 6, age: 0, cx: x, cy: y };
+      // color propio (açaí): dos tonos para que se vea batido
+      if (col) {
+        q.c = col.c[(Math.random() * col.c.length) | 0];
+        q.h = col.h;
+      }
+      this.p.push(q);
     }
     // lo nuevo empuja a lo anterior: el yogur se va extendiendo por el bol
     const k = dt * 60 * 0.9;
@@ -218,12 +224,12 @@ export class PourSurface {
     return true;
   }
 
-  honeyPool(uv, r, a) {
+  honeyPool(uv, r, a, rgb = '226,150,38') {
     const [x, y] = this.px(uv);
     const c = this.decor.getContext('2d');
     const g = c.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, `rgba(226,150,38,${a})`);
-    g.addColorStop(1, 'rgba(226,150,38,0)');
+    g.addColorStop(0, `rgba(${rgb},${a})`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
     c.fillStyle = g;
     c.fillRect(x - r, y - r, r * 2, r * 2);
     this.dirty = true;
@@ -264,14 +270,14 @@ export class PourSurface {
     this.dirty = false;
     const c = this.c.getContext('2d');
     c.drawImage(this.base, 0, 0);
-    c.fillStyle = this.halo;
     for (const q of this.p) {
+      c.fillStyle = q.h || this.halo;
       c.beginPath();
       c.arc(q.x, q.y, q.r + 2.5, 0, 7);
       c.fill();
     }
-    c.fillStyle = this.milk;
     for (const q of this.p) {
+      c.fillStyle = q.c || this.milk;
       c.beginPath();
       c.arc(q.x, q.y, q.r, 0, 7);
       c.fill();

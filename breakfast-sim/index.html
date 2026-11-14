@@ -38,6 +38,7 @@
         <button id="sound" class="round" aria-label="Sonido">♪</button>
         <button id="reset" class="round" aria-label="Empezar de nuevo">↺</button>
       </div>
+      <button id="photoBtn" class="round" aria-label="Hacer una foto">📷</button>
       <button id="more" class="round" aria-label="Más opciones">⋯</button>
       <button id="undo" class="round" aria-label="Deshacer">↶</button>
     </div>
@@ -52,6 +53,27 @@
       <div class="grid" id="shopGrid"></div>
     </div>
   </div>
+
+  <!-- modo foto -->
+  <div id="photoUI">
+    <div id="photoFrame"></div>
+    <p id="photoTip">Mueve con un dedo · pellizca para acercar</p>
+    <div class="photoBar">
+      <button id="photoClose" class="round" aria-label="Salir del modo foto">✕</button>
+      <button id="photoAngle" class="badge">📐 Desde arriba</button>
+      <button id="photoShot" aria-label="Hacer la foto"></button>
+      <button id="photoFilter" class="badge">🎨 Natural</button>
+    </div>
+  </div>
+  <div id="photoResult">
+    <div class="polaroid"><img id="photoImg" alt="Tu desayuno" /></div>
+    <div class="photoActions">
+      <button id="photoShare" class="big">Compartir 💌</button>
+      <button id="photoAgain" class="badge">Otra foto</button>
+    </div>
+    <p id="photoHelp"></p>
+  </div>
+  <div id="flash"></div>
 
   <div id="fade"></div>
   <script type="module" src="/src/main.js"></script>

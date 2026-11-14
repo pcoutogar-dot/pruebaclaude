@@ -232,3 +232,45 @@ body.late .clock { background: var(--berry); animation: tick .5s ease-in-out inf
 @media (prefers-reduced-motion: reduce) {
   #hub.on .hubtag, body.late .clock { animation: none; }
 }
+
+/* ---------- Modo foto ---------- */
+#photoUI, #photoResult { display: none; }
+body.photo #hud, body.photo #bottom, body.photo #hub, body.photo #ghost, body.photo #msg, body.photo #vignette { display: none; }
+body.photo #photoUI { display: block; }
+#photoFrame {
+  position: fixed; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  width: min(calc(100vw - 28px), calc((100vh - 230px) * 0.8)); aspect-ratio: 4 / 5;
+  border: 3px solid var(--paper); border-radius: 10px; pointer-events: none;
+  box-shadow: 0 0 0 100vmax rgba(60, 38, 30, 0.5);
+}
+#photoTip {
+  position: fixed; left: 0; right: 0; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 92px); margin: 0;
+  text-align: center; font: 700 13px/1 var(--font); color: var(--paper); pointer-events: none;
+}
+.photoBar {
+  position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom));
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 10px;
+}
+.photoBar .badge { font-size: 13px; height: 38px; padding: 2px 11px 0; }
+#photoShot {
+  width: 70px; height: 70px; flex: none; border-radius: 50%; background: var(--paper);
+  border: var(--line); box-shadow: 0 0 0 5px var(--paper), 0 0 0 7.5px var(--ink), 0 6px 0 7px var(--ink);
+  margin: 0 8px;
+}
+#photoShot:active { transform: scale(0.92); background: var(--butter); }
+#photoResult {
+  position: fixed; inset: 0; z-index: 5; background: rgba(60, 38, 30, 0.72);
+  flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px;
+}
+#photoResult.show { display: flex; }
+.polaroid {
+  background: var(--paper); border: var(--line); border-radius: 8px; padding: 10px 10px 34px;
+  box-shadow: 0 8px 0 var(--ink); transform: rotate(-2.5deg); animation: polaroid .45s cubic-bezier(.2, .9, .3, 1.3);
+}
+.polaroid img { display: block; height: min(52vh, 110vw); aspect-ratio: 4 / 5; border-radius: 3px; -webkit-touch-callout: default; user-select: auto; -webkit-user-select: auto; }
+@keyframes polaroid { from { transform: translateY(60px) rotate(6deg) scale(0.8); opacity: 0; } }
+.photoActions { display: flex; align-items: center; gap: 12px; }
+.photoActions .big { margin: 0; background: var(--butter); }
+#photoHelp { margin: 0; min-height: 1.2em; font: 700 13.5px/1.25 var(--font); color: var(--paper); text-align: center; max-width: 300px; }
+#flash { position: fixed; inset: 0; z-index: 6; background: #fff; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+#flash.on { opacity: 0.9; transition: none; }

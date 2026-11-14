@@ -33,11 +33,49 @@ function makeDipper() {
   return g;
 }
 
+// botella de aceite de oliva; el origen es la boca por donde cae
+function makeOilBottle() {
+  const g = new THREE.Group(), body = new THREE.Group();
+  const glass = new THREE.MeshStandardMaterial({ color: '#5c7032', roughness: 0.1, transparent: true, opacity: 0.93 });
+  glass.defines = { NO_MATTE: '' };
+  const pts = [[0, 0], [0.11, 0], [0.125, 0.03], [0.125, 0.4], [0.06, 0.58], [0.042, 0.72], [0.05, 0.74], [0, 0.74]].map(([x, y]) => new THREE.Vector2(x, y));
+  body.add(new THREE.Mesh(new THREE.LatheGeometry(pts, 28), glass));
+  const label = new THREE.Mesh(new THREE.CylinderGeometry(0.128, 0.128, 0.2, 28, 1, true), new THREE.MeshStandardMaterial({ color: '#f6efdc', roughness: 0.8 }));
+  label.position.y = 0.2;
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), new THREE.MeshStandardMaterial({ color: '#7d9440', roughness: 0.6 }));
+  leaf.scale.set(1.3, 0.6, 0.15);
+  leaf.position.set(0, 0.2, 0.128);
+  const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.03, 0.09, 12), new THREE.MeshStandardMaterial({ color: '#cfcac2', roughness: 0.3, metalness: 0.8 }));
+  spout.position.y = 0.78;
+  body.add(label, leaf, spout);
+  body.position.y = -0.82;
+  g.add(body);
+  g.traverse((c) => c.isMesh && (c.castShadow = true));
+  return g;
+}
+
+// Ajustes de cada líquido: la miel es espesa y se enrosca; el aceite es fluido,
+// cae casi recto, se corta enseguida y se extiende más.
+export const LIQUIDS = {
+  honey: { kind: 'honey', mat: honeyMat, tool: makeDipper, lag: 4, coil: 0.032, tail: 1.1, first: 1.3, steady: 0.75, radius: 0.011, height: 0.75, pourTilt: 0, restY: 0.5 },
+  oil: {
+    kind: 'oil',
+    mat: (() => {
+      const m = new THREE.MeshStandardMaterial({ color: '#c9b632', roughness: 0.05, transparent: true, opacity: 0.8 });
+      m.defines = { NO_MATTE: '' };
+      return m;
+    })(),
+    tool: makeOilBottle, lag: 11, coil: 0, tail: 3, first: 0.9, steady: 0.7, radius: 0.007, height: 0.6, pourTilt: -2.05, restY: 0.82,
+  },
+};
+
 export class Honey {
-  constructor(scene) {
-    this.dipper = makeDipper();
+  constructor(scene, cfg = LIQUIDS.honey) {
+    this.cfg = cfg;
+    this.kind = cfg.kind;
+    this.dipper = cfg.tool();
     this.dipper.visible = false;
-    this.thread = new THREE.Mesh(new THREE.BufferGeometry(), honeyMat);
+    this.thread = new THREE.Mesh(new THREE.BufferGeometry(), cfg.mat);
     this.thread.frustumCulled = false;
     this.thread.visible = false;
     this.spills = new THREE.Group();
@@ -57,7 +95,7 @@ export class Honey {
     this.onDeposit = onDeposit;
     this.goal.copy(point);
     this.pressing = true;
-    this.flow = 1.3; // primero cae un goterón, luego el hilo se afina
+    this.flow = this.cfg.first; // primero cae un goterón, luego el hilo se afina
     if (!this.running) {
       this.L.set(this.dipper.position.x, surfY, this.dipper.position.z);
       this.landY = surfY;
@@ -82,22 +120,25 @@ export class Honey {
       return;
     }
     if (this.spills.children.length > 70) this.spills.remove(this.spills.children[0]);
-    const m = new THREE.Mesh(new THREE.CircleGeometry(0.03 + Math.random() * 0.02, 14), honeyMat);
+    const m = new THREE.Mesh(new THREE.CircleGeometry(0.03 + Math.random() * 0.02, 14), this.cfg.mat);
     m.rotation.x = -Math.PI / 2;
     m.position.set(p.x, y, p.z);
     this.spills.add(m);
   }
 
   update(dt) {
+    // la botella se inclina al verter y se endereza al terminar
+    const c = this.cfg;
+    this.dipper.rotation.z += ((this.running && this.pressing ? c.pourTilt : 0) - this.dipper.rotation.z) * Math.min(1, dt * 9);
     if (!this.running) return;
     // la cuchara sigue a la mano, por encima de donde apuntas
-    const tipGoal = this.goal.clone().setY(this.surfY + 0.75);
+    const tipGoal = this.goal.clone().setY(this.surfY + c.height);
     const before = this.dipper.position.clone();
     this.dipper.position.lerp(tipGoal, 1 - Math.exp(-dt * 12));
     const speed = before.distanceTo(this.dipper.position) / Math.max(dt, 1e-3);
     // caudal: se afina con el tiempo; al soltar, el hilo tarda un poco en cortarse
-    if (this.pressing) this.flow += (0.75 - this.flow) * (1 - Math.exp(-dt * 0.9));
-    else this.flow -= dt * 1.1;
+    if (this.pressing) this.flow += (c.steady - this.flow) * (1 - Math.exp(-dt * 0.9));
+    else this.flow -= dt * c.tail;
     if (this.flow <= 0.05) {
       this.running = false;
       this.thread.visible = false;
@@ -105,9 +146,9 @@ export class Honey {
     }
     // viscosidad: el punto de caída persigue a la mano con retraso
     const tip = this.dipper.position;
-    this.L.lerp(new THREE.Vector3(tip.x, this.surfY, tip.z), 1 - Math.exp(-dt * 4));
+    this.L.lerp(new THREE.Vector3(tip.x, this.surfY, tip.z), 1 - Math.exp(-dt * c.lag));
     // quieto → el hilo se enrosca; rápido → se estira y afina
-    const coil = THREE.MathUtils.clamp(1 - speed / 0.8, 0, 1) * 0.032 * Math.min(1, this.flow);
+    const coil = THREE.MathUtils.clamp(1 - speed / 0.8, 0, 1) * c.coil * Math.min(1, this.flow);
     this.phase += dt * 13;
     this.land.set(this.L.x + Math.cos(this.phase) * coil, this.landY, this.L.z + Math.sin(this.phase) * coil);
     const w = this.flow * THREE.MathUtils.clamp(1 - speed / 4, 0.35, 1);
@@ -118,7 +159,7 @@ export class Honey {
       pts.push(new THREE.Vector3(tip.x + (this.land.x - tip.x) * h, tip.y + (this.land.y - tip.y) * t, tip.z + (this.land.z - tip.z) * h));
     }
     this.thread.geometry.dispose();
-    this.thread.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.004 + 0.011 * w, 6);
+    this.thread.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.004 + c.radius * w, 6);
     this.thread.visible = true;
     // deja miel donde aterriza (el juego decide si es tostada, yogur o encimera)
     const y = this.onDeposit?.(this.prev || this.land, this.land, w);

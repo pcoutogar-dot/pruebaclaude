@@ -174,11 +174,13 @@ export class Skin {
       if (s < 0) continue;
       const l = THREE.MathUtils.smoothstep(c.shown - s, 0, 0.3);
       const l2 = l * l;
-      let x = b[k * 3] + n[k * 3] * 0.1 * l, y = b[k * 3 + 1] + n[k * 3 + 1] * 0.1 * l, z = b[k * 3 + 2] + n[k * 3 + 2] * 0.1 * l;
+      // la piel es correosa, no chicle: se despega y se curva hacia fuera, apenas se estira
+      const lift = 0.05 * l + 0.13 * l2;
+      let x = b[k * 3] + n[k * 3] * lift, y = b[k * 3 + 1] + n[k * 3 + 1] * lift, z = b[k * 3 + 2] + n[k * 3 + 2] * lift;
       if (f) {
-        x += (f.x - x) * 0.4 * l2;
-        y += (f.y - y) * 0.4 * l2;
-        z += (f.z - z) * 0.4 * l2;
+        x += (f.x - x) * 0.09 * l2;
+        y += (f.y - y) * 0.09 * l2;
+        z += (f.z - z) * 0.09 * l2;
       }
       a[k * 3] = x;
       a[k * 3 + 1] = y;

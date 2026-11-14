@@ -1,9 +1,5 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import './look.js';
 import './style.css';
 import { buildRoom } from './room.js';
@@ -19,7 +15,8 @@ import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets } from './fx.js';
 import { jelly, updateJelly, burst } from './juice.js';
-import { Honey, honeyMat } from './honey.js';
+import { Honey, LIQUIDS } from './honey.js';
+import { Flow } from './spill.js';
 import { noiseBump } from './textures.js';
 import * as TG from './texgen.js';
 import { real } from './real.js';
@@ -27,10 +24,11 @@ import { real } from './real.js';
 // ---------- Render ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
 // iPhone tiene DPR 3: limitamos a 2 para ir fluidos sin perder nitidez
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+let dpr = Math.min(window.devicePixelRatio, 2);
+renderer.setPixelRatio(dpr);
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap; // sombras más sólidas y mucho más baratas
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.getElementById('app').appendChild(renderer.domElement);
@@ -41,10 +39,21 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 60);
 
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.28, 0.6, 0.92));
-composer.addPass(new OutputPass());
+// Rendimiento: se dibuja directo (sin pasadas de postproceso) y la resolución
+// baja sola si el móvil no llega a 40 fps.
+const perf = { slow: 0, t: 0 };
+function adaptQuality(raw) {
+  perf.t += raw;
+  if (perf.t < 4) return; // los primeros segundos no cuentan (carga)
+  if (raw > 1 / 40) perf.slow += raw;
+  else perf.slow = Math.max(0, perf.slow - raw * 0.5);
+  if (perf.slow > 1.5 && dpr > 1) {
+    dpr = Math.max(1, dpr - 0.25);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(innerWidth, innerHeight);
+    perf.slow = 0;
+  }
+}
 
 const room = buildRoom(scene);
 const physics = new Physics();
@@ -236,7 +245,11 @@ for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 8.0, -1.1], ['#f6a33
   physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone() });
 }
 // golpes blanditos: lo ligero suena agudo, lo pesado más grave
-physics.onImpact = (v, it) => sfx.plop(Math.min(1.1, v / 18), (it.body.mass < 0.2 ? 1.15 : 0.6) + Math.random() * 0.2);
+physics.onImpact = (v, it) => {
+  if (v > 12 && it.mesh.userData.tip?.key === 'juice') breakPending = true;
+  hitSound(v, it);
+};
+const hitSound = (v, it) => sfx.plop(Math.min(1.1, v / 18), (it.body.mass < 0.2 ? 1.15 : 0.6) + Math.random() * 0.2);
 physics.onRespawn = () => sfx.boing(1.3);
 
 // ---------- Cuchillo que se carga y cuchara de yogur ----------
@@ -278,9 +291,79 @@ function moveKnife(point, dir) {
   const fwd = new THREE.Vector3(Math.cos(knifeGoal.ry), 0, -Math.sin(knifeGoal.ry));
   knifeGoal.pos = new THREE.Vector3(point.x - fwd.x * 0.6, point.y + 0.01, point.z - fwd.z * 0.6);
 }
+// Lo que rascas con el cuchillo queda marcado: hoyitos en la carne del aguacate
+// y en la margarina; el montón de ricotta baja.
+const scoopables = [];
+function markScoop(mesh, dark, light) {
+  mesh.userData.scoop = { dark, light, orig: null };
+  scoopables.push(mesh);
+}
+function scoopMark(h, dx, dy) {
+  const sc = h.object.userData.scoop;
+  if (!sc || !h.uv) return;
+  const map = h.object.material.map, img = map.image, x = img.getContext('2d');
+  if (!sc.orig) sc.orig = x.getImageData(0, 0, img.width, img.height);
+  const r = img.width * 0.05;
+  x.save();
+  x.translate(h.uv.x * img.width, (1 - h.uv.y) * img.height);
+  x.rotate(Math.atan2(dy, dx));
+  x.globalAlpha = 0.3;
+  x.fillStyle = sc.dark;
+  x.beginPath();
+  x.ellipse(0, 0, r * 1.3, r * 0.7, 0, 0, 7);
+  x.fill();
+  x.globalAlpha = 0.5;
+  x.strokeStyle = sc.light;
+  x.lineWidth = r * 0.2;
+  x.beginPath();
+  x.arc(0, r * 0.15, r * 0.9, Math.PI * 1.1, Math.PI * 1.9);
+  x.stroke();
+  x.restore();
+  map.needsUpdate = true;
+}
+{
+  const g = sets.golden.items, c = sets.cutre.items;
+  markScoop(g.avo.children[0].children[1], '#8fb04c', '#fbf7c4');
+  // la tarrina se abre al usarla y deja ver la margarina
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 128;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = '#f6e08f';
+  cx.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  const marg = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.36), new THREE.MeshStandardMaterial({ map: t, roughness: 0.35 }));
+  marg.rotation.x = -Math.PI / 2;
+  marg.position.y = 0.222;
+  c.tub.add(marg);
+  markScoop(marg, '#dcc260', '#fff6c8');
+  c.tub.userData.lid = c.tub.children[1];
+}
+function resetScoops() {
+  for (const m of scoopables) {
+    const sc = m.userData.scoop;
+    if (sc.orig) {
+      m.material.map.image.getContext('2d').putImageData(sc.orig, 0, 0);
+      m.material.map.needsUpdate = true;
+    }
+  }
+  sets.golden.items.ricottaPot.children[1].scale.y = 0.35;
+  const tub = sets.cutre.items.tub;
+  tub.userData.open = false;
+  tub.userData.lid.position.set(0, 0.24, 0);
+  tub.userData.lid.rotation.set(0, 0, 0);
+}
 function updateKnife(dt) {
+  // tapa de la tarrina: se aparta al abrirla
+  const tub = sets.cutre.items.tub, lid = tub.userData.lid;
+  if (tub.userData.open) {
+    lid.position.lerp(new THREE.Vector3(0.62, 0.02, 0.12), Math.min(1, dt * 7));
+    lid.rotation.y += (0.5 - lid.rotation.y) * Math.min(1, dt * 7);
+  }
   const k = knifeGoal.k;
   if (!k || !knifeGoal.pos) return;
+  // al rascar, la hoja se inclina y se hunde un poco
+  k.rotation.z += ((knifeGoal.tilt || 0) - k.rotation.z) * Math.min(1, dt * 12);
   k.position.lerp(knifeGoal.pos, 1 - Math.exp(-dt * 20));
   const d = ((knifeGoal.ry - k.rotation.y + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
   k.rotation.y += d * (1 - Math.exp(-dt * 12));
@@ -298,12 +381,14 @@ const yogPot = new THREE.Group();
   fill.rotation.x = -Math.PI / 2;
   fill.position.y = 0.28;
   body.add(pot, label, fill);
+  yogPot.userData = { label, fill };
   body.position.set(-0.2, -0.32, 0);
   yogPot.add(body);
   yogPot.traverse((c) => c.isMesh && (c.castShadow = true));
   yogPot.visible = false;
   scene.add(yogPot);
 }
+const ACAI = { c: ['#6a2c70', '#7a3582', '#5c2463'], h: '#47194d' };
 const yogStream = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1, 12, 1, true), new THREE.MeshStandardMaterial({ color: '#fbf8f1', roughness: 0.4 }));
 yogStream.visible = false;
 scene.add(yogStream);
@@ -363,6 +448,8 @@ const bowlOver = (() => {
 
 // ---------- Miel ----------
 const honey = new Honey(scene);
+const oil = new Honey(scene, LIQUIDS.oil);
+const liquidOf = (t) => (t?.liq === 'oil' ? oil : honey);
 let honeySess = null;
 const honeyPools = [];
 const DOWN = new THREE.Vector3(0, -1, 0);
@@ -379,19 +466,20 @@ function honeyDeposit(a, b, w) {
   if (h && h.uv && (hs.info.kind !== 'toast' || h.face.normal.y > 0.5)) {
     const uv = h.uv.clone();
     const prev = hs.prevUV && hs.prevUV.distanceTo(uv) < 0.15 ? hs.prevUV : uv;
-    if (hs.info.kind === 'toast') s.toast.paint(prev.x, prev.y, uv.x, uv.y, 'honey', w * 1.7);
-    else s.yogurt.drizzle(prev, uv, undefined, 5 * w + 1.5);
+    const isOil = hs.L.kind === 'oil';
+    if (hs.info.kind === 'toast') s.toast.paint(prev.x, prev.y, uv.x, uv.y, hs.L.kind, w * 1.7);
+    else s.yogurt.drizzle(prev, uv, isOil ? 'rgba(196,178,52,0.7)' : undefined, 5 * w + 1.5);
     hs.prevUV = uv;
     if (clock.elapsedTime - (hs.poolAt || 0) > 0.05) {
       hs.poolAt = clock.elapsedTime;
-      honeyPools.push({ kind: hs.info.kind, uv, age: 0 });
+      honeyPools.push({ kind: hs.info.kind, uv, age: 0, oil: isOil });
     }
     return h.point.y;
   }
   hs.prevUV = null;
   const below = ray.intersectObjects([s.items.board || s.items.towel, s.bowl].filter(Boolean), true)[0];
   const y = below ? below.point.y + 0.004 : 0.012;
-  honey.spill(b, y);
+  hs.L.spill(b, y);
   return y;
 }
 
@@ -492,26 +580,66 @@ function makeTippable(key, h, shape, mass, onSpill) {
   tippables.push(t);
   return t;
 }
-const juicePuddle = new THREE.Mesh(new THREE.CircleGeometry(0.55, 36), (() => {
-  const m = new THREE.MeshStandardMaterial({ color: '#f6a43a', roughness: 0.08, transparent: true, opacity: 0.85 });
-  m.defines = { NO_MATTE: '' };
-  return m;
-})());
-juicePuddle.rotation.x = -Math.PI / 2;
-juicePuddle.visible = false;
-sets.golden.group.add(juicePuddle);
-const juiceTip = makeTippable('juice', 0.44, new CANNON.Cylinder(0.26, 0.22, 0.86, 12), 0.5, (t) => {
+// zumo derramado: corre por la encimera hacia donde se vuelca el vaso
+const juiceFlow = new Flow(sets.golden.group, '#f6a43a');
+juiceFlow.onDrip = (q) => droplets.splash(new THREE.Vector3(q.x, 0, 1.7), '#f6a43a', 1, 0.3, -3);
+function spillJuice(t, all = false) {
   if (t.empty) return;
   t.empty = true;
   t.inner.children[1].visible = false; // el zumo ya no está en el vaso…
   const p = t.holder.position;
-  juicePuddle.position.set(p.x, 0.013, p.z);
-  juicePuddle.scale.setScalar(0.2);
-  juicePuddle.visible = true; // …está en la encimera
+  const d = new THREE.Vector3(0, 1, 0).applyQuaternion(t.holder.quaternion).setY(0);
+  if (all || d.lengthSq() < 0.01) {
+    // roto o de pie: se desparrama en todas direcciones
+    for (let i = 0; i < 6; i++) juiceFlow.pour(p, new THREE.Vector3(Math.cos(i), 0, Math.sin(i)), 14, 1.6, 0.3, 0.6);
+  } else {
+    d.normalize();
+    // …sale por la boca del vaso y corre por la encimera
+    juiceFlow.pour({ x: p.x + d.x * 0.4, z: p.z + d.z * 0.4 }, d, 90, 3.0, 0.9, 0.5);
+  }
   droplets.splash(new THREE.Vector3(p.x, 0.2, p.z), '#f6a43a', 14, 2.2, 0.02);
+}
+const juiceTip = makeTippable('juice', 0.44, new CANNON.Cylinder(0.26, 0.22, 0.86, 12), 0.5, (t) => {
+  if (t.empty || t.broken) return;
+  spillJuice(t);
   sfx.plop(1.2, 0.5);
   say('¡Ups! 🍊', 'Se ha volcado el zumo. Mantén el dedo encima para recogerlo');
 });
+// un golpe fuerte rompe el vaso
+const shardMat = new THREE.MeshStandardMaterial({ color: '#e8f6fb', roughness: 0.05, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
+shardMat.defines = { NO_MATTE: '' };
+const shards = [];
+let breakPending = false;
+function breakGlass() {
+  const t = juiceTip;
+  if (t.broken) return;
+  t.broken = true;
+  const p = t.holder.position.clone();
+  spillJuice(t, true);
+  t.holder.visible = false;
+  t.it.grabbable = false;
+  t.it.body.collisionResponse = false;
+  t.it.body.type = CANNON.Body.STATIC;
+  for (let i = 0; i < 11; i++) {
+    const sh = new THREE.Shape();
+    const w = 0.06 + Math.random() * 0.1, h = 0.1 + Math.random() * 0.16;
+    sh.moveTo(-w / 2, 0);
+    sh.lineTo(w / 2, Math.random() * 0.04);
+    sh.lineTo((Math.random() - 0.5) * w, h);
+    const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), shardMat);
+    m.castShadow = true;
+    const a = (i / 11) * Math.PI * 2;
+    m.position.set(p.x + Math.cos(a) * 0.12, Math.max(0.15, p.y) + Math.random() * 0.3, p.z + Math.sin(a) * 0.12);
+    m.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+    sets.golden.group.add(m);
+    const it = physics.add(m, [[new CANNON.Box(new CANNON.Vec3(w / 2, 0.012, h / 2))]], { mass: 0.03, grabbable: false, home: null, angularDamping: 0.5 });
+    it.body.velocity.set(Math.cos(a) * (2 + Math.random() * 4), 2 + Math.random() * 4, Math.sin(a) * (2 + Math.random() * 4));
+    it.body.angularVelocity.set(Math.random() * 12 - 6, Math.random() * 12 - 6, Math.random() * 12 - 6);
+    shards.push(it);
+  }
+  sfx.crash();
+  say('¡Crash! 🫣', 'Se ha roto el vaso. Mañana habrá uno nuevo');
+}
 makeTippable('daisies', 0.25, new CANNON.Cylinder(0.12, 0.17, 0.5, 12), 0.35, () => {
   sfx.plop(1, 0.8);
   say('¡Ay, las flores! 🌼', 'Mantén el dedo encima para ponerlas de pie');
@@ -527,7 +655,19 @@ function resetTippables() {
     t.empty = false;
   }
   juiceTip.inner.children[1].visible = true;
-  juicePuddle.visible = false;
+  juiceFlow.clear();
+  for (const it of shards) {
+    physics.remove(it);
+    it.mesh.removeFromParent();
+  }
+  shards.length = 0;
+  if (juiceTip.broken) {
+    juiceTip.broken = false;
+    juiceTip.holder.visible = true;
+    juiceTip.it.grabbable = true;
+    juiceTip.it.body.collisionResponse = true;
+    juiceTip.it.body.type = CANNON.Body.DYNAMIC;
+  }
 }
 const tipUp = new THREE.Vector3();
 function updateTippables(dt) {
@@ -538,7 +678,12 @@ function updateTippables(dt) {
       t.onSpill?.(t);
     } else if (!tip && !t.it.held) t.tipped = false;
   }
-  if (juicePuddle.visible && juicePuddle.scale.x < 1) juicePuddle.scale.setScalar(Math.min(1, juicePuddle.scale.x + dt * 0.9));
+  juiceFlow.update(dt);
+  // los cambios en el mundo físico se hacen fuera del paso de simulación
+  if (breakPending) {
+    breakPending = false;
+    breakGlass();
+  }
 }
 // el dedo (o el utensilio que llevas) ocupa sitio en el mundo
 const fingerBody = new CANNON.Body({ mass: 0, type: CANNON.Body.KINEMATIC, material: physics.mat });
@@ -572,6 +717,7 @@ const T = (id, icon, label, type, hint, extra = {}) => ({ id, icon, label, type,
 const H = {
   heat: 'Mantén el dedo sobre el pan para tostarlo. Muévelo para dorarlo a tu gusto… ¡o quémalo!',
   spread: 'Unta a tu manera: despacio deja grumos, rápido una capa fina. Las vetas siguen tu dedo.',
+  oil: 'Mantén pulsado para echar un chorrito de aceite de oliva: cae fino, se corta rápido y empapa el pan.',
   honey: 'Mantén pulsado y mueve: la miel cae en hilo, con retraso. Quieto se enrosca; rápido se afina. Ojo, que fuera mancha.',
   place: 'Toca para colocar y arrastra para moverlo. Puedes apilar unas cosas sobre otras.',
   orient: 'Toca para colocar y arrastra para girarla. ¿Abanico, espiral, en fila?',
@@ -595,6 +741,7 @@ const TOPPINGS = [
   T('sprouts', '🌱', 'Brotes', 'place', H.place),
   T('mint', '🌿', 'Menta', 'place', H.orient, { orient: true }),
   T('granola', '🥣', 'Granola', 'sprinkle', H.sprinkle),
+  T('coco', '🥥', 'Coco', 'sprinkle', H.sprinkle),
   T('chili', '🌶️', 'Chile', 'sprinkle', H.sprinkle),
   T('sesame', '✨', 'Sésamo', 'sprinkle', H.sprinkle),
 ];
@@ -623,6 +770,7 @@ const STATIONS = {
           { lock: () => (avoPrep.peeled ? null : 'Primero prepara el aguacate en la pestaña 🥑') }),
         T('ricotta', '🤍', 'Ricotta', 'spread', 'Carga el cuchillo en el tarro de ricotta y úntala a tu manera.'),
         T('honey', '🍯', 'Miel', 'honeydrip', H.honey),
+        T('oil', '🫒', 'Aceite', 'honeydrip', H.oil, { liq: 'oil' }),
         T('yogurtPourT', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para echar yogur del tarro encima. Sí, en la tostada también.'),
         ...TOPPINGS,
       ],
@@ -633,7 +781,9 @@ const STATIONS = {
       id: 'bowl', label: 'Bol', icon: '🥣', surface: 'bowl', width: 1.7, tools: [
         T('yogurtPour', '🫙', 'Yogur', 'jarpour', 'Mantén pulsado para verter el yogur del tarro: cae espeso y se va plegando. Muévete para repartirlo.'),
         T('spoonSwirl', '🥄', 'Cuchara', 'spoon', 'Arrastra la cuchara por el yogur para removerlo, extenderlo y dibujar remolinos.'),
+        T('acaiPour', '🍇', 'Açaí', 'jarpour', 'Mantén pulsado para servir el açaí: un batido morado y espeso. Luego decóralo en filas, como en las fotos.', { col: 'acai' }),
         T('drizzle', '🍯', 'Miel', 'honeydrip', H.honey),
+        T('oilBowl', '🫒', 'Aceite', 'honeydrip', H.oil, { liq: 'oil' }),
         ...TOPPINGS,
       ],
     },
@@ -979,7 +1129,9 @@ $('work').addEventListener('click', () => {
     coffeeProc.reset();
     toasterProc.reset();
     resetTippables();
+    resetScoops();
     honey.spills.clear();
+    oil.spills.clear();
     {
       const h = toasterProc.getHome();
       sets.golden.toast.group.position.copy(h.pos);
@@ -1004,6 +1156,75 @@ $('homeBtn').addEventListener('click', () => {
   sfx.plop(0.5, 1.2);
 });
 $('more').addEventListener('click', () => $('menu').classList.toggle('open'));
+
+// ---------- Modo foto: encuadra, elige filtro, dispara y comparte ----------
+const photo = { on: false, flat: false, f: 0, blob: null };
+const FILTERS = [
+  ['Natural', 'none'],
+  ['Cálido', 'sepia(0.22) saturate(1.2) brightness(1.03)'],
+  ['Pastel', 'saturate(0.82) brightness(1.08) contrast(0.92)'],
+  ['Vivo', 'saturate(1.35) contrast(1.06)'],
+];
+function setPhoto(on) {
+  photo.on = on;
+  photo.flat = false;
+  document.body.classList.toggle('photo', on);
+  $('photoResult').classList.remove('show');
+  $('photoAngle').textContent = '📐 Desde arriba';
+  renderer.domElement.style.filter = on ? FILTERS[photo.f][1] : '';
+  if (on) selectStation(tableStation());
+  free.pan.set(0, 0, 0);
+  free.zoom = 1;
+}
+$('photoBtn').addEventListener('click', () => setPhoto(true));
+$('photoClose').addEventListener('click', () => setPhoto(false));
+$('photoAngle').addEventListener('click', () => {
+  photo.flat = !photo.flat;
+  $('photoAngle').textContent = photo.flat ? '📐 De lado' : '📐 Desde arriba';
+});
+$('photoFilter').addEventListener('click', () => {
+  photo.f = (photo.f + 1) % FILTERS.length;
+  $('photoFilter').textContent = `🎨 ${FILTERS[photo.f][0]}`;
+  renderer.domElement.style.filter = FILTERS[photo.f][1];
+});
+$('photoShot').addEventListener('click', () => {
+  // se dibuja y se copia en el mismo instante (formato 4:5, el de Instagram)
+  renderer.render(scene, camera);
+  const src = renderer.domElement, r = $('photoFrame').getBoundingClientRect(), k = src.width / innerWidth;
+  const out = document.createElement('canvas');
+  out.width = 1080;
+  out.height = 1350;
+  const x = out.getContext('2d');
+  const f = FILTERS[photo.f][1];
+  if (f !== 'none' && 'filter' in x) x.filter = f;
+  x.drawImage(src, r.left * k, r.top * k, r.width * k, r.height * k, 0, 0, 1080, 1350);
+  x.filter = 'none';
+  x.font = '800 36px "Baloo 2", ui-rounded, sans-serif';
+  x.fillStyle = 'rgba(255,255,255,0.94)';
+  x.shadowColor = 'rgba(60,35,25,0.5)';
+  x.shadowBlur = 10;
+  x.fillText(`☀️ desayuno · día ${day}`, 40, 1350 - 44);
+  $('photoImg').src = out.toDataURL('image/jpeg', 0.9);
+  out.toBlob((b) => (photo.blob = b), 'image/jpeg', 0.9);
+  $('photoHelp').textContent = '';
+  $('flash').classList.add('on');
+  setTimeout(() => $('flash').classList.remove('on'), 120);
+  sfx.plop(1, 2.4);
+  setTimeout(() => $('photoResult').classList.add('show'), 150);
+});
+$('photoAgain').addEventListener('click', () => $('photoResult').classList.remove('show'));
+$('photoShare').addEventListener('click', async () => {
+  const file = photo.blob && new File([photo.blob], 'desayuno.jpg', { type: 'image/jpeg' });
+  try {
+    if (file && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Mi desayuno' });
+      return;
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+  }
+  $('photoHelp').textContent = 'Mantén pulsada la foto para guardarla y súbela a Instagram 📲';
+});
 $('tosti').addEventListener('click', () => {
   // Tosti enseña otra vez la pista y el gesto
   showHint();
@@ -1076,9 +1297,28 @@ function landNote(vol = 1) {
   sfx.note(combo++, vol);
 }
 
+// altura del yogur en un punto (el relieve se dibuja en la GPU; aquí se lee del mapa)
+let yogMap = null, yogMapT = 0;
+function yogLift(uv) {
+  const s = sets.golden;
+  if (!s.yogurt.h || !uv) return 0;
+  if (!yogMap) yogMap = s.yogurt.h.getContext('2d').getImageData(0, 0, 256, 256).data;
+  const x = Math.min(255, Math.max(0, (uv.x * 256) | 0)), y = Math.min(255, Math.max(0, ((1 - uv.y) * 256) | 0));
+  return (yogMap[(y * 256 + x) * 4] / 255) * s.ysurf.material.displacementScale;
+}
+function restOnYogurt(o, h) {
+  const s = sets.golden;
+  if (mood !== 'golden' || o.parent !== s.bowlPlaced) return;
+  if (h.object === s.ysurf && h.uv) {
+    o.userData.uv = h.uv.clone();
+    o.position.y = yogLift(o.userData.uv);
+  } else o.userData.uv = null; // apoyado sobre otra pieza
+}
 function placeAt(holder, h, kind, sprinkle = false, opts) {
   const o = makePlaced(kind, sprinkle);
+  holder.add(o);
   o.position.copy(holder.worldToLocal(h.point.clone()));
+  restOnYogurt(o, h);
   o.rotation.y = Math.random() * Math.PI * 2;
   holder.add(o);
   pop(o, opts);
@@ -1188,6 +1428,11 @@ el.addEventListener('pointerdown', (e) => {
   if (panLock) return;
   ghost.kind = null;
   ghost.idle = 0;
+  if (photo.on) {
+    // en modo foto, un dedo encuadra
+    drag = { kind: 'photopan', x: e.clientX, y: e.clientY };
+    return;
+  }
   const owner = ownerAt(e);
   if (owner && owner !== station) {
     goTap = { st: owner, x: e.clientX, y: e.clientY, t: performance.now() };
@@ -1269,6 +1514,8 @@ function handleDown(e) {
         }
         drag = { kind: 'load', src };
         jelly(src, 0.35);
+        src.userData.open = true; // (tarrina) se destapa
+        knifeGoal.tilt = -0.32;
         moveKnife(hs.point);
         return;
       }
@@ -1280,6 +1527,12 @@ function handleDown(e) {
         }
         undo.push(s.toast.snapshot());
         drag = { kind: 'spread', uv: h.uv.clone(), point: h.point.clone() };
+        knifeGoal.tilt = 0;
+        // el primer contacto deja el pegote; luego lo vas extendiendo
+        for (let i = 0; i < 3; i++) s.toast.paint(h.uv.x, h.uv.y, h.uv.x + 0.003, h.uv.y + 0.003 * i, tool.id, Math.min(1.25, knifeLoad.amount * 1.5));
+        knifeLoad.amount *= 0.8;
+        updateKnifeBlob();
+        sfx.plop(0.6, 0.8);
         moveKnife(h.point);
         return;
       }
@@ -1289,9 +1542,10 @@ function handleDown(e) {
       if (pt) {
         if (!pay()) return;
         undo.push(info.kind === 'toast' ? s.toast.snapshot() : s.yogurt.snapshot());
-        honeySess = { info, prevUV: null };
-        honey.start(pt, y, honeyDeposit);
-        drag = { kind: 'honey', y };
+        const L = liquidOf(tool);
+        honeySess = { info, prevUV: null, L };
+        L.start(pt, y, honeyDeposit);
+        drag = { kind: 'honey', y, L };
         return;
       }
     } else if (tool.type === 'jarpour') {
@@ -1383,6 +1637,12 @@ el.addEventListener('pointermove', (e) => {
     return;
   }
   if (panLock) return;
+  if (drag?.kind === 'photopan') {
+    panBy(drag.x, drag.y, e.clientX, e.clientY);
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    return;
+  }
   const dx = e.clientX - lastX, dy = e.clientY - lastY;
   lastX = e.clientX;
   lastY = e.clientY;
@@ -1401,8 +1661,14 @@ el.addEventListener('pointermove', (e) => {
       const h = cast(e, [drag.src]);
       if (h) {
         const d = Math.hypot(dx, dy);
-        knifeLoad.amount = Math.min(1, knifeLoad.amount + d * 0.006);
+        // se carga según lo que rasques de verdad: hay que pasar la hoja
+        knifeLoad.amount = Math.min(1, knifeLoad.amount + d * 0.0045);
         moveKnife(h.point, new THREE.Vector3(dx, 0, dy));
+        scoopMark(h, dx, dy);
+        if (drag.src === s.items.ricottaPot) {
+          const cheese = drag.src.children[1];
+          cheese.scale.y = Math.max(0.14, cheese.scale.y - d * 0.0005);
+        }
         sfx.scrape(d * 0.0012);
         updateKnifeBlob();
       }
@@ -1418,7 +1684,7 @@ el.addEventListener('pointermove', (e) => {
     }
     case 'honey': {
       const pt = procCtx.planePoint(e, drag.y);
-      if (pt) honey.setTarget(pt);
+      if (pt) drag.L.setTarget(pt);
       break;
     }
     case 'spoon': {
@@ -1462,7 +1728,10 @@ el.addEventListener('pointermove', (e) => {
     }
     case 'move': {
       const h = hitSurface(e, drag.info, { withPlaced: !ROUND.has(tool.id), exclude: drag.obj });
-      if (h) drag.obj.position.copy(drag.info.holder.worldToLocal(h.point.clone()));
+      if (h) {
+        drag.obj.position.copy(drag.info.holder.worldToLocal(h.point.clone()));
+        restOnYogurt(drag.obj, h);
+      }
       break;
     }
     case 'orient': {
@@ -1535,8 +1804,9 @@ const up = (e) => {
     }
     renderUI();
   }
-  if (drag?.kind === 'honey') honey.release();
+  if (drag?.kind === 'honey') drag.L.release();
   if (drag?.kind === 'spoon') spoonGoal.pos = null;
+  knifeGoal.tilt = 0;
   fingerGoal = null;
   drag = null;
   sfx.stop();
@@ -1609,6 +1879,7 @@ function computeBase() {
       const hNow = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(30) / 2) * a);
       want.fov = hNow < minH ? THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(minH / 2) / a)) : 30;
     }
+    if (photo.flat) want.dir.set(0, 1, 0.16).normalize(); // foto cenital (flat-lay)
     return;
   }
   const w = station.width;
@@ -1630,7 +1901,6 @@ function computeBase() {
 
 function resize() {
   renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight;
   applyLayout(camera.aspect < 0.9);
 }
@@ -1650,7 +1920,9 @@ cur.dist = want.dist;
 cur.fov = want.fov;
 
 function loop() {
-  const dt = Math.min(clock.getDelta(), 0.05) * (window.__timeScale || 1);
+  const rawDt = clock.getDelta();
+  adaptQuality(rawDt);
+  const dt = Math.min(rawDt, 0.05) * (window.__timeScale || 1);
   const time = clock.elapsedTime;
   const s = sets[mood];
 
@@ -1682,11 +1954,27 @@ function loop() {
   updateKnife(dt);
   droplets.update(dt);
   if (s.yogurt) {
+    // si echas más yogur, lo que ya estaba colocado sube con él (no se hunde)
+    // (se relee el mapa como mucho 3 veces por segundo: leerlo cuesta)
+    yogMapT = (yogMapT || 0) + dt;
+    if (yogMapT > 0.33 && s.bowlPlaced.children.length) {
+      yogMapT = 0;
+      yogMap = null;
+      for (const o of s.bowlPlaced.children) if (o.userData.uv) o.position.y = yogLift(o.userData.uv);
+    }
     s.yogurt.relax(dt);
     bowlOver(s.yogurt.over || 0);
   }
   // tarro de yogur: sigue al dedo, se inclina al verter y cae un chorro espeso que se pliega
   const potOn = (station.id === 'bowl' || station.id === 'toast') && tool?.type === 'jarpour';
+  // açaí: batido morado intenso (dos tonos) en vez de yogur blanco
+  const acai = potOn && tool.col === 'acai';
+  if (potOn && yogPot.userData.acai !== acai) {
+    yogPot.userData.acai = acai;
+    yogPot.userData.fill.material.color.set(acai ? '#6a2c70' : '#fbf8f1');
+    yogPot.userData.label.material.color.set(acai ? '#d9b8e0' : '#a9c4d8');
+    yogStream.material.color.set(acai ? '#6a2c70' : '#fbf8f1');
+  }
   yogStream.visible = false;
   if (!potOn) yogPot.visible = false;
   else {
@@ -1712,7 +2000,7 @@ function loop() {
         s.toast.paint(prev.x, prev.y, uvF.x, uvF.y, 'yogurt', 1.15);
         s.toast.paint(uvF.x, uvF.y, uvF.x + 0.004, uvF.y, 'yogurt', 1.15);
         drag.prevUV = uvF;
-      } else s.yogurt.ribbon(uvF, dt);
+      } else s.yogurt.ribbon(uvF, dt, acai ? ACAI : null);
       const top = yogPot.position, bot = drag.point;
       const h = top.y - bot.y;
       yogStream.visible = true;
@@ -1741,23 +2029,29 @@ function loop() {
   spoon.userData.load.visible = false;
   // miel: el hilo sigue cayendo aunque sueltes; lo caído se extiende despacio
   honey.update(dt);
+  oil.update(dt);
   for (let i = honeyPools.length - 1; i >= 0; i--) {
     const q = honeyPools[i];
     q.age += dt;
-    if (q.kind === 'toast') s.toast.honeyPool(q.uv.x, q.uv.y, 10 + q.age * 14, 0.05);
-    else if (s.yogurt) s.yogurt.honeyPool(q.uv, 6 + q.age * 8, 0.03);
+    // el aceite es más fluido: se extiende más que la miel
+    const k = q.oil ? 1.8 : 1;
+    if (q.kind === 'toast') s.toast.honeyPool(q.uv.x, q.uv.y, (10 + q.age * 14) * k, 0.05, q.oil);
+    else if (s.yogurt) s.yogurt.honeyPool(q.uv, (6 + q.age * 8) * k, 0.03, q.oil ? '196,178,52' : undefined);
     if (q.age > 1.4) honeyPools.splice(i, 1);
   }
-  const honeyOn = tool?.type === 'honeydrip' && (station.id === 'toast' || station.id === 'bowl');
-  if (!honeyOn && !honey.running) honey.dipper.visible = false;
-  else if (!honey.running) {
-    const o = station.id === 'toast' ? s.toast.group : s.bowl;
-    const rest = o.getWorldPosition(new THREE.Vector3()).setY(0.5).add(new THREE.Vector3(0.2, 0, 1.0));
-    if (!honey.dipper.visible) {
-      honey.dipper.visible = true;
-      honey.dipper.position.copy(rest);
+  // cuchara de miel y botella de aceite: descansan junto a lo que preparas
+  for (const L of [honey, oil]) {
+    const on = tool?.type === 'honeydrip' && liquidOf(tool) === L && (station.id === 'toast' || station.id === 'bowl');
+    if (!on && !L.running) L.dipper.visible = false;
+    else if (!L.running) {
+      const o = station.id === 'toast' ? s.toast.group : s.bowl;
+      const rest = o.getWorldPosition(new THREE.Vector3()).setY(L.cfg.restY).add(new THREE.Vector3(0.2, 0, 1.0));
+      if (!L.dipper.visible) {
+        L.dipper.visible = true;
+        L.dipper.position.copy(rest);
+      }
+      L.dipper.position.lerp(rest, 1 - Math.exp(-dt * 6));
     }
-    honey.dipper.position.lerp(rest, 1 - Math.exp(-dt * 6));
   }
   if (mood === 'golden') {
     const inCoffee = station.id === 'coffee';
@@ -1886,7 +2180,7 @@ function loop() {
   updateGhost(dt);
   updateHub();
   $('holdRing').classList.toggle('on', !!pendingGrab);
-  composer.render();
+  renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 loop();
@@ -1894,6 +2188,10 @@ loop();
 window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
   free,
+  breakGlass: () => (breakPending = true),
+  flowCount: () => juiceFlow.p.length,
+  shardCount: () => shards.length,
+  dpr: () => dpr,
   honeySpills: () => honey.spills.children.length,
   finger: () => [fingerBody.position.x, fingerBody.position.y, fingerBody.position.z].map((v) => v.toFixed(2)).join(',') + ' goal ' + (fingerGoal ? fingerGoal.toArray().map((v) => v.toFixed(2)).join(',') : 'null') + ' drag ' + (drag ? drag.kind : 'none'),
   juicePos: () => juiceTip.holder.position.toArray().map((v) => v.toFixed(2)).join(','),

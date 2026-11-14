@@ -187,9 +187,12 @@ export function makeJuice() {
   const g = new THREE.Group();
   const glass = new THREE.Mesh(
     lathe([[0, 0], [0.2, 0], [0.21, 0.02], [0.245, 0.8], [0.23, 0.8], [0.195, 0.035], [0, 0.035]]),
-    new THREE.MeshPhysicalMaterial({
-      color: '#ffffff', roughness: 0.05, transmission: 1, thickness: 0.05, ior: 1.45, transparent: true,
-    }),
+    // cristal sencillo (sin refracción real: en móvil costaba dibujar la escena dos veces)
+    (() => {
+      const m = new THREE.MeshStandardMaterial({ color: '#e8f6fb', roughness: 0.05, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide });
+      m.defines = { NO_MATTE: '' };
+      return m;
+    })(),
   );
   g.add(glass);
   const juice = mesh(
