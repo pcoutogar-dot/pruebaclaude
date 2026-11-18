@@ -140,6 +140,15 @@ Reglas de los procesos:
 - **Modo foto** 📷: encuadre 4:5 (Instagram), vista de lado o cenital (flat-lay), cuatro filtros, firma con el día. Compartir abre la hoja de compartir del móvil; donde no esté disponible, se guarda manteniendo pulsada la foto.
 - **Rendimiento**: sin postproceso, sombras definidas de 1024, cristal sin refracción y resolución que baja sola si no se llega a 40 fps.
 
+## 3 octies. Físicas relajantes
+
+- **Movimiento liso**: las físicas se interpolan entre pasos (sin tirones aunque el móvil vaya a otra frecuencia).
+- **Coger y llevar**: el objeto "salta" a tu mano, crece un pelín, se inclina hacia donde lo llevas como si colgara del dedo y lleva una sombrita debajo que indica dónde caerá. Los lanzamientos son más tranquilos y giran en el sentido del gesto.
+- **Aterrizar**: "puf" de polvillo, aplastamiento de gelatina y lo de alrededor tiembla un poco. Al quedarse quieto, un "plof" suave.
+- **Colocar y arrastrar ingredientes**: van tras el dedo con suavidad, se inclinan al moverlos y al soltarlos se mecen hasta quedarse quietos; al aterrizar, los vecinos tiemblan y la tostada o el bol se aplastan un pelín.
+- **Migas**: el pan tostado cruje y suelta migas al untarlo; al saltar de la tostadora caen migas. Rebotan, ruedan y se quedan sobre la tabla o la encimera.
+- **Sonido ASMR**: untado grave y cremoso, crujido de pan, golpes según el material (madera, cerámica, cristal, fruta, blando), reverberación de cocina, música ambiental lo-fi muy suave y pájaros por la ventana (solo en la mañana dorada).
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

@@ -13,7 +13,7 @@ import { CoffeeProc, setMugLevel } from './coffee.js';
 import { ToasterProc } from './toaster.js';
 import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
-import { Droplets } from './fx.js';
+import { Droplets, Puff, Crumbs, makeBlobShadow } from './fx.js';
 import { jelly, updateJelly, burst } from './juice.js';
 import { Honey, LIQUIDS } from './honey.js';
 import { Flow } from './spill.js';
@@ -58,6 +58,10 @@ function adaptQuality(raw) {
 const room = buildRoom(scene);
 const physics = new Physics();
 const droplets = new Droplets(scene);
+const puff = new Puff(scene);
+const crumbs = new Crumbs(scene);
+const holdShadow = makeBlobShadow();
+scene.add(holdShadow);
 let uiReady = false;
 const shop = new Shop({ renderer, env: scene.environment, onChange: () => uiReady && renderUI() });
 
@@ -242,14 +246,28 @@ for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 8.0, -1.1], ['#f6a33
   o.position.set(x, r * sy + 0.02, z);
   o.rotation.z = (Math.random() - 0.5) * 0.4;
   sets.golden.group.add(o);
-  physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone() });
+  physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone(), sfx: 'fruit' });
 }
 // golpes blanditos: lo ligero suena agudo, lo pesado más grave
-physics.onImpact = (v, it) => {
+physics.onImpact = (v, it, point) => {
   if (v > 12 && it.mesh.userData.tip?.key === 'juice') breakPending = true;
   hitSound(v, it);
+  if (v > 4.5) {
+    // "puf" de polvillo y lo que hay alrededor tiembla un poquito
+    puff.at(point, Math.min(1.4, v / 10), v > 9 ? 11 : 7);
+    const k = Math.min(1, v / 14) * 0.3;
+    for (const o of wobblables()) {
+      if (o.getWorldPosition(tmpW).distanceTo(point) < 0.9) jelly(o, k);
+    }
+    for (const q of physics.items) {
+      if (q !== it && !q.held && q.body.position.distanceTo(point) < 0.8) q.sqV += 3 * k;
+    }
+  }
 };
-const hitSound = (v, it) => sfx.plop(Math.min(1.1, v / 18), (it.body.mass < 0.2 ? 1.15 : 0.6) + Math.random() * 0.2);
+const tmpW = new THREE.Vector3();
+// al quedarse quieto, un toquecito muy suave (se nota que "se ha asentado")
+physics.onSettle = (it) => sfx.tap(it.sfx, 0.22);
+const hitSound = (v, it) => sfx.tap(it.sfx, Math.min(1.2, 0.25 + v / 14));
 physics.onRespawn = () => sfx.boing(1.3);
 
 // ---------- Cuchillo que se carga y cuchara de yogur ----------
@@ -574,7 +592,7 @@ function makeTippable(key, h, shape, mass, onSpill) {
     homes.set(holder, e);
   }
   items[key] = holder;
-  const it = physics.add(holder, [[shape]], { mass, home: holder.position.clone(), angularDamping: 0.35 });
+  const it = physics.add(holder, [[shape]], { mass, home: holder.position.clone(), angularDamping: 0.35, sfx: key === 'juice' ? 'glass' : 'ceramic' });
   const t = { key, holder, inner: o, it, tipped: false, onSpill };
   holder.userData.tip = t;
   tippables.push(t);
@@ -632,7 +650,7 @@ function breakGlass() {
     m.position.set(p.x + Math.cos(a) * 0.12, Math.max(0.15, p.y) + Math.random() * 0.3, p.z + Math.sin(a) * 0.12);
     m.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
     sets.golden.group.add(m);
-    const it = physics.add(m, [[new CANNON.Box(new CANNON.Vec3(w / 2, 0.012, h / 2))]], { mass: 0.03, grabbable: false, home: null, angularDamping: 0.5 });
+    const it = physics.add(m, [[new CANNON.Box(new CANNON.Vec3(w / 2, 0.012, h / 2))]], { mass: 0.03, grabbable: false, home: null, angularDamping: 0.5, sfx: 'glass' });
     it.body.velocity.set(Math.cos(a) * (2 + Math.random() * 4), 2 + Math.random() * 4, Math.sin(a) * (2 + Math.random() * 4));
     it.body.angularVelocity.set(Math.random() * 12 - 6, Math.random() * 12 - 6, Math.random() * 12 - 6);
     shards.push(it);
@@ -1040,6 +1058,8 @@ function selectStation(st) {
 
 function applyMood(m) {
   mood = m;
+  if (ambientOn) sfx.ambient(sfx.on, m === 'golden'); // en el piso cutre no cantan pájaros
+  crumbs.clear();
   knifeGoal.pos = null;
   room.setMood(m, renderer);
   sets.golden.group.visible = m === 'golden';
@@ -1079,6 +1099,7 @@ $('reset').addEventListener('click', () => {
   if (station.id === 'toast') {
     s.toast.reset();
     s.toast.placed.clear();
+    crumbs.clear();
     if (mood === 'golden') {
       toasterProc.reset();
       const h = toasterProc.getHome();
@@ -1129,6 +1150,7 @@ $('work').addEventListener('click', () => {
     coffeeProc.reset();
     toasterProc.reset();
     resetTippables();
+    crumbs.clear();
     resetScoops();
     honey.spills.clear();
     oil.spills.clear();
@@ -1235,6 +1257,7 @@ soundBtn.addEventListener('click', () => {
   sfx.on = !sfx.on;
   soundBtn.classList.toggle('off', !sfx.on);
   if (!sfx.on) sfx.stop();
+  sfx.ambient(sfx.on, mood === 'golden');
 });
 
 const timeEl = $('time');
@@ -1281,6 +1304,55 @@ function hitSurface(e, info, { withPlaced = false, exclude = null } = {}) {
 }
 
 const ROUND = new Set(['blueberry', 'raspberry', 'tomato']);
+
+// Inclinación con muelle (poco amortiguado): lo que arrastras se inclina hacia
+// donde va y, al soltarlo, se mece un par de veces hasta quedarse quieto.
+const tilts = new Map();
+function tiltOf(o) {
+  let t = tilts.get(o);
+  if (!t) tilts.set(o, (t = { x: 0, vx: 0, z: 0, vz: 0, tx: 0, tz: 0, bx: o.rotation.x, bz: o.rotation.z }));
+  return t;
+}
+function updateTilts(dt) {
+  for (const [o, t] of tilts) {
+    t.vx += ((t.tx - t.x) * 140 - t.vx * 7) * dt;
+    t.vz += ((t.tz - t.z) * 140 - t.vz * 7) * dt;
+    t.x += t.vx * dt;
+    t.z += t.vz * dt;
+    o.rotation.x = t.bx + t.x;
+    o.rotation.z = t.bz + t.z;
+    if (!t.tx && !t.tz && Math.abs(t.x) + Math.abs(t.z) < 0.002 && Math.abs(t.vx) + Math.abs(t.vz) < 0.01) {
+      o.rotation.x = t.bx;
+      o.rotation.z = t.bz;
+      tilts.delete(o);
+    }
+  }
+}
+const mv = new THREE.Vector3();
+function updateCarry(dt) {
+  if (drag?.kind === 'move' && drag.goal) {
+    const o = drag.obj;
+    mv.copy(o.position);
+    o.position.lerp(drag.goal, 1 - Math.exp(-dt * 16));
+    mv.subVectors(o.position, mv).divideScalar(Math.max(dt, 1e-3));
+    // velocidad al marco del propio objeto (que puede estar girado)
+    const c = Math.cos(-o.rotation.y), sn = Math.sin(-o.rotation.y);
+    const lx = mv.x * c - mv.z * sn, lz = mv.x * sn + mv.z * c;
+    const t = tiltOf(o.children[0]);
+    t.tx = THREE.MathUtils.clamp(lz * 0.09, -0.4, 0.4);
+    t.tz = THREE.MathUtils.clamp(-lx * 0.09, -0.4, 0.4);
+  }
+  // sombrita bajo lo que llevas en la mano
+  if (drag?.kind === 'grab') {
+    const it = drag.it, m = it.mesh;
+    if (!it.r) it.r = new THREE.Box3().setFromObject(m).getSize(mv).length() * 0.42;
+    const g = physics.groundBelow(it), h = Math.max(0, m.position.y - g);
+    holdShadow.visible = true;
+    holdShadow.position.set(m.position.x, g + 0.012, m.position.z);
+    holdShadow.scale.setScalar(it.r * 2.4 * (1 - Math.min(0.45, h * 0.18)));
+    holdShadow.material.opacity = THREE.MathUtils.clamp(1 - h * 0.25, 0.3, 0.95);
+  } else holdShadow.visible = false;
+}
 
 // Lo que colocas cae desde un poquito arriba, se aplasta al aterrizar y rebota
 // como gelatina. Se anima la pieza interior, así puedes seguir arrastrándola.
@@ -1341,6 +1413,31 @@ function tapWobble(e) {
   jelly(o, 0.8);
   sfx.boing(0.85 + Math.random() * 0.5);
 }
+
+// ---------- Migas ----------
+const fl = new THREE.Vector3();
+crumbs.floorAt = (x, z) => {
+  const s = sets[mood];
+  const t = s.toast.group;
+  fl.set(x, 0, z);
+  t.worldToLocal(fl);
+  const b = s.toast.bounds;
+  if (t.visible && fl.x > b.minX && fl.x < b.minX + b.w && -fl.z > b.minY && -fl.z < b.minY + b.h && Math.abs(t.rotation.x) < 0.1) {
+    return t.localToWorld(fl.set(fl.x, s.toast.topY, fl.z)).y;
+  }
+  const board = s.items.board || s.items.towel;
+  fl.set(x, 0, z);
+  board.worldToLocal(fl);
+  const top = board.userData.top || 0.02;
+  if (Math.abs(fl.x) < 1.0 && Math.abs(fl.z) < 0.66) return board.localToWorld(fl.set(fl.x, top, fl.z)).y;
+  return 0.005;
+};
+let crumbTickAt = 0;
+crumbs.onTick = () => {
+  if (clock.elapsedTime - crumbTickAt < 0.07) return;
+  crumbTickAt = clock.elapsedTime;
+  sfx.crunch(0.12);
+};
 
 // ---------- Coger y lanzar (mantén el dedo sobre un objeto suelto) ----------
 let pendingGrab = null;
@@ -1408,8 +1505,14 @@ el.addEventListener('wheel', (e) => {
   clampFree();
 }, { passive: false });
 
+let ambientOn = false;
 el.addEventListener('pointerdown', (e) => {
   sfx.ensure();
+  if (!ambientOn) {
+    // música ambiental suave (empieza con el primer toque: así lo exige el navegador)
+    ambientOn = true;
+    sfx.ambient(true, mood === 'golden');
+  }
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try {
     el.setPointerCapture(e.pointerId);
@@ -1665,11 +1768,12 @@ el.addEventListener('pointermove', (e) => {
         knifeLoad.amount = Math.min(1, knifeLoad.amount + d * 0.0045);
         moveKnife(h.point, new THREE.Vector3(dx, 0, dy));
         scoopMark(h, dx, dy);
+        if (drag.src === sets.golden.items.avo && Math.random() < d * 0.02) crumbs.spill(h.point, 1, ['#b9dc66', '#9cc456', '#d7ea8a'], 0.6);
         if (drag.src === s.items.ricottaPot) {
           const cheese = drag.src.children[1];
           cheese.scale.y = Math.max(0.14, cheese.scale.y - d * 0.0005);
         }
-        sfx.scrape(d * 0.0012);
+        sfx.scrape(d * 0.0012, true);
         updateKnifeBlob();
       }
       break;
@@ -1708,8 +1812,15 @@ el.addEventListener('pointermove', (e) => {
       }
       if (drag.uv && knifeLoad.amount > 0.01) {
         s.toast.paint(drag.uv.x, drag.uv.y, h.uv.x, h.uv.y, tool.id, knifeLoad.amount);
-        knifeLoad.amount = Math.max(0, knifeLoad.amount - drag.uv.distanceTo(h.uv) * 0.3);
-        sfx.scrape(drag.uv.distanceTo(h.uv));
+        const dd = drag.uv.distanceTo(h.uv);
+        knifeLoad.amount = Math.max(0, knifeLoad.amount - dd * 0.3);
+        sfx.scrape(dd, true);
+        // el pan tostado cruje y suelta migas al rascarlo
+        const crisp = Math.min(1, (s.toast.heatTotal || 0) / 4);
+        if (Math.random() < dd * (3 + crisp * 8)) {
+          crumbs.spill(h.point.clone().add(new THREE.Vector3(0, 0.03, 0)), crisp > 0.6 ? 2 : 1);
+          if (crisp > 0.2) sfx.crunch(0.25 + crisp * 0.4);
+        }
         updateKnifeBlob();
         if (knifeLoad.amount <= 0.01 && !drag.warned) {
           drag.warned = true;
@@ -1729,8 +1840,11 @@ el.addEventListener('pointermove', (e) => {
     case 'move': {
       const h = hitSurface(e, drag.info, { withPlaced: !ROUND.has(tool.id), exclude: drag.obj });
       if (h) {
-        drag.obj.position.copy(drag.info.holder.worldToLocal(h.point.clone()));
-        restOnYogurt(drag.obj, h);
+        const o = drag.obj, prev = o.position.clone();
+        o.position.copy(drag.info.holder.worldToLocal(h.point.clone()));
+        restOnYogurt(o, h);
+        drag.goal = o.position.clone();
+        o.position.copy(prev);
       }
       break;
     }
@@ -1792,6 +1906,14 @@ const up = (e) => {
   ghost.idle = 0;
   pendingGrab = null;
   if (drag?.kind === 'proc') drag.proc.up(drag.step, e, procCtx);
+  if (drag?.kind === 'move' && drag.goal) {
+    // al soltarlo se asienta: se mece y hace "plof"
+    drag.obj.position.copy(drag.goal);
+    const ts = tiltOf(drag.obj.children[0]);
+    ts.tx = ts.tz = 0;
+    jelly(drag.obj, 0.45);
+    sfx.tap('soft', 0.45);
+  }
   if (drag?.kind === 'grab') {
     physics.release(drag.it);
     // al recoger algo volcado, lo dejas de pie
@@ -1827,6 +1949,7 @@ const procCtx = {
     }
   },
   wobble: (o, k) => jelly(o, k),
+  crumbs: (p, n) => crumbs.spill(p, n, undefined, 1.4),
   say: (a, b) => say(a, b),
   planePoint: (e, y) => {
     ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
@@ -1953,6 +2076,10 @@ function loop() {
   updateJelly(dt);
   updateKnife(dt);
   droplets.update(dt);
+  puff.update(dt);
+  crumbs.update(dt);
+  updateCarry(dt);
+  updateTilts(dt);
   if (s.yogurt) {
     // si echas más yogur, lo que ya estaba colocado sube con él (no se hunde)
     // (se relee el mapa como mucho 3 veces por segundo: leerlo cuesta)
@@ -2165,7 +2292,18 @@ function loop() {
       // aterriza: se aplasta y rebota
       if (!a.landed) {
         a.landed = true;
-        if (!a.quiet) landNote();
+        if (!a.quiet) {
+          landNote();
+          const obj = a.c.parent, holder = obj?.parent;
+          if (holder) {
+            for (const n of holder.children) {
+              if (n !== obj && n.position.distanceTo(obj.position) < 0.24) jelly(n, 0.22);
+            }
+            const s = sets[mood];
+            if (holder === s.toast.placed) jelly(s.toast.group, 0.1);
+            else if (holder === s.bowlPlaced) jelly(s.bowl, 0.08);
+          }
+        }
       }
       const tt = a.t - FALL, q = 0.3 * Math.exp(-9 * tt) * Math.cos(21 * tt);
       a.c.position.y = a.y0;
@@ -2189,6 +2327,12 @@ window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
   free,
   breakGlass: () => (breakPending = true),
+  crumbCount: () => crumbs.p.length,
+  crumbsAtRest: () => crumbs.p.filter((q) => q.rest).length,
+  puffCount: () => puff.p.length,
+  shadowOn: () => holdShadow.visible,
+  tiltCount: () => tilts.size,
+  tiltDump: () => [...tilts.values()].map((t) => [t.x, t.vx, t.z, t.vz, t.tx, t.tz].map((v) => v.toFixed(4)).join(',')).join(' | '),
   flowCount: () => juiceFlow.p.length,
   shardCount: () => shards.length,
   dpr: () => dpr,

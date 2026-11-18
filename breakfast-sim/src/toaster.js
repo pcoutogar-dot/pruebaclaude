@@ -146,7 +146,11 @@ export class ToasterProc {
       if (a.t >= 1) {
         this.anim = null;
         this.state = a.next;
-        if (a.next === 'popped') ctx?.chime();
+        if (a.next === 'popped') {
+          ctx?.chime();
+          // salta y suelta migas sobre la tabla
+          ctx?.crumbs?.(this.getToast().group.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.2, 0)), 16);
+        }
         // aterriza blandito
         ctx?.wobble?.(a.next === 'in' ? this.obj : this.getToast().group, a.next === 'in' ? 0.5 : 0.9);
       }

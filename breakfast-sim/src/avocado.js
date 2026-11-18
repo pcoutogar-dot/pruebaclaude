@@ -133,7 +133,7 @@ export class AvocadoPrep {
     this.item = this.physics.add(this.holder, [
       [new CANNON.Sphere(0.3), new THREE.Vector3(-0.07, 0, 0)],
       [new CANNON.Sphere(0.22), new THREE.Vector3(0.24, -0.04, 0)],
-    ], { mass: 1.2, home: this.homeC(), angularDamping: 0.6 });
+    ], { mass: 1.2, home: this.homeC(), angularDamping: 0.6, sfx: 'fruit' });
     this.pose();
   }
 
@@ -320,7 +320,7 @@ export class AvocadoPrep {
     this.debris.attach(pit);
     pit.position.copy(wp);
     pit.scale.copy(ws);
-    const it = this.physics.add(pit, [[new CANNON.Sphere(0.13)]], { mass: 0.35, home: this.home.clone().add(new THREE.Vector3(0.5, 0.2, -0.6)) });
+    const it = this.physics.add(pit, [[new CANNON.Sphere(0.13)]], { mass: 0.35, home: this.home.clone().add(new THREE.Vector3(0.5, 0.2, -0.6)), sfx: 'wood' });
     const h = this.pitDrag.hist;
     if (h.length > 1) {
       const a = h[0], b = h[h.length - 1], dt = Math.max(0.03, b.t - a.t);
@@ -376,7 +376,7 @@ export class AvocadoPrep {
     const step = Math.max(1, Math.floor(pts.length / 8));
     const shapes = [];
     for (let i = 0; i < pts.length && shapes.length < 8; i += step) shapes.push([new CANNON.Sphere(0.045), pts[i].clone().sub(c)]);
-    const it = this.physics.add(m, shapes, { mass: 0.08, linearDamping: 0.25, angularDamping: 0.5, home: null });
+    const it = this.physics.add(m, shapes, { mass: 0.08, linearDamping: 0.25, angularDamping: 0.5, home: null, sfx: 'soft' });
     // sale hacia fuera del aguacate (no se queda metida dentro)
     const out = c.clone().sub(half.wrap.getWorldPosition(new THREE.Vector3())).setY(0).normalize();
     it.body.velocity.set(out.x * 2.5 + dx * 0.02, 3 + Math.random() * 1.5, out.z * 2.5 + dy * 0.02);
