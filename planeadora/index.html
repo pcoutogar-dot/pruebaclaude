@@ -6,7 +6,7 @@
 <title>Planeadora: A Descarga</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;600;700&family=Caveat:wght@600&display=swap">
 <style>
 /* Layout: canvas a pantalla completa; HUD en las esquinas como instrumentos de a bordo, luz de sodio sobre noche atlántica */
 :root{
@@ -20,6 +20,9 @@
   --line:rgba(230,237,240,.16);
   --display:'Anton', Impact, 'Arial Narrow', sans-serif;
   --body:'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --hand:'Caveat', 'Comic Sans MS', cursive;
+  --paper:#f3efe4;
+  --stamp:#ff8a2a;
   color-scheme:dark;
 }
 html,body{margin:0;height:100%;overflow:hidden;background:var(--night);color:var(--ink);font-family:var(--body);-webkit-user-select:none;user-select:none;touch-action:none}
@@ -69,8 +72,8 @@ canvas{display:block}
 #ptr{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
 #ptrarrow{width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:20px solid var(--sodium);filter:drop-shadow(0 0 6px rgba(255,179,65,.6))}
 #ptrlab{font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sodium);text-shadow:0 1px 4px #000;white-space:nowrap}
-#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(5,12,18,.55),rgba(5,12,18,.92));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-#card{max-width:560px;width:100%;display:grid;gap:14px}
+#overlay{position:fixed;inset:0;display:flex;overflow-y:auto;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(5,12,18,.55),rgba(5,12,18,.92));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#card{max-width:560px;width:100%;display:grid;gap:14px;margin:auto;padding-block:24px}
 #card h1{font-family:var(--display);font-weight:400;font-size:clamp(54px,12vw,104px);line-height:.9;margin:0;letter-spacing:.01em;color:var(--ink);text-wrap:balance}
 #card h1 span{color:var(--sodium)}
 #card .kick{font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:var(--sodium);font-weight:700}
@@ -80,7 +83,7 @@ canvas{display:block}
 #card .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 #card .stats div{border-top:1px solid var(--line);padding-top:6px}
 #card .stats strong{display:block;font-family:var(--display);font-weight:400;font-size:34px}
-#go{justify-self:start;font-family:var(--display);font-size:24px;letter-spacing:.06em;background:var(--sodium);color:#1b1206;border:0;padding:12px 26px;cursor:pointer;pointer-events:auto}
+#go,.btn{justify-self:start;font-family:var(--display);font-size:24px;letter-spacing:.06em;background:var(--sodium);color:#1b1206;border:0;padding:12px 26px;cursor:pointer;pointer-events:auto}
 #go:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 #touch{position:fixed;inset:auto 0 0 0;display:none;justify-content:space-between;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(110px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
 #touch .pad{display:flex;gap:12px;pointer-events:auto}
@@ -90,6 +93,39 @@ canvas{display:block}
 body.touch #touch{display:flex}
 body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 @media (max-width:640px){#tl .big{font-size:24px}#timer{font-size:36px}#spd{font-size:42px}#riskbar{width:100px}#objtxt{font-size:17px}#card p{font-size:18px}}
+
+/* ---------- pantalla de carga: copias de revelado de verano en la ría ---------- */
+#loader{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 35%,#1a2129 0%,#070c11 70%);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transition:opacity .7s ease}
+#loader.out{opacity:0;pointer-events:none}
+.lwrap{width:min(980px,100%);display:grid;gap:18px;justify-items:center}
+.prints{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%}
+.print{background:var(--paper);padding:10px 10px 34px;box-shadow:0 18px 40px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.4);position:relative;min-width:0}
+.print:first-child{transform:rotate(-2.2deg) translateY(6px)}
+.print:last-child{transform:rotate(1.6deg)}
+.print svg{display:block;width:100%;height:auto;filter:saturate(.82) contrast(.95) sepia(.18)}
+.print figcaption{position:absolute;left:14px;bottom:5px;font-family:var(--hand);font-size:22px;color:#3a4250}
+.print .stamp{position:absolute;right:20px;bottom:44px;font:700 15px/1 'Courier New',monospace;color:var(--stamp);text-shadow:0 0 4px rgba(255,120,30,.8);letter-spacing:.08em}
+.ltitle{font-family:var(--display);font-weight:400;font-size:clamp(46px,9vw,92px);line-height:.9;margin:6px 0 0;letter-spacing:.01em}
+.ltitle span{color:var(--sodium)}
+.lbar{width:min(420px,100%);height:6px;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+#lfill{height:100%;width:4%;background:var(--sodium);transition:width .25s}
+.lrow{width:min(420px,100%);display:flex;justify-content:space-between;font-size:16px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+#ltip{margin:0;font-size:19px;color:var(--ink);opacity:.85;text-align:center;max-width:52ch;min-height:2.6em}
+@media (max-width:640px){.prints{grid-template-columns:1fr;gap:10px}.print:last-child{display:none}}
+/* ---------- menú e instrucciones ---------- */
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{font-family:var(--display);font-size:22px;letter-spacing:.06em;border:0;padding:12px 26px;cursor:pointer;pointer-events:auto}
+.btn.pri{background:var(--sodium);color:#1b1206}
+.btn.sec{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.help{display:grid;grid-template-columns:1fr 1fr;gap:16px 26px}
+.help section{border-top:1px solid var(--line);padding-top:8px;min-width:0}
+.help h3{margin:0 0 4px;font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.04em;color:var(--sodium)}
+.help p,.help li{font-size:17px;line-height:1.35;color:var(--ink)}
+.help ul{margin:0;padding-left:18px}
+.help .keys{font-size:17px}
+#card.wide{max-width:780px}
+@media (max-width:640px){.help{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){#timer.hurry{animation:none}}
 </style>
 </head>
@@ -125,7 +161,84 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   <div class="pad"><button id="tLeft" aria-label="Babor">◀</button><button id="tRight" aria-label="Estribor">▶</button></div>
   <div class="pad v"><button id="tUp" aria-label="Acelerar">▲</button><button id="tDown" aria-label="Atrás">▼</button></div>
 </div>
-<div id="overlay"><div id="card"></div></div>
+<div id="loader">
+  <div class="lwrap">
+    <div class="prints">
+      <figure class="print" style="margin:0">
+        <svg viewBox="0 0 400 290" role="img" aria-label="Copia de los 90: proa de una planeadora frente a unas islas en la ría">
+          <defs>
+            <linearGradient id="sk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9dfc6"/><stop offset="1" stop-color="#d4d4c8"/></linearGradient>
+            <linearGradient id="se1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a9a9c"/><stop offset="1" stop-color="#3b5260"/></linearGradient>
+            <radialGradient id="lk1" cx="1" cy="0" r=".9"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+            <filter id="gr"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+          </defs>
+          <rect width="400" height="172" fill="url(#sk1)"/>
+          <path d="M0 168 Q60 152 120 160 T240 152 T400 158 V174 H0Z" fill="#b8bbb4"/>
+          <path d="M160 174 L196 150 L214 156 L246 126 L264 133 L288 104 L310 118 L338 98 L372 110 L400 103 V174Z" fill="#3c4839"/>
+          <path d="M246 126 L264 133 L288 104 L300 112 L290 140 L262 150Z" fill="#2c3829" opacity=".7"/>
+          <path d="M0 158 L22 148 L50 151 L70 170 L0 174Z" fill="#8b7a60"/>
+          <rect y="170" width="400" height="120" fill="url(#se1)"/>
+          <g stroke="#f2f0e6" stroke-opacity=".35" stroke-width="2" stroke-linecap="round">
+            <path d="M40 190h30M120 186h18M210 196h40M300 188h22M70 214h26M260 222h34M150 232h20M340 210h18"/>
+          </g>
+          <path d="M0 290 V258 L230 238 Q330 246 400 272 V290Z" fill="#e7e5dc"/>
+          <path d="M0 270 L230 250 Q330 256 400 282" stroke="#3a434b" stroke-width="4" fill="none"/>
+          <path d="M8 246 L120 230 L232 226" stroke="#c9ced1" stroke-width="3" fill="none"/>
+          <path d="M40 262V241M100 256V233M160 251V229M220 247V227" stroke="#c9ced1" stroke-width="3"/>
+          <rect x="250" y="226" width="34" height="22" fill="#6f5c3e"/><rect x="262" y="226" width="4" height="22" fill="#2a2015"/>
+          <rect x="288" y="232" width="34" height="22" fill="#2a2e33"/><rect x="300" y="232" width="4" height="22" fill="#111"/>
+          <rect x="330" y="240" width="16" height="22" fill="#e9ebe2"/><rect x="348" y="242" width="16" height="22" fill="#2f62a8"/>
+          <rect width="400" height="290" fill="url(#lk1)"/>
+          <rect width="400" height="290" filter="url(#gr)" opacity=".16" style="mix-blend-mode:multiply"/>
+        </svg>
+        <figcaption>Cíes, agosto</figcaption>
+        <span class="stamp">'89 8 12</span>
+      </figure>
+      <figure class="print" style="margin:0">
+        <svg viewBox="0 0 400 290" role="img" aria-label="Copia de los 90: consola de la planeadora con volante, relojes y palancas de gas">
+          <defs>
+            <linearGradient id="sk2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ea7cf"/><stop offset="1" stop-color="#c8d9e3"/></linearGradient>
+            <linearGradient id="se2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f5d8a"/><stop offset="1" stop-color="#1d3f63"/></linearGradient>
+            <radialGradient id="lk2" cx="0" cy="1" r=".9"><stop offset="0" stop-color="#ff7b2c" stop-opacity=".35"/><stop offset="1" stop-color="#ff7b2c" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="400" height="128" fill="url(#sk2)"/>
+          <path d="M0 126 L18 112 L36 116 L58 98 L80 108 L96 118 L120 126Z" fill="#6c7b72"/>
+          <rect y="126" width="400" height="164" fill="url(#se2)"/>
+          <path d="M150 124h4M180 123h3M205 124h5M232 123h3" stroke="#f4f4f0" stroke-width="3"/>
+          <path d="M248 150 L268 146 L276 150 L250 153Z" fill="#f4f4f0"/><path d="M276 150 Q300 152 330 151" stroke="#f4f4f0" stroke-width="2" opacity=".7" fill="none"/>
+          <path d="M0 290 V178 Q110 150 250 160 L400 176 V290Z" fill="#ecebe4"/>
+          <path d="M0 290 V214 Q120 196 250 204 L330 214 V290Z" fill="#d9d8d0"/>
+          <g fill="#25292d" stroke="#cfd0c8" stroke-width="3">
+            <circle cx="40" cy="232" r="20"/><circle cx="88" cy="226" r="17"/><circle cx="34" cy="275" r="14"/><circle cx="76" cy="268" r="13"/><circle cx="118" cy="262" r="12"/>
+          </g>
+          <g stroke="#ff8a2a" stroke-width="2"><path d="M40 232l12-8M88 226l-9-11M34 275l8 5M76 268l-8-6M118 262l6-8"/></g>
+          <g transform="translate(176 248) rotate(-14)">
+            <ellipse rx="70" ry="58" fill="none" stroke="#3a3f44" stroke-width="13"/>
+            <path d="M0 0L-62 -20M0 0L62 -20M0 0V56" stroke="#3a3f44" stroke-width="9"/>
+            <circle r="15" fill="#9aa1a6"/>
+          </g>
+          <path d="M300 214 V160" stroke="#c4c8ca" stroke-width="7"/><rect x="290" y="146" width="22" height="18" rx="4" fill="#202326"/>
+          <path d="M326 216 V170" stroke="#c4c8ca" stroke-width="7"/><rect x="316" y="158" width="22" height="16" rx="4" fill="#202326"/>
+          <rect x="296" y="210" width="44" height="30" fill="#2a2e32"/>
+          <ellipse cx="352" cy="196" rx="36" ry="9" fill="#e7e1cf"/><path d="M328 196 Q332 172 352 170 Q372 172 376 196Z" fill="#efe9d8"/><path d="M330 192 Q352 186 374 192" stroke="#cbc3ad" stroke-width="3" fill="none"/>
+          <rect width="400" height="290" fill="url(#lk2)"/>
+          <rect width="400" height="290" filter="url(#gr)" opacity=".16" style="mix-blend-mode:multiply"/>
+        </svg>
+        <figcaption>A consola, antes de saír</figcaption>
+        <span class="stamp">'89 8 12</span>
+      </figure>
+    </div>
+    <h1 class="ltitle">PLANEA<span>DORA</span></h1>
+    <div class="lbar"><div id="lfill"></div></div>
+    <div class="lrow"><span id="lstep">Cargando motor 3D</span><span id="lpct">4%</span></div>
+    <p id="ltip">Una planeadora no frena: suelta el gas con tiempo o mete marcha atrás.</p>
+  </div>
+</div>
+<script>
+(function(){var tips=["Una planeadora no frena: suelta el gas con tiempo o mete marcha atrás.","Con diez fardos a bordo el barco pesa más y corre menos que la patrullera.","Cuando la linterna parpadea en tierra, allí te esperan.","El foco de Aduanas barre de lado a lado: cruza por detrás del haz.","Las bateas sirven de escondite, pero también se rompen los cascos contra ellas.","Un golpe fuerte contra las piedras tira un fardo al agua."],i=0,el=document.getElementById('ltip');
+window.__tipT=setInterval(function(){i=(i+1)%tips.length;el.textContent=tips[i];},2600);})();
+</script>
+<div id="overlay" hidden><div id="card"></div></div>
 
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
@@ -143,6 +256,11 @@ const CFG = {
   unloadEvery: 0.32,  // s por fardo descargado
   maxLoadSpeed: 3.6,  // m/s para poder cargar / descargar
 };
+
+const LT0=performance.now(),$L=id=>document.getElementById(id);
+async function step(f,txt){$L('lfill').style.width=(f*100)+'%';$L('lpct').textContent=Math.round(f*100)+'%';if(txt)$L('lstep').textContent=txt;
+  await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,90)));}
+await step(.1,'Levantando la costa');
 
 /* =========================================================
    NOISE + TERRENO (función analítica compartida por malla, agua y colisiones)
@@ -248,6 +366,7 @@ const TX0=-760,TX1=760,TZ0=-580,TZ1=170;
   scene.add(m);
 }
 
+await step(.3,'Midiendo el fondo de la ría');
 /* ---------- mapa de alturas para el agua ---------- */
 const HM_W=512,HM_H=256,HB={x0:TX0,z0:TZ0,w:TX1-TX0,d:TZ1-TZ0};
 const hmTex=(()=>{
@@ -260,6 +379,7 @@ const hmTex=(()=>{
   t.magFilter=t.minFilter=THREE.LinearFilter;t.needsUpdate=true;return t;
 })();
 
+await step(.42,'Echando el mar');
 /* ---------- agua ---------- */
 const waterU={uTime:{value:0},uH:{value:hmTex},uHB:{value:new THREE.Vector4(HB.x0,HB.z0,HB.w,HB.d)},uDawn:{value:0}};
 {
@@ -318,6 +438,7 @@ function ring(r,color){
    ========================================================= */
 const colliders=[];
 
+await step(.52,'Colocando las piedras');
 /* ---------- rocas ---------- */
 function rockGeo(detail=1){
   const g=new THREE.IcosahedronGeometry(1,detail),p=g.attributes.position;
@@ -373,6 +494,7 @@ function rockGeo(detail=1){
   }
 }
 
+await step(.64,'Apagando las luces del pueblo');
 /* ---------- aldea, muelle, faro, playa ---------- */
 const PORT_DROP={name:'Peirao Vello',x:PORT_X-8,z:coastZ(PORT_X)+24};
 const BEACH_DROP={name:'Praia da Lagoa',x:BEACH_X,z:coastZ(BEACH_X)+15};
@@ -466,54 +588,135 @@ function hullGeo(L,W,depth){
   const g=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:false,curveSegments:8});
   g.rotateX(Math.PI/2);return {g,s};
 }
-const fardoMat=new THREE.MeshStandardMaterial({color:0x6b5a3a,roughness:1});
-const fardoMat2=new THREE.MeshStandardMaterial({color:0x2b2f33,roughness:.6});
-const fardoGeo=new THREE.BoxGeometry(.85,.55,.6);
-function fardo(){const m=new THREE.Mesh(fardoGeo,Math.random()<.5?fardoMat:fardoMat2);return m;}
+/* ---------- fardos: sacos envueltos en plástico y cinchados ---------- */
+const fardoMats=[0x6f5c3e,0x24282c,0x5d5a4c].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.75}));
+const strapMat=new THREE.MeshStandardMaterial({color:0x15120e,roughness:1});
+const fardoGeo=new THREE.BoxGeometry(.82,.5,.58),strapGeo=new THREE.BoxGeometry(.86,.53,.08);
+function fardo(){
+  const g=new THREE.Group();
+  g.add(new THREE.Mesh(fardoGeo,fardoMats[(Math.random()*3)|0]));
+  for(const z of [-.16,.16]){const s=new THREE.Mesh(strapGeo,strapMat);s.position.z=z;g.add(s);}
+  return g;
+}
 
-/* ---------- planeadora ---------- */
-const boat={group:new THREE.Group(),slots:[],engines:[]};
+await step(.76,'Llenando las garrafas');
+/* ---------- planeadora ----------
+   Referencia: planeadoras de las rías (años 80-90) y narcolanchas actuales.
+   Casco de fibra estrecho y largo (~12,5 m) con V profunda para planear, borda baja,
+   consola central mínima, tres fueraborda de 300 CV, garrafas de gasolina a popa,
+   pintura gris plomo mate para no destacar de noche, sin luces de navegación. */
+const boat={group:new THREE.Group(),slots:[],engines:[],props:[]};
 {
   const B=boat.group;B.rotation.order='YXZ';
-  const {g,s}=hullGeo(12.4,3.1,1.35);g.translate(0,.9,0);
-  const hull=new THREE.Mesh(g,[new THREE.MeshStandardMaterial({color:0xa9aeb2,roughness:.6}),new THREE.MeshStandardMaterial({color:0x1f262c,roughness:.5,metalness:.2})]);
-  B.add(hull);
-  const deckG=new THREE.ShapeGeometry(s);deckG.rotateX(-Math.PI/2);deckG.scale(.86,1,.9);
-  // ShapeGeometry tras rotateX(-PI/2) apunta la proa a -z; giramos para que mire a +z
-  deckG.rotateY(Math.PI);
-  const deck=new THREE.Mesh(deckG,new THREE.MeshStandardMaterial({color:0x3d4449,roughness:.9}));deck.position.y=.92;B.add(deck);
-  const stripe=new THREE.Mesh(new THREE.BoxGeometry(3.14,.12,7),new THREE.MeshStandardMaterial({color:0x7a1c1c}));stripe.position.set(0,.55,-2.4);B.add(stripe);
-  // consola central
-  const con=new THREE.Mesh(new THREE.BoxGeometry(1.4,1,.9),new THREE.MeshStandardMaterial({color:0xcfd3d6,roughness:.7}));con.position.set(0,1.4,.4);B.add(con);
-  const ws=new THREE.Mesh(new THREE.BoxGeometry(1.5,.55,.06),new THREE.MeshStandardMaterial({color:0x7fa6b8,transparent:true,opacity:.45,roughness:.1}));ws.position.set(0,2.15,.82);ws.rotation.x=-.4;B.add(ws);
-  // tripulación: patrón y acompañante
-  function person(jacket,hat,x){
-    const p=new THREE.Group();
-    const t=new THREE.Mesh(new THREE.CylinderGeometry(.27,.33,.95,8),new THREE.MeshStandardMaterial({color:jacket,roughness:.9}));t.position.y=.5;p.add(t);
-    const sh=new THREE.Mesh(new THREE.BoxGeometry(.85,.22,.38),t.material);sh.position.y=.9;p.add(sh);
-    const hd=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshStandardMaterial({color:0xc99272,roughness:.8}));hd.position.y=1.22;p.add(hd);
-    const ht=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.14,10),new THREE.MeshStandardMaterial({color:hat}));ht.position.y=1.38;p.add(ht);
-    p.position.set(x,.92,-.5);B.add(p);return p;
+  const N=28,L0=-6.2,L1=6.3,st=[];
+  for(let i=0;i<=N;i++){
+    const t=i/N,z=L0+(L1-L0)*t;
+    const bt=t<.48?1:Math.sqrt(Math.max(0,1-((t-.48)/.52)**2));
+    const b=1.38*bt;
+    const top=.92+.42*Math.pow(smooth(.4,1,t),1.6);           // arrufo: la proa sube
+    const keel=-.42+1.1*Math.pow(smooth(.6,1,t),2.2);          // roda lanzada
+    st.push({t,z,b,top,keel,chY:keel+(top-keel)*.34,chX:b*.84});
   }
-  boat.captain=person(0x1c2838,0x111111,-.48);
-  boat.mate=person(0xd2a21a,0x8a2020,.5);
-  // tres fueraborda
-  for(const x of [-.95,0,.95]){
-    const pv=new THREE.Group();pv.position.set(x,.9,-6.15);
-    const e=new THREE.Mesh(new THREE.BoxGeometry(.6,1.1,.85),new THREE.MeshStandardMaterial({color:0x121416,roughness:.4,metalness:.3}));e.position.set(0,.2,-.4);pv.add(e);
-    const cap=new THREE.Mesh(new THREE.BoxGeometry(.5,.12,.6),new THREE.MeshStandardMaterial({color:0xb0b4b8}));cap.position.set(0,.8,-.4);pv.add(cap);
-    B.add(pv);boat.engines.push(pv);
+  // casco: secciones en V (borda, pantoque, quilla)
+  const pos=[],idx=[];
+  for(const s of st)pos.push(-s.b,s.top,s.z,-s.chX,s.chY,s.z,0,s.keel,s.z,s.chX,s.chY,s.z,s.b,s.top,s.z);
+  for(let i=0;i<N;i++)for(let k=0;k<4;k++){const a=i*5+k;idx.push(a,a+5,a+1,a+1,a+5,a+6);}
+  idx.push(0,1,2,0,2,3,0,3,4); // espejo de popa
+  let hg=new THREE.BufferGeometry();hg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));hg.setIndex(idx);
+  hg=hg.toNonIndexed();hg.computeVertexNormals();
+  const hullOut=new THREE.MeshStandardMaterial({color:0x39434b,roughness:.55,metalness:.05,side:THREE.FrontSide});
+  const hullIn=new THREE.MeshStandardMaterial({color:0x8b9196,roughness:.8,side:THREE.BackSide});
+  B.add(new THREE.Mesh(hg,hullOut),new THREE.Mesh(hg,hullIn));
+  // cubierta: bañera hundida y cubierta de proa a ras de borda
+  const dp=[],di=[];
+  st.forEach((s,i)=>{const y=s.t<.7?.5:s.top-.03,w=s.t<.7?Math.max(0,s.b-.1):s.b;dp.push(-w,y,s.z,w,y,s.z);if(i<N)di.push(i*2,i*2+2,i*2+1,i*2+1,i*2+2,i*2+3);});
+  let dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.Float32BufferAttribute(dp,3));dg.setIndex(di);dg.computeVertexNormals();
+  B.add(new THREE.Mesh(dg,new THREE.MeshStandardMaterial({color:0x5c6469,roughness:.95,side:THREE.DoubleSide})));
+  // regala (cintón de goma) y franja de flotación
+  const gun=[];for(let i=0;i<=N;i++)gun.push(new THREE.Vector3(-st[i].b-.02,st[i].top+.02,st[i].z));
+  for(let i=N;i>=0;i--)gun.push(new THREE.Vector3(st[i].b+.02,st[i].top+.02,st[i].z));
+  B.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(gun),160,.075,6,false),new THREE.MeshStandardMaterial({color:0x101315,roughness:.6})));
+  for(const sd of [-1,1]){
+    const pts=st.filter(s=>s.t<.93).map(s=>new THREE.Vector3(sd*(s.b*.95+.02),s.top-.24,s.z));
+    B.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),60,.04,4,false),new THREE.MeshStandardMaterial({color:0x6f7b84,roughness:.5})));
   }
-  // huecos para fardos
-  const pos=[];
-  for(let r=0;r<3;r++)for(const x of [-.55,.55])pos.push([x,-2.2-r*1.05]);
-  for(let r=0;r<2;r++)for(const x of [-.5,.5])pos.push([x,1.7+r*.95]);
-  for(const [x,z] of pos){const f=fardo();f.position.set(x,1.2,z);f.visible=false;B.add(f);boat.slots.push(f);}
+  const dark=new THREE.MeshStandardMaterial({color:0x1b1f22,roughness:.5});
+  const steel=new THREE.MeshStandardMaterial({color:0xb8bec2,roughness:.25,metalness:.8});
+  // tapa del pañol de proa y cornamusas
+  const hatch=new THREE.Mesh(new THREE.BoxGeometry(.9,.06,.8),dark);hatch.position.set(0,st[24].top+.01,4.2);B.add(hatch);
+  for(const [x,z] of [[-.9,3.6],[.9,3.6],[-1.1,-5.6],[1.1,-5.6]]){const c=new THREE.Mesh(new THREE.BoxGeometry(.08,.08,.32),steel);c.position.set(x,(z>0?1.2:.97),z);B.add(c);}
+  // consola central baja con parabrisas ahumado y asidero
+  const gel=new THREE.MeshStandardMaterial({color:0xc9ced1,roughness:.55});
+  const con=new THREE.Mesh(new THREE.BoxGeometry(1.25,.95,1.05),gel);con.position.set(0,.98,.75);B.add(con);
+  const dash=new THREE.Mesh(new THREE.BoxGeometry(1.15,.06,.55),dark);dash.position.set(0,1.47,.55);dash.rotation.x=.35;B.add(dash);
+  const gps=new THREE.Mesh(new THREE.PlaneGeometry(.38,.24),new THREE.MeshBasicMaterial({color:0x2fbf7a}));gps.position.set(.25,1.52,.5);gps.rotation.x=-1.2;B.add(gps);
+  const wheel=new THREE.Mesh(new THREE.TorusGeometry(.2,.03,6,16),dark);wheel.position.set(-.3,1.55,.38);wheel.rotation.x=-.9;B.add(wheel);boat.wheel=wheel;
+  const ws=new THREE.Mesh(new THREE.BoxGeometry(1.3,.42,.04),new THREE.MeshStandardMaterial({color:0x2a3a44,transparent:true,opacity:.6,roughness:.05}));
+  ws.position.set(0,1.68,1.18);ws.rotation.x=-.55;B.add(ws);
+  const rail=new THREE.Mesh(new THREE.TorusGeometry(.55,.025,5,20,Math.PI),steel);rail.position.set(0,1.5,1.3);rail.rotation.x=-Math.PI/2;B.add(rail);
+  const ant=new THREE.Mesh(new THREE.CylinderGeometry(.015,.02,1.6,4),dark);ant.position.set(.55,2.1,.5);ant.rotation.x=-.5;B.add(ant);
+  // palancas de gas
+  for(const x of [.42,.52,.62]){const l=new THREE.Mesh(new THREE.BoxGeometry(.04,.28,.04),steel);l.position.set(x,1.6,.4);B.add(l);boat.levers=(boat.levers||[]).concat(l);}
+  // asiento de apoyo (leaning post)
+  const post=new THREE.Mesh(new THREE.BoxGeometry(1.4,.75,.5),gel);post.position.set(0,.88,-.85);B.add(post);
+  const cush=new THREE.Mesh(new THREE.BoxGeometry(1.4,.14,.55),new THREE.MeshStandardMaterial({color:0x2d3236,roughness:.9}));cush.position.set(0,1.32,-.85);B.add(cush);
+  // tripulación: patrón al timón y acompañante
+  const skin=new THREE.MeshStandardMaterial({color:0xc48b66,roughness:.8});
+  function person(o){
+    const p=new THREE.Group(),top=new THREE.MeshStandardMaterial({color:o.top,roughness:.9}),bot=new THREE.MeshStandardMaterial({color:o.legs,roughness:.9});
+    for(const x of [-.12,.12]){const l=new THREE.Mesh(new THREE.CylinderGeometry(.09,.08,.8,6),bot);l.position.set(x,.4,0);p.add(l);}
+    const hip=new THREE.Mesh(new THREE.BoxGeometry(.42,.22,.26),bot);hip.position.y=.82;p.add(hip);
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(.24,.2,.62,8),top);t.position.y=1.22;p.add(t);
+    const sh=new THREE.Mesh(new THREE.BoxGeometry(.66,.16,.3),top);sh.position.y=1.5;p.add(sh);
+    for(const sd of [-1,1]){const a=new THREE.Mesh(new THREE.CylinderGeometry(.065,.06,.62,5),o.bareArms?skin:top);a.position.set(sd*.33,1.3,.2);a.rotation.x=-1.0;a.rotation.z=sd*.15;p.add(a);}
+    const hd=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),skin);hd.position.y=1.74;p.add(hd);
+    const hair=new THREE.Mesh(new THREE.SphereGeometry(.155,10,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x2a1d14}));hair.position.y=1.76;hair.rotation.x=-.3;p.add(hair);
+    if(o.hat){const hm=new THREE.MeshStandardMaterial({color:o.hat,roughness:1});
+      const brim=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.03,14),hm);brim.position.y=1.82;p.add(brim);
+      const crown=new THREE.Mesh(new THREE.CylinderGeometry(.14,.16,.14,12),hm);crown.position.y=1.89;p.add(crown);}
+    if(o.glasses){const g=new THREE.Mesh(new THREE.BoxGeometry(.26,.05,.05),dark);g.position.set(0,1.76,.13);p.add(g);}
+    p.position.set(o.x,.5,-.35);B.add(p);return p;
+  }
+  // patrón: chaqueta de cuero oscura y gafas de sol; acompañante: barba, sombrero de pescador blanco y polo
+  boat.captain=person({x:-.32,top:0x2b211b,legs:0x1f2a3a,glasses:true});
+  boat.mate=person({x:.4,top:0x6d7f5a,legs:0x2a2e33,hat:0xe8e2d0,bareArms:true});
+  // garrafas de gasolina a popa (petacas de 25-30 l)
+  const canW=new THREE.MeshStandardMaterial({color:0xd9dccf,roughness:.6}),canB=new THREE.MeshStandardMaterial({color:0x2f62a8,roughness:.6});
+  const canG=new THREE.BoxGeometry(.3,.42,.22),hdlG=new THREE.BoxGeometry(.06,.08,.14);
+  for(let r=0;r<2;r++)for(let i=0;i<5;i++){
+    const c=new THREE.Mesh(canG,(i+r)%3?canW:canB);c.position.set(-.86+i*.43,.71,-5.65+r*.32);c.rotation.y=(Math.random()-.5)*.25;B.add(c);
+    const h=new THREE.Mesh(hdlG,c.material);h.position.set(c.position.x,.96,c.position.z);B.add(h);
+  }
+  // tres fueraborda de 300 CV con pata, placa anticavitación y hélice
+  const cowlM=new THREE.MeshStandardMaterial({color:0x0c0e10,roughness:.22,metalness:.35});
+  const legM=new THREE.MeshStandardMaterial({color:0x202326,roughness:.4,metalness:.4});
+  const decal=new THREE.MeshStandardMaterial({color:0xd0d4d6,roughness:.4});
+  for(const x of [-.82,0,.82]){
+    const pv=new THREE.Group();pv.position.set(x,.92,-6.25);
+    const bracket=new THREE.Mesh(new THREE.BoxGeometry(.3,.35,.2),legM);bracket.position.set(0,-.05,-.08);pv.add(bracket);
+    const cowl=new THREE.Mesh(new THREE.BoxGeometry(.58,.72,.92),cowlM);cowl.position.set(0,.45,-.5);pv.add(cowl);
+    const capTop=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.92,10,1,false,0,Math.PI),cowlM);capTop.rotation.x=Math.PI/2;capTop.rotation.y=Math.PI/2;capTop.rotation.z=Math.PI/2;
+    capTop.scale.set(1,1,.45);capTop.position.set(0,.81,-.5);pv.add(capTop);
+    const st1=new THREE.Mesh(new THREE.BoxGeometry(.6,.05,.94),decal);st1.position.set(0,.55,-.5);pv.add(st1);
+    const lg=new THREE.Mesh(new THREE.BoxGeometry(.2,1.2,.34),legM);lg.position.set(0,-.55,-.42);pv.add(lg);
+    const plate=new THREE.Mesh(new THREE.BoxGeometry(.46,.04,.6),legM);plate.position.set(0,-1.0,-.48);pv.add(plate);
+    const gear=new THREE.Mesh(new THREE.CylinderGeometry(.1,.08,.6,8),legM);gear.rotation.x=Math.PI/2;gear.position.set(0,-1.22,-.45);pv.add(gear);
+    const prop=new THREE.Group();prop.position.set(0,-1.22,-.8);
+    for(let k=0;k<3;k++){const bl=new THREE.Mesh(new THREE.BoxGeometry(.06,.3,.03),steel);bl.position.y=.15;const h=new THREE.Group();h.rotation.z=k*2.094;h.add(bl);prop.add(h);}
+    pv.add(prop);boat.props.push(prop);
+    pv.rotation.x=-.06;B.add(pv);boat.engines.push(pv);
+  }
+  // huecos para fardos: bañera de popa y delante de la consola
+  const slots=[];
+  for(let r=0;r<3;r++)for(const x of [-.5,.5])slots.push([x,-2.0-r*.95]);
+  for(let r=0;r<2;r++)for(const x of [-.45,.45])slots.push([x,1.9+r*.75]);
+  for(const [x,z] of slots){const f=fardo();f.position.set(x,.78,z);f.rotation.y=(Math.random()-.5)*.2;f.visible=false;B.add(f);boat.slots.push(f);}
   // luz tenue para leer el barco en la noche
   const pl=new THREE.PointLight(0x9fb8d0,40,26,2);pl.position.set(0,6,0);B.add(pl);
   scene.add(B);
 }
 
+await step(.84,'Avisando a la nodriza');
 /* ---------- nodriza ---------- */
 const NOD={x:-40,z:340,h:1.15};
 const nod={group:new THREE.Group(),stacks:[]};
@@ -667,7 +870,7 @@ const keys={},touch={x:0,y:0};
 addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
-  if((e.code==='Enter'||e.code==='Space')&&S.mode!=='play')startGame();
+  if((e.code==='Enter'||e.code==='Space')&&S.mode!=='play'&&S.ready&&!(document.activeElement&&document.activeElement.tagName==='BUTTON'))startGame();
   if(e.code==='KeyM'){muted=!muted;if(AU)AU.master.gain.value=muted?0:.9;}
   if(e.code==='KeyR'&&S.mode==='play')startGame();
 });
@@ -691,7 +894,7 @@ function input(){
 const $=id=>document.getElementById(id);
 const ui={cargo:$('cargo'),deliv:$('deliv'),goal:$('goal'),timer:$('timer'),riskfill:$('riskfill'),risktxt:$('risktxt'),
   spd:$('spd'),thrfill:$('thrfill'),thrtgt:$('thrtgt'),rudfill:$('rudfill'),rudtgt:$('rudtgt'),objtxt:$('objtxt'),prog:$('prog'),progfill:$('progfill'),
-  msg:$('msg'),radio:$('radio'),ptr:$('ptr'),ptrarrow:$('ptrarrow'),ptrlab:$('ptrlab'),overlay:$('overlay'),card:$('card'),slots:$('slots')};
+  msg:$('msg'),radio:$('radio'),ptr:$('ptr'),ptrarrow:$('ptrarrow'),ptrlab:$('ptrlab'),overlay:$('overlay'),card:$('card'),slots:$('slots'),hud:$('hud')};
 for(let i=0;i<CFG.capacity;i++)ui.slots.appendChild(document.createElement('i'));
 ui.goal.textContent='/ '+CFG.goal;
 function updateSlotsUI(){
@@ -706,19 +909,30 @@ function radio(text,dur=4){ui.radio.textContent=text;ui.radio.classList.add('sho
 const fmt=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');};
 
 function showMenu(){
+  ui.card.className='';
   ui.card.innerHTML=`
     <div class="kick">Costa da Morte · noche de levante</div>
     <h1>PLANEA<span>DORA</span></h1>
-    <p>La nodriza espera mar adentro con las luces apagadas. Carga los fardos, llévalos a tierra y descárgalos antes de que amanezca. Si el foco de Vigilancia Aduanera te encuentra, corre.</p>
-    <div class="keys">
-      <b>W / ↑</b><span>Gas (el motor tarda en responder)</span>
-      <b>S / ↓</b><span>Marcha atrás / frenar</span>
-      <b>A D / ← →</b><span>Timón (derrapa en las curvas)</span>
-      <b>Carga y descarga</b><span>Para el barco dentro del círculo</span>
-      <b>M · R</b><span>Silencio · Reiniciar</span>
+    <p>La nodriza espera mar adentro con las luces apagadas. Carga los fardos, llévalos a tierra y descárgalos antes de que amanezca.</p>
+    <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="how" class="btn sec">Instrucciones</button></div>`;
+  $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
+}
+function showHelp(){
+  ui.card.className='wide';
+  ui.card.innerHTML=`
+    <div class="kick">Cómo se hace una descarga</div>
+    <h1 style="font-size:clamp(40px,7vw,64px)">INSTRUC<span>CIONES</span></h1>
+    <div class="help">
+      <section><h3>El encargo</h3><p>Deja ${CFG.goal} fardos en tierra antes de que amanezca. Tienes ${fmt(CFG.time)} de noche y caben ${CFG.capacity} fardos por viaje, así que harán falta al menos tres viajes.</p></section>
+      <section><h3>Mandos</h3><div class="keys">
+        <b>W / ↑</b><span>Gas</span><b>S / ↓</b><span>Marcha atrás y frenar</span><b>A D / ← →</b><span>Timón</span><b>M · R</b><span>Silencio · Reiniciar</span></div></section>
+      <section><h3>Cargar en la nodriza</h3><p>Entra en el círculo naranja junto al costado del barco grande y quédate casi parado. Los fardos pasan solos de una cubierta a otra.</p></section>
+      <section><h3>Descargar en tierra</h3><p>La radio te dice si toca la Praia da Lagoa o el Peirao Vello. Busca la linterna que parpadea, entra en el círculo y frena.</p></section>
+      <section><h3>El barco</h3><ul><li>El motor y el timón tardan en responder.</li><li>En las curvas rápidas el barco derrapa hacia fuera.</li><li>Cargado pesa más, acelera menos y corre menos.</li></ul></section>
+      <section><h3>Vigilancia Aduanera</h3><ul><li>Su foco barre el agua. Si te mantiene dentro, sube el riesgo.</li><li>Con el riesgo al máximo te persigue. Aléjate y sal del haz para perderla.</li><li>Un golpe fuerte contra las piedras tira un fardo al agua.</li></ul></section>
     </div>
-    <button id="go">Salir al mar</button>`;
-  $('go').onclick=startGame;ui.overlay.hidden=false;
+    <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="back" class="btn sec">Volver</button></div>`;
+  $('go').onclick=startGame;$('back').onclick=showMenu;$('go').focus();
 }
 function showEnd(){
   const win=S.endReason==='win';
@@ -729,6 +943,7 @@ function showEnd(){
     caught:`La patrullera os ha cerrado el paso. Fin del viaje para el patrón y su acompañante.`,
     short:`Se han perdido demasiados fardos en el agua. Ya no llega para completar el encargo.`}[S.endReason];
   const stars=win?(S.time>70?'★★★':S.time>35?'★★☆':'★☆☆'):'☆☆☆';
+  ui.card.className='';
   ui.card.innerHTML=`
     <div class="kick">${win?'Encargo cumplido · '+stars:'Encargo fallido'}</div>
     <h1>${titles[S.endReason]}</h1>
@@ -738,8 +953,8 @@ function showEnd(){
       <div><span class="lab">Noche restante</span><strong>${fmt(S.time)}</strong></div>
       <div><span class="lab">Golpes · perdidos</span><strong>${S.hits} · ${S.lost}</strong></div>
     </div>
-    <button id="go">Otra descarga</button>`;
-  $('go').onclick=startGame;ui.overlay.hidden=false;$('go').focus();
+    <div class="btns"><button id="go" class="btn pri">Otra descarga</button><button id="how" class="btn sec">Instrucciones</button></div>`;
+  $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
 }
 function startGame(){
   initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();
@@ -988,8 +1203,14 @@ function updateHUD(){
    BUCLE
    ========================================================= */
 const clock=new THREE.Clock();let T=0;
-resetGame();showMenu();
+resetGame();
 camLook.set(S.x,0,S.z);camPos.set(S.x,90,S.z+38);
+await step(.93,'Calentando motores');
+updateCamera(.016,0);renderer.compile(scene,camera);renderer.render(scene,camera);
+await step(1,'Listos para salir');
+await new Promise(r=>setTimeout(r,Math.max(250,2600-(performance.now()-LT0))));
+clearInterval(window.__tipT);S.ready=true;showMenu();
+$L('loader').classList.add('out');setTimeout(()=>$L('loader').remove(),800);
 function frame(){
   const dt=Math.min(clock.getDelta(),.05);T+=dt;
   const playing=S.mode==='play';
@@ -1019,6 +1240,8 @@ function frame(){
   boat.group.position.set(S.x,bob+.05*smooth(5,15,u),S.z);
   boat.group.rotation.set(pitch,S.h,roll);
   boat.engines.forEach(e=>e.rotation.y=S.rud*.42);
+  boat.props.forEach(p=>p.rotation.z+=(S.thr*30+Math.hypot(S.vx,S.vz)*.5)*dt);
+  boat.wheel.rotation.z=-S.rud*1.6;boat.levers.forEach(l=>l.rotation.x=-S.thr*.6);
   boat.captain.rotation.z=-roll*.6;boat.mate.rotation.z=-roll*.8;
 
   // estela
@@ -1064,6 +1287,7 @@ function frame(){
 
   updateCamera(dt,T);
   updateHUD();
+  ui.hud.style.visibility=S.mode==='menu'?'hidden':'';
   updatePointer(tgt.target,tgt.label);
   if(msgT>0){msgT-=dt;if(msgT<=0)ui.msg.classList.remove('show');}
   if(radioT>0){radioT-=dt;if(radioT<=0)ui.radio.classList.remove('show');}
