@@ -111,12 +111,37 @@ export class Skin {
     return d[3] > 128;
   }
 
-  // empieza a tirar si tocas piel pegada
+  // la piel pegada más cercana a donde tocas (tocar justo encima no hace falta)
+  nearestAttached(uv, maxR = 0.3) {
+    if (!this.lo) {
+      this.lo = document.createElement('canvas');
+      this.lo.width = 64;
+      this.lo.height = 52;
+    }
+    const x = this.lo.getContext('2d', { willReadFrequently: true });
+    x.clearRect(0, 0, 64, 52);
+    x.drawImage(this.attached, 0, 0, 64, 52);
+    const d = x.getImageData(0, 0, 64, 52).data;
+    let best = null, bd = maxR * maxR;
+    for (let j = 0; j < 52; j++)
+      for (let i = 0; i < 64; i++) {
+        if (d[(j * 64 + i) * 4 + 3] < 160) continue;
+        const u = (i + 0.5) / 64, v = 1 - (j + 0.5) / 52, du = u - uv.x, dv = (v - uv.y) * (MH / MW), q = du * du + dv * dv;
+        if (q < bd) {
+          bd = q;
+          best = new THREE.Vector2(u, v);
+        }
+      }
+    return best;
+  }
+
+  // empieza a tirar desde la piel pegada más cercana al dedo
   begin(uv) {
-    if (!this.isAttached(uv)) return false;
+    if (!this.isAttached(uv)) uv = this.nearestAttached(uv);
+    if (!uv) return false;
     this.cur = { len: 0, shown: 0, last: uv.clone(), finger: null };
     this.strip.visible = true;
-    this.stamp(uv, 0.22);
+    this.stamp(uv, 0.3);
     return true;
   }
 
@@ -125,7 +150,7 @@ export class Skin {
     const c = this.cur;
     if (!c) return;
     const d = uv.distanceTo(c.last);
-    const w = THREE.MathUtils.clamp(0.28 - speed * 0.6, 0.16, 0.28);
+    const w = THREE.MathUtils.clamp(0.36 - speed * 0.6, 0.22, 0.36);
     const n = Math.max(1, Math.ceil(d / 0.02));
     for (let k = 1; k <= n; k++) {
       c.len += d / n;

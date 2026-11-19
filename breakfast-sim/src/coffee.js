@@ -35,16 +35,17 @@ function makeGrinder() {
   body.position.y = 0.18;
   g.add(body);
   const drawer = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.1, 0.02), dark);
-  drawer.position.set(0, 0.1, 0.185);
+  drawer.position.set(0, 0.1, 0.195);
   g.add(drawer);
   const knob = new THREE.Mesh(new THREE.SphereGeometry(0.02, 12, 8), metal);
-  knob.position.set(0, 0.1, 0.2);
+  knob.position.set(0, 0.1, 0.215);
   g.add(knob);
-  const hopper = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.14, 32), metal);
+  // tolva abierta por arriba (antes su tapa coincidía con los granos y parpadeaba)
+  const hopper = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.14, 32, 1, true), M('#cfc8bd', 0.3, { metalness: 0.7, side: THREE.DoubleSide }));
   hopper.position.y = 0.43;
   g.add(hopper);
   const beans = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.02, 24), M('#4a2c1a', 0.6));
-  beans.position.y = 0.49;
+  beans.position.y = 0.455;
   g.add(beans);
   const crank = new THREE.Group();
   crank.position.y = 0.53;
@@ -280,7 +281,7 @@ export class CoffeeProc {
   // coloca los utensilios alrededor de la taza (en la zona de preparación)
   layout(step) {
     const p = this.mug.position;
-    this.grinder.position.set(p.x - 0.85, 0, p.z + 0.15);
+    this.grinder.position.set(p.x - 0.45, 0, p.z + 0.95); // delante de la taza, lejos de la tostadora
     this.grinder.visible = step === 'grind';
     const showDrip = this.brewed ? this.dripLift < 1 : step === 'brew';
     this.dripper.visible = showDrip;

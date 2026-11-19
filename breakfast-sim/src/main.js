@@ -11,6 +11,7 @@ import { Shop } from './shop.js';
 import { AvocadoPrep } from './avocado.js';
 import { CoffeeProc, setMugLevel } from './coffee.js';
 import { ToasterProc } from './toaster.js';
+import { JuiceProc } from './juicer.js';
 import * as P from './props.js';
 import { Physics, CANNON } from './physics.js';
 import { Droplets, Puff, Crumbs, makeBlobShadow } from './fx.js';
@@ -241,12 +242,13 @@ function citrus(color, r, sy = 1) {
   g.add(leaf);
   return g;
 }
-for (const [color, r, sy, x, z] of [['#f39a2c', 0.36, 0.95, 8.0, -1.1], ['#f6a33a', 0.33, 0.95, 8.6, -0.85], ['#f2d64a', 0.27, 1.25, 8.25, -0.25]]) {
-  const o = citrus(color, r, sy);
-  o.position.set(x, r * sy + 0.02, z);
-  o.rotation.z = (Math.random() - 0.5) * 0.4;
-  sets.golden.group.add(o);
-  physics.add(o, [[new CANNON.Sphere(r * (sy > 1 ? 1.08 : 1))]], { mass: 1, home: o.position.clone(), sfx: 'fruit' });
+// fruta para el frutero (naranja o limón)
+function makeFruit(kind) {
+  const lemon = kind === 'lemon';
+  const r = lemon ? 0.27 : 0.31 + Math.random() * 0.04, sy = lemon ? 1.25 : 0.95;
+  const obj = citrus(lemon ? '#f2d64a' : '#f39a2c', r, sy);
+  obj.rotation.set((Math.random() - 0.5) * 0.4, Math.random() * 6, (Math.random() - 0.5) * 0.4);
+  return { obj, r, sy, lemon, peelMat: obj.children[0].material };
 }
 // golpes blanditos: lo ligero suena agudo, lo pesado más grave
 physics.onImpact = (v, it, point) => {
@@ -602,8 +604,10 @@ function makeTippable(key, h, shape, mass, onSpill) {
 const juiceFlow = new Flow(sets.golden.group, '#f6a43a');
 juiceFlow.onDrip = (q) => droplets.splash(new THREE.Vector3(q.x, 0, 1.7), '#f6a43a', 1, 0.3, -3);
 function spillJuice(t, all = false) {
-  if (t.empty) return;
+  if (t.empty || (t.level || 0) < 0.03) return;
   t.empty = true;
+  const amount = Math.min(1.2, t.level);
+  t.level = 0;
   t.inner.children[1].visible = false; // el zumo ya no está en el vaso…
   const p = t.holder.position;
   const d = new THREE.Vector3(0, 1, 0).applyQuaternion(t.holder.quaternion).setY(0);
@@ -613,12 +617,16 @@ function spillJuice(t, all = false) {
   } else {
     d.normalize();
     // …sale por la boca del vaso y corre por la encimera
-    juiceFlow.pour({ x: p.x + d.x * 0.4, z: p.z + d.z * 0.4 }, d, 90, 3.0, 0.9, 0.5);
+    juiceFlow.pour({ x: p.x + d.x * 0.4, z: p.z + d.z * 0.4 }, d, Math.round(90 * amount), 3.0, 0.9, 0.5);
   }
   droplets.splash(new THREE.Vector3(p.x, 0.2, p.z), '#f6a43a', 14, 2.2, 0.02);
 }
 const juiceTip = makeTippable('juice', 0.44, new CANNON.Cylinder(0.26, 0.22, 0.86, 12), 0.5, (t) => {
   if (t.empty || t.broken) return;
+  if ((t.level || 0) < 0.03) {
+    sfx.tap('glass', 0.6);
+    return; // vacío: solo se cae
+  }
   spillJuice(t);
   sfx.plop(1.2, 0.5);
   say('¡Ups! 🍊', 'Se ha volcado el zumo. Mantén el dedo encima para recogerlo');
@@ -658,6 +666,15 @@ function breakGlass() {
   sfx.crash();
   say('¡Crash! 🫣', 'Se ha roto el vaso. Mañana habrá uno nuevo');
 }
+const juiceProc = new JuiceProc({
+  parent: sets.golden.group, physics, droplets, flow: juiceFlow, glass: juiceTip, makeFruit,
+  bowlPos: new THREE.Vector3(8.05, 0, -0.8), glassZone: new THREE.Vector3(8.3, 0, 0.6), boardPos: new THREE.Vector3(7.35, 0, 0.65),
+});
+{
+  const l = new THREE.PointLight('#ffd9ad', 6, 7, 1.6);
+  l.position.set(8.1, 2.3, 0.9);
+  sets.golden.group.add(l);
+}
 makeTippable('daisies', 0.25, new CANNON.Cylinder(0.12, 0.17, 0.5, 12), 0.35, () => {
   sfx.plop(1, 0.8);
   say('¡Ay, las flores! 🌼', 'Mantén el dedo encima para ponerlas de pie');
@@ -672,7 +689,6 @@ function resetTippables() {
     t.tipped = false;
     t.empty = false;
   }
-  juiceTip.inner.children[1].visible = true;
   juiceFlow.clear();
   for (const it of shards) {
     physics.remove(it);
@@ -819,6 +835,13 @@ const STATIONS = {
         },
       ],
     },
+    {
+      id: 'juice', label: 'Zumo', icon: '🍊', width: 2.9, steps: [
+        { id: 'pick', label: 'Elegir', done: () => juiceProc.picked > 0, tools: [P_('juicePick', '🧺', 'Frutero', 'Toca una naranja (o el limón) del frutero: salta a la tablita.')] },
+        { id: 'cutO', label: 'Partir', done: () => juiceProc.cuts > 0, tools: [P_('juiceCut', '🔪', 'Partir', 'Desliza el dedo por la naranja para partirla por la mitad.')] },
+        { id: 'squeeze', label: 'Exprimir', done: () => false, tools: [P_('juiceSqueeze', '🍊', 'Exprimir', 'Toca una mitad para ponerla en el exprimidor y gira el dedo en círculos. ¿Más zumo? Coge otra fruta del frutero.')] },
+      ],
+    },
     { id: 'table', label: 'Mesa', icon: '✨', tools: [], hint: 'Toca lo que quieras preparar. Cuando esté a tu gusto, a trabajar.' },
   ],
   cutre: [
@@ -853,6 +876,7 @@ const anims = [];
 function focusObject() {
   const s = sets[mood];
   if (station.id === 'avocado') return prepBoard; // cámara fija aunque lances el aguacate
+  if (station.id === 'juice') return juiceProc.focus;
   if (station.id === 'toast' && mood === 'golden' && curStep()?.id === 'toaster') return toasterProc.obj;
   if (station.id === 'coffee' && mood === 'golden' && curStep()?.id === 'grind') return coffeeProc.grinder;
   return { toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[station.id];
@@ -915,6 +939,7 @@ function renderUI() {
 // Aparece al llegar a un paso o al cambiar de herramienta, y vuelve si llevas
 // un rato sin tocar nada.
 const GESTURE = {
+  juicePick: 'tap', juiceCut: 'swipeH', juiceSqueeze: 'holdCircle',
   avoCut: 'swipeH', avoOpen: 'dragDown', avoPit: 'dragUp', avoPeel: 'dragUp', avoSliceCut: 'swipeV',
   grind: 'circle', brew: 'holdCircle', foamMilk: 'hold', pourMilk: 'hold', instant: 'tap',
 };
@@ -993,6 +1018,31 @@ function updateGhost(dt) {
   el.style.transform = `translate(${a.x + g.x - 12}px, ${a.y + g.y - 6}px) scale(${g.k})`;
 }
 
+// ---------- Anillo-guía para los gestos de girar ----------
+// Un círculo alrededor del molinillo / exprimidor que se va llenando: así se
+// entiende que hay que dar vueltas, y cuánto falta.
+const spinV = new THREE.Vector3();
+function updateSpin() {
+  const sp = $('spin');
+  let anchor = null, prog = 0, ang = 0;
+  if (mood === 'golden' && station.id === 'coffee' && curStep()?.id === 'grind' && !tween) {
+    anchor = coffeeProc.grinder.getWorldPosition(spinV).add(new THREE.Vector3(0, 0.45, 0));
+    prog = Math.min(1, coffeeProc.turns / 3);
+    ang = -coffeeProc.grinder.userData.crank.rotation.y;
+  } else if (mood === 'golden' && station.id === 'juice' && juiceProc.onReamer && !tween) {
+    anchor = juiceProc.reamer.getWorldPosition(spinV).add(new THREE.Vector3(0, 0.3, 0));
+    prog = juiceProc.progress;
+    ang = juiceProc.onReamer.spin || 0;
+  }
+  sp.classList.toggle('on', !!anchor && !photo.on);
+  if (!anchor) return;
+  anchor.project(camera);
+  sp.style.left = `${((anchor.x + 1) / 2) * innerWidth}px`;
+  sp.style.top = `${((1 - anchor.y) / 2) * innerHeight}px`;
+  sp.style.setProperty('--p', prog.toFixed(3));
+  sp.style.setProperty('--a', `${ang}rad`);
+}
+
 // ---------- Navegación: flechas ‹ ›, deslizar y "dónde estoy" ----------
 function stationIndex() {
   return STATIONS[mood].indexOf(station);
@@ -1007,7 +1057,7 @@ function navigate(dir) {
 const tableStation = () => STATIONS[mood].find((st) => st.id === 'table');
 function hubAnchor(st) {
   const s = sets[mood];
-  return { avocado: s.items.avo, toast: s.toast.group, bowl: s.bowl, coffee: s.mug }[st.id];
+  return { avocado: s.items.avo, toast: s.toast.group, bowl: s.bowl, coffee: s.mug, juice: s.items.juice }[st.id];
 }
 function renderHub() {
   const hub = $('hub');
@@ -1150,6 +1200,7 @@ $('work').addEventListener('click', () => {
     coffeeProc.reset();
     toasterProc.reset();
     resetTippables();
+    juiceProc.reset();
     crumbs.clear();
     resetScoops();
     honey.spills.clear();
@@ -1401,7 +1452,7 @@ function placeAt(holder, h, kind, sprinkle = false, opts) {
 function wobblables() {
   const skip = new Set(['board', 'toast', 'napkin', 'steam', 'towel']);
   const list = Object.entries(sets[mood].items).filter(([k]) => !skip.has(k)).map(([, o]) => o);
-  if (mood === 'golden') list.push(toasterProc.obj, coffeeProc.grinder);
+  if (mood === 'golden') list.push(toasterProc.obj, coffeeProc.grinder, juiceProc.bowl);
   return list.filter((o) => o.visible);
 }
 function tapWobble(e) {
@@ -1481,7 +1532,7 @@ function panBy(x0, y0, x1, y1) {
 function ownerAt(e) {
   const s = sets[mood];
   const groups = mood === 'golden'
-    ? { avocado: [avoPrep.holder, prepBoard], toast: [s.toast.group, s.items.board, toasterProc.obj], bowl: [s.bowl], coffee: [s.mug, coffeeProc.grinder] }
+    ? { avocado: [avoPrep.holder, prepBoard], toast: [s.toast.group, s.items.board, toasterProc.obj], bowl: [s.bowl], coffee: [s.mug, coffeeProc.grinder], juice: [juiceProc.bowl, juiceProc.board, juiceProc.reamer] }
     : { toast: [s.toast.group, s.items.towel, s.items.tub], coffee: [s.mug] };
   const all = Object.values(groups).flat().filter((o) => o.visible);
   const h = cast(e, all);
@@ -1566,7 +1617,7 @@ const grabY = (it) => Math.max(it.body.position.y, 0.9);
 function handleDown(e) {
   // procesos (aguacate, café) y café soluble
   if (tool && tool.type === 'proc') {
-    const proc = station.id === 'avocado' ? avoPrep : station.id === 'toast' ? toasterProc : coffeeProc;
+    const proc = { avocado: avoPrep, toast: toasterProc, juice: juiceProc }[station.id] || coffeeProc;
     const step = curStep().id;
     if (step === 'art') undo.push(coffeeProc.snapshot());
     if (proc.down(step, e, procCtx)) {
@@ -1768,7 +1819,6 @@ el.addEventListener('pointermove', (e) => {
         knifeLoad.amount = Math.min(1, knifeLoad.amount + d * 0.0045);
         moveKnife(h.point, new THREE.Vector3(dx, 0, dy));
         scoopMark(h, dx, dy);
-        if (drag.src === sets.golden.items.avo && Math.random() < d * 0.02) crumbs.spill(h.point, 1, ['#b9dc66', '#9cc456', '#d7ea8a'], 0.6);
         if (drag.src === s.items.ricottaPot) {
           const cheese = drag.src.children[1];
           cheese.scale.y = Math.max(0.14, cheese.scale.y - d * 0.0005);
@@ -1817,10 +1867,7 @@ el.addEventListener('pointermove', (e) => {
         sfx.scrape(dd, true);
         // el pan tostado cruje y suelta migas al rascarlo
         const crisp = Math.min(1, (s.toast.heatTotal || 0) / 4);
-        if (Math.random() < dd * (3 + crisp * 8)) {
-          crumbs.spill(h.point.clone().add(new THREE.Vector3(0, 0.03, 0)), crisp > 0.6 ? 2 : 1);
-          if (crisp > 0.2) sfx.crunch(0.25 + crisp * 0.4);
-        }
+        if (crisp > 0.2 && Math.random() < dd * 10) sfx.crunch(0.25 + crisp * 0.4); // solo suena, sin motas
         updateKnifeBlob();
         if (knifeLoad.amount <= 0.01 && !drag.warned) {
           drag.warned = true;
@@ -1949,6 +1996,7 @@ const procCtx = {
     }
   },
   wobble: (o, k) => jelly(o, k),
+  cancelGrab: () => (pendingGrab = null),
   crumbs: (p, n) => crumbs.spill(p, n, undefined, 1.4),
   say: (a, b) => say(a, b),
   planePoint: (e, y) => {
@@ -2191,6 +2239,7 @@ function loop() {
     s.steam.position.set(s.mug.position.x, 0.62, s.mug.position.z);
     avoPrep.update(dt, station.id === 'avocado' ? curStep().id : null, procCtx);
     toasterProc.update(dt, procCtx);
+    juiceProc.update(dt, station.id === 'juice' ? curStep().id : null, procCtx);
     if (toasterProc.state !== 'toasting') sfx.sizzle(false);
     coffeeProc.update(dt, inCoffee ? curStep().id : null, procCtx);
     s.items.avo.visible = avoPrep.open;
@@ -2316,6 +2365,7 @@ function loop() {
   }
 
   updateGhost(dt);
+  updateSpin();
   updateHub();
   $('holdRing').classList.toggle('on', !!pendingGrab);
   renderer.render(scene, camera);
@@ -2327,6 +2377,8 @@ window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
   free,
   breakGlass: () => (breakPending = true),
+  juiceProc,
+  juiceTip,
   crumbCount: () => crumbs.p.length,
   crumbsAtRest: () => crumbs.p.filter((q) => q.rest).length,
   puffCount: () => puff.p.length,

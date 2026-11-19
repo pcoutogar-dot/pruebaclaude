@@ -254,7 +254,7 @@ export function makePlant(scale = 1, trailing = false) {
   ));
   const soil = mesh(new THREE.CircleGeometry(0.24, 24), std('#4a3426', 1));
   soil.rotation.x = -Math.PI / 2;
-  soil.position.y = 0.4;
+  soil.position.y = 0.415; // por encima del fondo de la maceta (si no, parpadea)
   g.add(soil);
   const r = rng(trailing ? 5 : 3);
   const leafMats = [std('#5f8f47', 0.55), std('#7aa85a', 0.55), std('#4d7a3a', 0.55)];

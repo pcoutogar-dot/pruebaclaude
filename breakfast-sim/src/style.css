@@ -274,3 +274,27 @@ body.photo #photoUI { display: block; }
 #photoHelp { margin: 0; min-height: 1.2em; font: 700 13.5px/1.25 var(--font); color: var(--paper); text-align: center; max-width: 300px; }
 #flash { position: fixed; inset: 0; z-index: 6; background: #fff; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
 #flash.on { opacity: 0.9; transition: none; }
+
+/* ---------- Anillo-guía de girar (molinillo, exprimidor) ---------- */
+#spin {
+  position: fixed; width: 170px; height: 170px; margin: -85px 0 0 -85px; border-radius: 50%;
+  pointer-events: none; opacity: 0; transform: scale(0.8); transition: opacity .3s ease, transform .3s cubic-bezier(.2, .9, .3, 1.4);
+  --p: 0; --a: 0rad;
+}
+#spin.on { opacity: 1; transform: scale(1); }
+#spin::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--butter) calc(var(--p) * 360deg), rgba(255, 248, 236, 0.55) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
+}
+#spin::after {
+  content: ""; position: absolute; inset: -2px; border-radius: 50%;
+  border: 2.5px dashed rgba(74, 47, 39, 0.55);
+}
+#spin i {
+  position: absolute; left: 50%; top: -14px; width: 30px; height: 30px; margin-left: -15px;
+  display: grid; place-items: center; font: 800 18px/1 var(--font); font-style: normal;
+  background: var(--paper); border: var(--line); border-radius: 50%; box-shadow: var(--pop);
+  transform-origin: 15px 99px; transform: rotate(var(--a));
+}

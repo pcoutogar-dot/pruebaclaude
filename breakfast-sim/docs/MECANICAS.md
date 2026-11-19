@@ -149,6 +149,13 @@ Reglas de los procesos:
 - **Migas**: el pan tostado cruje y suelta migas al untarlo; al saltar de la tostadora caen migas. Rebotan, ruedan y se quedan sobre la tabla o la encimera.
 - **Sonido ASMR**: untado grave y cremoso, crujido de pan, golpes según el material (madera, cerámica, cristal, fruta, blando), reverberación de cocina, música ambiental lo-fi muy suave y pájaros por la ventana (solo en la mañana dorada).
 
+## 3 nonies. Zumo de naranja y frutero
+
+- **Frutero** en la zona de preparación con tres naranjas y un limón (se rellena cada día). Las frutas son objetos físicos: se pueden coger y lanzar.
+- **Zumo paso a paso**: tocar una fruta → salta a la tablita; deslizar → se parte por la mitad (cara cortada con sus gajos); tocar una mitad → va al exprimidor, que está sobre el vaso; girar el dedo en círculos → la mitad se hunde y se aplasta y el zumo gotea al vaso. El vaso se llena de verdad (empieza vacío) y puede rebosar; naranja y limón se mezclan de color.
+- **Anillo-guía** alrededor del molinillo y del exprimidor: un círculo que se va llenando enseña que hay que dar vueltas y cuánto falta.
+- **Pelado sin atascos**: empieza en la piel más cercana a donde toques (aunque toques carne ya pelada), la tira se suelta sola al ser larga y si sigues arrastrando empieza otra; las pieles que se quedan encima del aguacate resbalan hacia fuera.
+
 ## 4. ¿Cómo se valora algo libre?
 
 Si no hay "perfecto", ¿cómo se gana dinero en el juego? La propuesta es **recompensar el cuidado, no la exactitud**:

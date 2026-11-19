@@ -190,9 +190,14 @@ export class AvocadoPrep {
 
   // ---- gestos ----
   down(step, e, ctx) {
-    const h = ctx.cast(e, this.targets());
+    let h = ctx.cast(e, this.targets());
     this.last = [e.clientX, e.clientY];
     this.acc = 0;
+    // para pelar no hace falta acertar: vale tocar cerca de una mitad
+    if (!h && step === 'peel') {
+      const p = ctx.planePoint(e, this.home.y + 0.3);
+      if (p && Math.min(...[this.A, this.B].map((x) => x.wrap.getWorldPosition(new THREE.Vector3()).setY(p.y).distanceTo(p))) < 0.9) h = { point: p, object: this.group };
+    }
     if (step === 'cut') {
       if (this.state === 'whole' && this.item && (!this.atHome() || Math.abs(this.holder.quaternion.w) < 0.9)) this.homing = true;
       return true; // el corte puede empezar fuera del aguacate, como un cuchillo de verdad
@@ -203,17 +208,7 @@ export class AvocadoPrep {
       this.pitDrag = { hist: [] };
       ctx.sfx.plop();
     }
-    if (step === 'peel' && this.state === 'pitless' && this.flipT >= 1) {
-      const sk = h.object.userData.skin;
-      if (sk) {
-        const half = sk === this.A.skin ? this.A : this.B;
-        const q = sk.uvOf(half.inner.worldToLocal(h.point.clone()));
-        if (sk.begin(q)) {
-          this.peelDrag = { half, sk, q };
-          ctx.sfx.plop(0.6, 1.4);
-        }
-      }
-    }
+    if (step === 'peel' && this.state === 'pitless' && this.flipT >= 1) this.startPeel(h.point, ctx);
     if (step === 'slice' && this.peeled) this.sliceStart = { e: [e.clientX, e.clientY], h };
     return true;
   }
@@ -267,8 +262,12 @@ export class AvocadoPrep {
         pd.sk.extend(q, sp);
         pd.q = q;
         ctx.sfx.scrape(Math.min(0.012, sp * 0.08));
-        // un tirón muy brusco arranca la tira de golpe
-        if (sp > 0.3) this.finishStrip(ctx, dx, dy);
+        // cuando la tira es larga (o das un tirón) se suelta sola y, si sigues
+        // arrastrando, empiezas otra: se pela de un tirón continuo
+        if (pd.sk.cur && (pd.sk.cur.len > 0.42 || sp > 0.3)) {
+          this.finishStrip(ctx, dx, dy);
+          if (this.state === 'pitless') this.startPeel(h.point, ctx, true);
+        }
       }
       const f = ctx.planePoint(e, this.home.y + 0.55);
       if (f && this.peelDrag) pd.sk.setFinger(pd.half.inner.worldToLocal(f));
@@ -335,6 +334,22 @@ export class AvocadoPrep {
     ctx.chime();
   }
 
+  // empieza una tira en la mitad más cercana al punto tocado
+  startPeel(point, ctx, quiet = false) {
+    const dist = (x) => x.wrap.getWorldPosition(new THREE.Vector3()).distanceTo(point);
+    const order = dist(this.A) <= dist(this.B) ? [this.A, this.B] : [this.B, this.A];
+    for (const half of order) {
+      const sk = half.skin;
+      const q = sk.uvOf(half.inner.worldToLocal(point.clone()));
+      if (sk.begin(q)) {
+        this.peelDrag = { half, sk, q: sk.cur.last.clone() };
+        if (!quiet) ctx.sfx.plop(0.6, 1.4);
+        return true;
+      }
+    }
+    return false;
+  }
+
   // la tira se separa y cae con física real (con la forma que tenía al soltarla)
   finishStrip(ctx, dx = 0, dy = 0) {
     const pd = this.peelDrag;
@@ -345,7 +360,7 @@ export class AvocadoPrep {
     ctx.sfx.plop(0.7, 1.2);
     // ¿queda poca piel a la vista? el resto se desprende de una vez
     const left = (this.A.skin.remaining(this.A.inner.matrixWorld) + this.B.skin.remaining(this.B.inner.matrixWorld)) / 2;
-    if (left < 0.3) {
+    if (left < 0.45) {
       for (const h of [this.A, this.B]) {
         const rest = h.skin.dropRest();
         if (rest) this.dropPiece(h, rest, 0, 0);
@@ -379,7 +394,8 @@ export class AvocadoPrep {
     const it = this.physics.add(m, shapes, { mass: 0.08, linearDamping: 0.25, angularDamping: 0.5, home: null, sfx: 'soft' });
     // sale hacia fuera del aguacate (no se queda metida dentro)
     const out = c.clone().sub(half.wrap.getWorldPosition(new THREE.Vector3())).setY(0).normalize();
-    it.body.velocity.set(out.x * 2.5 + dx * 0.02, 3 + Math.random() * 1.5, out.z * 2.5 + dy * 0.02);
+    it.body.velocity.set(out.x * 3.2 + dx * 0.02, 3.4 + Math.random() * 1.5, out.z * 3.2 + dy * 0.02);
+    it.peel = true;
     it.body.angularVelocity.set((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 5);
     this.loose.push(it);
   }
@@ -412,5 +428,19 @@ export class AvocadoPrep {
     }
     // la tira que estás pelando se levanta con un poco de retraso (blandita)
     if (this.peelDrag) this.peelDrag.sk.deform(dt);
+    // una piel que se queda encima del aguacate resbala hacia fuera sola
+    for (const it of this.loose) {
+      if (!it.peel || it.held) continue;
+      const b = it.body;
+      if (b.position.y < this.home.y + 0.22 || b.velocity.length() > 0.6) continue;
+      for (const h of [this.A, this.B]) {
+        const c = h.wrap.getWorldPosition(new THREE.Vector3());
+        const dx = b.position.x - c.x, dz = b.position.z - c.z, d = Math.hypot(dx, dz);
+        if (d < 0.6) {
+          b.wakeUp();
+          b.velocity.set((dx / (d || 1)) * 2.2, 1.2, (dz / (d || 1)) * 2.2);
+        }
+      }
+    }
   }
 }
