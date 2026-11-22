@@ -324,9 +324,9 @@ const amb=new THREE.AmbientLight(0x2a3c58,1.0);scene.add(amb);
    p: 0 al empezar, 1 cuando se acaba el tiempo, >1 tras salir el sol */
 const C=h=>new THREE.Color(h),W=h=>{const c=new THREE.Color();c.r=((h>>16)&255)/255;c.g=((h>>8)&255)/255;c.b=(h&255)/255;return c;},V=(a,b,c)=>new THREE.Vector3(a,b,c);
 const SKY=[
-  {p:0,   bg:C(0x050c12),hs:C(0x7d9cc0),hg:C(0x2a2218),hi:1.55,lc:C(0xc4d8ff),li:1.7,ld:V(-200,400,-150),am:.9, wd:W(0x081a25),ws:W(0x13474c),gl:W(0x5a7390),lamps:1},
-  {p:.5,  bg:C(0x060e16),hs:C(0x7d9cc0),hg:C(0x2a2218),hi:1.55,lc:C(0xc4d8ff),li:1.7,ld:V(-200,400,-150),am:.9, wd:W(0x081a25),ws:W(0x13474c),gl:W(0x5a7390),lamps:1},
-  {p:.78, bg:C(0x1a2a44),hs:C(0x6f8cc4),hg:C(0x2c2634),hi:1.75,lc:C(0x9db0e6),li:1.3,ld:V(150,300,-100), am:1,  wd:W(0x0e2232),ws:W(0x1a525a),gl:W(0x8090c0),lamps:1},
+  {p:0,   bg:C(0x050c12),hs:C(0x7d9cc0),hg:C(0x2a2218),hi:2.15,lc:C(0xc4d8ff),li:2.3,ld:V(-200,400,-150),am:1.3,wd:W(0x10293a),ws:W(0x1e5a62),gl:W(0x6a86a6),lamps:1},
+  {p:.5,  bg:C(0x060e16),hs:C(0x7d9cc0),hg:C(0x2a2218),hi:2.15,lc:C(0xc4d8ff),li:2.3,ld:V(-200,400,-150),am:1.3,wd:W(0x10293a),ws:W(0x1e5a62),gl:W(0x6a86a6),lamps:1},
+  {p:.78, bg:C(0x1a2a44),hs:C(0x6f8cc4),hg:C(0x2c2634),hi:2.2, lc:C(0x9db0e6),li:1.9,ld:V(150,300,-100), am:1.3,wd:W(0x163248),ws:W(0x25626a),gl:W(0x8090c0),lamps:1},
   {p:.92, bg:C(0x6a5878),hs:C(0xb8a4b8),hg:C(0x33303c),hi:1.9, lc:C(0xffae80),li:1.6,ld:V(500,90,60),   am:1.1,wd:W(0x253448),ws:W(0x3c6670),gl:W(0xff9a6a),lamps:.7},
   {p:1,   bg:C(0xd8946a),hs:C(0xe6c8b4),hg:C(0x3e3a34),hi:2.3, lc:C(0xffc898),li:2.4,ld:V(500,150,60),  am:1.2,wd:W(0x2c4758),ws:W(0x4f8288),gl:W(0xffb27a),lamps:.25},
   {p:1.25,bg:C(0x9cc0dc),hs:C(0xd3e6ff),hg:C(0x4d4636),hi:2.6, lc:C(0xfff0d8),li:3.4,ld:V(400,420,60),  am:1.2,wd:W(0x1f4a63),ws:W(0x4a8e92),gl:W(0xffffff),lamps:0},
