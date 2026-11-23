@@ -2090,9 +2090,19 @@ cur.dir.copy(want.dir);
 cur.dist = want.dist;
 cur.fov = want.fov;
 
-function loop() {
-  const rawDt = clock.getDelta();
-  adaptQuality(rawDt);
+// Modo grabación (vídeos promocionales): el tiempo avanza a pasos fijos que
+// marca quien graba, así el vídeo sale fluido aunque el equipo sea lento.
+function loop(fixed) {
+  const manual = typeof fixed === 'number';
+  if (window.__record && !manual) return; // en grabación solo avanza paso a paso
+  let rawDt;
+  if (manual) {
+    rawDt = fixed;
+    clock.elapsedTime += fixed;
+  } else {
+    rawDt = clock.getDelta();
+    adaptQuality(rawDt);
+  }
   const dt = Math.min(rawDt, 0.05) * (window.__timeScale || 1);
   const time = clock.elapsedTime;
   const s = sets[mood];
@@ -2369,7 +2379,7 @@ function loop() {
   updateHub();
   $('holdRing').classList.toggle('on', !!pendingGrab);
   renderer.render(scene, camera);
-  requestAnimationFrame(loop);
+  if (!manual) requestAnimationFrame(loop);
 }
 loop();
 
@@ -2377,6 +2387,7 @@ window.__bs = {
   scene, camera, sets, applyMood, selectStation, STATIONS, shop, avoPrep, coffeeProc, physics, knifeLoad, toasterProc,
   free,
   breakGlass: () => (breakPending = true),
+  step: (dt) => loop(dt),
   juiceProc,
   juiceTip,
   crumbCount: () => crumbs.p.length,
