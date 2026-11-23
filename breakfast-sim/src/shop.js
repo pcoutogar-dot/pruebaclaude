@@ -7,6 +7,8 @@ import * as P from './props.js';
 // pack: unidades por compra · price: monedas · scope: una unidad por plato (si no, por uso)
 export const ITEMS = {
   avocado: { name: 'Aguacates', pack: 2, price: 6, scope: true, thumb: () => P.makeAvocadoHalf() },
+  realbutter: { name: 'Mantequilla', pack: 4, price: 5, scope: true, thumb: () => jar('#f6dc86', '#f3ecdc') },
+  jam: { name: 'Mermelada de fresa', pack: 4, price: 5, scope: true, thumb: () => jar('#c41e3a', '#e85d6f') },
   ricotta: { name: 'Ricotta', pack: 3, price: 5, scope: true, thumb: () => jar('#fbf7ee', '#e9e2d4') },
   honey: { name: 'Miel', pack: 6, price: 6, scope: true, thumb: () => jar('#e39a2a', '#c98a3a') },
   egg: { name: 'Huevos', pack: 6, price: 4, thumb: () => makePlaced('egg') },
@@ -34,7 +36,7 @@ export const ITEMS = {
 
 // qué ingrediente gasta cada herramienta
 export const TOOL_ITEM = {
-  avoCut: 'avocado', grind: 'beans', foamMilk: 'milk', instant: 'instant', ricotta: 'ricotta', honey: 'honey', drizzle: 'honey',
+  avoCut: 'avocado', grind: 'beans', foamMilk: 'milk', instant: 'instant', ricotta: 'ricotta', butterG: 'realbutter', jam: 'jam', honey: 'honey', drizzle: 'honey',
   egg: 'egg', radish: 'radish', tomato: 'tomato', sprouts: 'sprouts', chili: 'chili', sesame: 'sesame',
   yogurt: 'yogurt', yogurtPour: 'yogurt', yogurtPourT: 'yogurt', blueberry: 'blueberry', raspberry: 'raspberry', strawberry: 'strawberry',
   banana: 'banana', granola: 'granola', mint: 'mint', cinnamon: 'cinnamon', butter: 'butter',

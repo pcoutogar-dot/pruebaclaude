@@ -3,6 +3,10 @@
 // tenga volumen y reflejo, no solo color.
 import * as THREE from 'three';
 import { canvas, tex, rng } from './textures.js';
+import { SpreadSim, CAP } from './spreadsim.js';
+
+// lo que se unta con la simulación de "materia" (el resto, como el aguacate, se pinta)
+export const SIM_KINDS = { butter: 'margarine', butterG: 'butter', jam: 'jam', ricotta: 'ricotta' };
 
 const CW = 768; // color
 const HW = 384; // relieve / rugosidad
@@ -70,9 +74,13 @@ export class Toast {
     this.cRough = canvas(HW);
     this.cMask = canvas(MW);
     this.cPaint = canvas(MW);
-    this.tColor = tex(this.cColor);
-    this.tHeight = tex(this.cHeight, { srgb: false });
-    this.tRough = tex(this.cRough, { srgb: false });
+    // lo que se ve = lo pintado (debajo) + la crema simulada (encima)
+    this.dColor = canvas(CW);
+    this.dHeight = canvas(HW);
+    this.dRough = canvas(HW);
+    this.tColor = tex(this.dColor);
+    this.tHeight = tex(this.dHeight, { srgb: false });
+    this.tRough = tex(this.dRough, { srgb: false });
 
     const top = new THREE.MeshStandardMaterial({
       map: this.tColor,
@@ -102,6 +110,8 @@ export class Toast {
     this.maskIdx = [];
     for (let i = 0; i < MW * MW; i++) if (md[i * 4 + 3] > 128) this.maskIdx.push(i);
 
+    const B = this.bounds;
+    this.sim = new SpreadSim((u, v) => inside(this.outline, B.minX + u * B.w, B.minY + v * B.h));
     this.reset();
   }
 
@@ -183,6 +193,7 @@ export class Toast {
     c.restore();
 
     this.cPaint.getContext('2d').clearRect(0, 0, MW, MW);
+    this.sim?.reset();
     this.covered = 0;
     this.heatTotal = 0;
     this.crustMat.color.copy(this.crustRaw);
@@ -255,8 +266,10 @@ export class Toast {
       return [x, x.getImageData(0, 0, c.width, c.height)];
     });
     const heat = this.heatTotal, crust = this.crustMat.color.clone();
+    const sim = this.sim?.snapshot();
     return () => {
       for (const [x, d] of cs) x.putImageData(d, 0, 0);
+      sim?.();
       this.heatTotal = heat;
       this.crustMat.color.copy(crust);
       this.dirty = true;
@@ -419,9 +432,40 @@ export class Toast {
     p.fill();
   }
 
+  // ---- untar con la simulación de materia ----
+  simDollop(u, v, load, kind) {
+    const k = SIM_KINDS[kind];
+    const m = load * CAP * 0.45;
+    this.sim.dollop(u, v, m, k);
+    return load * 0.55;
+  }
+
+  simStroke(u0, v0, u1, v1, kind, load, press) {
+    return this.sim.stroke(u0, v0, u1, v1, load, SIM_KINDS[kind], press);
+  }
+
+  update(dt) {
+    // el pan tostado está calentito: la mantequilla se derrite
+    this.sim.update(dt, Math.min(1, (this.heatTotal || 0) / 5));
+  }
+
   flush() {
+    if (this.sim.render()) this.dirty = true;
     if (!this.dirty) return;
     this.dirty = false;
+    const c = this.dColor.getContext('2d'), hh = this.dHeight.getContext('2d'), ro = this.dRough.getContext('2d');
+    c.drawImage(this.cColor, 0, 0);
+    hh.drawImage(this.cHeight, 0, 0);
+    ro.drawImage(this.cRough, 0, 0);
+    c.imageSmoothingQuality = 'high';
+    c.drawImage(this.sim.canvas, 0, 0, CW, CW);
+    hh.drawImage(this.sim.hc, 0, 0, HW, HW);
+    // lo untado brilla más que la miga
+    ro.globalCompositeOperation = 'multiply';
+    ro.globalAlpha = 0.55;
+    ro.drawImage(this.sim.hc, 0, 0, HW, HW);
+    ro.globalAlpha = 1;
+    ro.globalCompositeOperation = 'source-over';
     this.tColor.needsUpdate = true;
     this.tHeight.needsUpdate = true;
     this.tRough.needsUpdate = true;
