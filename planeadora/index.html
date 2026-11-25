@@ -1577,7 +1577,7 @@ function frame(){
   // ciclo de luz
   if(S.mode==='end'&&S.endReason==='dawn')S.sunrise=(S.sunrise||0)+dt;
   const pDay=S.mode==='menu'?0:1-S.time/CFG.time+(S.sunrise||0)*.025;
-  applySky(Math.min(pDay,1.25));
+  applySky(0); // siempre de noche (el reloj sigue marcando el tiempo hasta el amanecer)
   const L=sky.lamps;
   for(const l of lampSprites)l.s.material.opacity=l.o*L;
   winMat.color.setRGB(1*L+.25*(1-L),.77*L+.24*(1-L),.42*L+.24*(1-L));
