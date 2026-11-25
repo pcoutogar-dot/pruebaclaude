@@ -35,7 +35,7 @@ canvas{display:block}
 #tl .big{font-family:var(--display);font-size:30px;line-height:1}
 #tl .sm{font-size:18px;color:var(--dim)}
 #slots{display:flex;gap:3px;margin-top:2px}
-#slots i{width:12px;height:9px;border:1px solid var(--line);background:transparent;display:block}
+#slots i{width:26px;height:14px;border:1px solid var(--line);background:transparent;display:block}
 #slots i.on{background:var(--sodium);border-color:var(--sodium)}
 #tc{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);text-align:center}
 #timer{font-family:var(--display);font-size:46px;line-height:1;letter-spacing:.02em}
@@ -237,7 +237,7 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   </div>
 </div>
 <script>
-(function(){var tips=["Una planeadora no frena: suelta el gas con tiempo o mete marcha atrás.","Con diez fardos a bordo el barco pesa más y corre menos que la patrullera.","Cuando la linterna parpadea en tierra, allí te esperan.","El foco de Aduanas barre de lado a lado: cruza por detrás del haz.","Las bateas sirven de escondite, pero también se rompen los cascos contra ellas.","Un golpe fuerte contra las piedras tira un fardo al agua."],i=0,el=document.getElementById('ltip');
+(function(){var tips=["Una planeadora no frena: suelta el gas con tiempo o mete marcha atrás.","Con tres fardos a bordo el barco pesa más y corre menos que la patrullera.","Cuando la linterna parpadea en tierra, allí te esperan.","El foco de Aduanas barre de lado a lado: cruza por detrás del haz.","Las bateas sirven de escondite, pero también se rompen los cascos contra ellas.","Un golpe fuerte contra las piedras tira un fardo al agua."],i=0,el=document.getElementById('ltip');
 window.__tipT=setInterval(function(){i=(i+1)%tips.length;el.textContent=tips[i];},2600);})();
 </script>
 <div id="overlay" hidden><div id="card"></div></div>
@@ -253,11 +253,11 @@ const KENNEY={"stone_largeA":{"b":[-0.3925,-0.0,-0.5077,0.3925,0.2598,0.5077],"p
    ========================================================= */
 const CFG = {
   time: 240,          // segundos hasta el amanecer
-  goal: 30,           // fardos a dejar en tierra
-  capacity: 10,       // fardos por viaje
-  stock: 34,          // fardos en la nodriza
-  loadEvery: 0.42,    // s por fardo cargado
-  unloadEvery: 0.32,  // s por fardo descargado
+  goal: 9,            // fardos a dejar en tierra
+  capacity: 3,        // fardos grandes por viaje
+  stock: 11,          // fardos en la nodriza
+  loadEvery: 1.1,     // s por fardo cargado
+  unloadEvery: 0.9,   // s por fardo descargado
   maxLoadSpeed: 3.6,  // m/s para poder cargar / descargar
 };
 
@@ -771,6 +771,17 @@ function fardo(){
   for(const z of [-.16,.16]){const s=new THREE.Mesh(strapGeo,strapMat);s.position.z=z;g.add(s);}
   return g;
 }
+// fardo grande: saco de ~1,6 m envuelto en plástico, con cinchas y asas
+const bigGeo=new THREE.BoxGeometry(1.0,.8,1.6),bigStrap=new THREE.BoxGeometry(1.04,.84,.1),bigStrapL=new THREE.BoxGeometry(.1,.84,1.64);
+const wrapMat=new THREE.MeshStandardMaterial({color:0x9aa6a0,roughness:.25,metalness:.1,transparent:true,opacity:.35});
+function fardoGrande(){
+  const g=new THREE.Group(),m=fardoMats[(Math.random()*3)|0];
+  const b=new THREE.Mesh(bigGeo,m);g.add(b);
+  const w=new THREE.Mesh(bigGeo,wrapMat);w.scale.set(1.02,1.02,1.01);g.add(w);
+  for(const z of [-.5,0,.5]){const s=new THREE.Mesh(bigStrap,strapMat);s.position.z=z;g.add(s);}
+  const sl=new THREE.Mesh(bigStrapL,strapMat);g.add(sl);
+  return g;
+}
 
 await step(.76,'Llenando las garrafas');
 /* ---------- planeadora ----------
@@ -877,10 +888,10 @@ const boat={group:new THREE.Group(),slots:[],engines:[],props:[]};
       const brim=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.03,14),hm);brim.position.y=1.82;p.add(brim);
       const crown=new THREE.Mesh(new THREE.CylinderGeometry(.14,.16,.14,12),hm);crown.position.y=1.89;p.add(crown);}
     if(o.glasses){const g=new THREE.Mesh(new THREE.BoxGeometry(.26,.05,.05),dark);g.position.set(0,1.76,.13);p.add(g);}
-    p.position.set(o.x,.5,-.4);B.add(p);return p;
+    p.position.set(o.x,.5,-.4);p.scale.setScalar(1.18);B.add(p);return p;
   }
-  boat.captain=person({x:-.32,top:0x2b211b,legs:0x1f2a3a,glasses:true});
-  boat.mate=person({x:.4,top:0x6d7f5a,legs:0x2a2e33,hat:0xe8e2d0,bareArms:true});
+  boat.captain=person({x:-.36,top:0x6b4a32,legs:0x23324a,glasses:true});
+  boat.mate=person({x:.42,top:0xc9c4b4,legs:0x2a2e33,hat:0xece6d4,bareArms:true});
   // garrafas de gasolina a popa (petacas de 25-30 l), algo desordenadas
   const canW=new THREE.MeshStandardMaterial({color:0xd9dccf,roughness:.6}),canB=new THREE.MeshStandardMaterial({color:0x2f62a8,roughness:.6}),canR=new THREE.MeshStandardMaterial({color:0xa8322a,roughness:.6});
   const canG=new THREE.BoxGeometry(.3,.42,.22),hdlG=new THREE.BoxGeometry(.06,.08,.14);
@@ -911,10 +922,8 @@ const boat={group:new THREE.Group(),slots:[],engines:[],props:[]};
     pv.rotation.x=-.06;B.add(pv);boat.engines.push(pv);
   }
   // huecos para fardos: bañera de popa y delante de la consola
-  const slots=[];
-  for(let r=0;r<3;r++)for(const x of [-.5,.5])slots.push([x,-2.0-r*.95]);
-  for(let r=0;r<2;r++)for(const x of [-.45,.45])slots.push([x,1.95+r*.75]);
-  for(const [x,z] of slots){const f=fardo();f.position.set(x,.78,z);f.rotation.y=(Math.random()-.5)*.2;f.visible=false;B.add(f);boat.slots.push(f);}
+  const slots=[[0,-2.4,0],[0,-4.25,0],[0,1.97,Math.PI/2]];boat.slotZ=slots.map(s=>s[1]);
+  for(const [x,z,ry] of slots){const f=fardoGrande();f.position.set(x,.92,z);f.rotation.y=ry+(Math.random()-.5)*.12;f.visible=false;B.add(f);boat.slots.push(f);}
   // luz tenue para leer el barco en la noche
   const pl=new THREE.PointLight(0x9fb8d0,40,26,2);pl.position.set(0,6,0);B.add(pl);
   scene.add(B);
@@ -1002,7 +1011,7 @@ function updateParts(dt){
    ========================================================= */
 const flying=[];
 function flyBox(from,to,dur,onDone){
-  const m=fardo();m.scale.setScalar(1.3);scene.add(m);
+  const m=fardoGrande();scene.add(m);
   flying.push({m,from,to,t:0,dur,onDone,spin:(Math.random()-.5)*8});
 }
 function updateFlying(dt){
@@ -1048,6 +1057,80 @@ function thud(){
   if(!AU||muted)return;const t=AU.ctx.currentTime,o=AU.ctx.createOscillator(),g=AU.ctx.createGain();
   o.type='sine';o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(35,t+.3);
   g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.connect(g);g.connect(AU.master);o.start(t);o.stop(t+.4);
+}
+
+/* =========================================================
+   MÚSICA ÉPICA PROCEDURAL: tambores tipo taiko, cuerdas, bajo ostinato y gaita con roncón
+   Re menor, 112 bpm, bucle de 8 compases. La intensidad sube con el riesgo y la persecución.
+   ========================================================= */
+const MUS={on:false,next:0,step:0,int:.35,target:.35};
+const mf=m=>440*Math.pow(2,(m-69)/12);
+const CHORDS=[[50,53,57],[46,50,53],[53,57,60],[48,52,55],[50,53,57],[46,50,53],[48,52,55],[45,49,52]]; // Rem Sib Fa Do Rem Sib Do La
+const MELODY=[ // [paso en el bucle de 128 semicorcheas, nota midi, duración]
+  [64,74,4],[68,76,2],[70,77,2],[72,81,6],[78,79,2],
+  [80,77,4],[84,76,2],[86,74,2],[88,77,8],
+  [96,76,4],[100,79,4],[104,76,2],[106,74,2],[108,72,4],
+  [112,73,4],[116,76,4],[120,81,8],
+  [0,69,4],[4,74,4],[8,77,4],[12,76,2],[14,74,2],[16,74,8],[24,72,4],[28,70,4],[32,72,4],[36,77,4],[40,76,8],[48,74,4],[52,73,4],[56,76,8]];
+function musicStart(){
+  if(!AU||MUS.on)return;const ctx=AU.ctx;MUS.on=true;
+  MUS.bus=ctx.createGain();MUS.bus.gain.value=0;MUS.bus.connect(AU.master);MUS.bus.gain.setTargetAtTime(.6,ctx.currentTime,1.2);
+  // reverberación de sala grande (impulso generado)
+  const len=ctx.sampleRate*2.6,ir=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4);}
+  const conv=ctx.createConvolver();conv.buffer=ir;MUS.rev=ctx.createGain();MUS.rev.gain.value=.4;MUS.rev.connect(conv);conv.connect(MUS.bus);
+  // roncón de la gaita: Re grave continuo
+  MUS.drone=ctx.createGain();MUS.drone.gain.value=0;const df=ctx.createBiquadFilter();df.type='lowpass';df.frequency.value=900;
+  for(const [m,dt] of [[38,0],[50,3],[57,-4]]){const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=mf(m);o.detune.value=dt;o.connect(df);o.start();}
+  df.connect(MUS.drone);MUS.drone.connect(MUS.bus);MUS.drone.connect(MUS.rev);
+  MUS.next=ctx.currentTime+.15;MUS.step=0;
+}
+function mOut(node,dry,wet){const g=AU.ctx.createGain();g.gain.value=dry;node.connect(g);g.connect(MUS.bus);const w=AU.ctx.createGain();w.gain.value=wet;node.connect(w);w.connect(MUS.rev);}
+function mPad(t,notes,dur,vol){
+  const ctx=AU.ctx,f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=700+MUS.int*900;
+  const g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.5);g.gain.setValueAtTime(vol,t+dur-.4);g.gain.linearRampToValueAtTime(0,t+dur+.3);
+  for(const m of notes)for(const dt of [-9,9]){const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=mf(m);o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+.4);}
+  f.connect(g);mOut(g,.6,.6);
+}
+function mBass(t,m,dur,vol){
+  const ctx=AU.ctx,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain();o.type='sawtooth';o.frequency.value=mf(m);
+  f.type='lowpass';f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(220,t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(f);f.connect(g);mOut(g,1,.15);o.start(t);o.stop(t+dur+.05);
+}
+function mDrum(t,f0,vol,len=.5,noise=.3){
+  const ctx=AU.ctx,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';
+  o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*.35,t+len*.6);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+len);o.connect(g);mOut(g,1,.35);o.start(t);o.stop(t+len+.05);
+  if(noise>0){const b=ctx.createBufferSource(),nb=ctx.createBuffer(1,ctx.sampleRate*.2,ctx.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+    b.buffer=nb;const nf=ctx.createBiquadFilter();nf.type='bandpass';nf.frequency.value=f0*8;const ng=ctx.createGain();ng.gain.value=vol*noise;b.connect(nf);nf.connect(ng);mOut(ng,1,.3);b.start(t);}
+}
+function mGaita(t,m,dur,vol){
+  const ctx=AU.ctx,g=ctx.createGain(),f=ctx.createBiquadFilter(),hp=ctx.createBiquadFilter();
+  f.type='bandpass';f.frequency.value=1700;f.Q.value=.8;hp.type='highpass';hp.frequency.value=350;
+  const lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=5.6;lg.gain.value=7;lfo.connect(lg);
+  for(const [type,dt] of [['sawtooth',0],['square',6]]){const o=ctx.createOscillator();o.type=type;o.frequency.value=mf(m);o.detune.value=dt;lg.connect(o.detune);o.connect(f);o.start(t);o.stop(t+dur+.1);}
+  lfo.start(t);lfo.stop(t+dur+.1);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.03);g.gain.setValueAtTime(vol,t+dur-.05);g.gain.linearRampToValueAtTime(0,t+dur+.08);
+  f.connect(hp);hp.connect(g);mOut(g,.8,.5);
+}
+function musicTick(){
+  if(!MUS.on||!AU)return;const ctx=AU.ctx,s16=60/112/4;
+  MUS.int+=(MUS.target-MUS.int)*.02;const I=MUS.int;
+  MUS.drone.gain.setTargetAtTime(muted?0:.012+.03*smooth(.4,1,I),ctx.currentTime,.4);
+  while(MUS.next<ctx.currentTime+.25){
+    const t=MUS.next,st=MUS.step%128,inBar=st%16,bar=(st/16)|0,ch=CHORDS[bar];
+    if(inBar===0)mPad(t,ch.map(n=>n+12),16*s16,.018+.02*I);
+    if(inBar%2===0)mBass(t,ch[0]-12+((inBar===6||inBar===14)?12:0),s16*1.8,(inBar%8===0?.2:.12)*(.6+.5*I));
+    // tambores
+    if(inBar===0||inBar===8)mDrum(t,95,.55+.35*I,.6,.25);
+    if(inBar===6||inBar===11)mDrum(t,110,(.25+.3*I),.4,.2);
+    if(I>.5&&(inBar===4||inBar===12))mDrum(t,180,.3*I,.25,.9);
+    if(I>.75&&inBar>=13)mDrum(t,140+inBar*6,.22*I,.2,.4);
+    if(bar%4===0&&inBar===0)mDrum(t,60,.8,1.4,.5);
+    // gaita: entra con el riesgo; en persecución toca el bucle entero
+    for(const [s0,m,d] of MELODY)if(s0===st&&(s0>=64?I>.3:I>.7))mGaita(t,m,d*s16*.95,.03+.03*I);
+    MUS.next+=s16;MUS.step++;
+  }
 }
 
 /* =========================================================
@@ -1167,7 +1250,7 @@ function showEnd(){
   $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
 }
 function startGame(){
-  initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();
+  initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();musicStart();
   S.mode='play';resetGame();S.mode='play';ui.overlay.hidden=true;
   say('¡A la nodriza!','good',1.8);
   setTimeout(()=>S.mode==='play'&&radio('Radio: «A nodriza está no sitio. Non acendades luces.»'),900);
@@ -1238,7 +1321,7 @@ function stepBoat(dt,inp){
   S.rud+=clamp(inp.steer-S.rud,-dt*2.6,dt*2.6);
   const fx=Math.sin(S.h),fz=Math.cos(S.h),rx=-Math.cos(S.h),rz=Math.sin(S.h);
   let u=S.vx*fx+S.vz*fz,w=S.vx*rx+S.vz*rz;
-  const load=1-.025*S.cargo;
+  const load=1-.08*S.cargo;
   const thrust=S.thr>=0?S.thr*9*load:S.thr*4.2;
   let au=thrust-.0156*u*Math.abs(u)-.16*u-Math.abs(S.om)*Math.abs(u)*.1;
   const aw=-w*(1.35+.02*Math.abs(u));               // poco agarre lateral -> derrape
@@ -1257,7 +1340,7 @@ function impact(speed,n){
   S.hitCd=1;S.hits++;S.shake=Math.min(1.2,speed/8);thud();
   if(speed>7.5&&S.cargo>0){
     S.cargo--;S.lost++;updateSlotsUI();
-    const [px,pz]=boatPoint(0,-1);const m=fardo();m.position.set(px,.3,pz);m.scale.setScalar(1.3);scene.add(m);sinking.push({m,t:0,vx:-n[0]*3+(Math.random()-.5)*2,vz:-n[1]*3+(Math.random()-.5)*2});
+    const [px,pz]=boatPoint(0,-1);const m=fardoGrande();m.position.set(px,.3,pz);scene.add(m);sinking.push({m,t:0,vx:-n[0]*3+(Math.random()-.5)*2,vz:-n[1]*3+(Math.random()-.5)*2});
     say('¡Golpe! Fardo al agua','bad',1.6);
     if(S.stock+S.cargo+S.delivered+flying.length<CFG.goal)setTimeout(()=>endGame('short'),800);
   }else say('¡Cuidado con las piedras!','bad',1.2);
@@ -1370,7 +1453,7 @@ function stepMission(dt){
       if(S.loadT>=CFG.loadEvery&&S.pendingIn===0){
         S.loadT=0;S.stock--;S.pendingIn++;
         const slot=Math.min(S.cargo,CFG.capacity-1);
-        flyBox({x:NOD.deckX,y:7,z:NOD.deckZ},()=>{const [px,pz]=boatPoint(0,slot<6?-3:2);return {x:px,y:1.5,z:pz};},.45,()=>{
+        flyBox({x:NOD.deckX,y:7,z:NOD.deckZ},()=>{const [px,pz]=boatPoint(0,boat.slotZ[slot]);return {x:px,y:1.5,z:pz};},.8,()=>{
           S.pendingIn--;if(S.mode!=='play')return;S.cargo++;beep(520+S.cargo*30,.06,.08);updateSlotsUI();
           if(S.cargo===1&&!S.drop){S.drop=DROPS[Math.random()<.5?0:1];S.drop.zone.visible=true;
             radio(S.drop===BEACH_DROP?'Radio: «Praia da Lagoa limpa. Alí vos agardamos co coche.»':'Radio: «Ide ao Peirao Vello. A garda civil está na praia.»',4.5);}
@@ -1571,7 +1654,8 @@ function frame(){
     AU.g.gain.setTargetAtTime(playing?.035+Math.abs(S.thr)*.07:.015,now,.1);
     AU.ng.gain.setTargetAtTime(Math.min(.09,speed/18*.07),now,.1);AU.nf.frequency.setTargetAtTime(500+speed*40,now,.1);
     const chase=patrol.state==='chase'&&playing;
-    AU.sg.gain.setTargetAtTime(chase?.03:0,now,.1);AU.so.frequency.setTargetAtTime(Math.sin(T*5)>0?760:560,now,.02);
+    AU.sg.gain.setTargetAtTime(chase?.03:0,now,.1);
+    MUS.target=!playing?.25:chase?1:S.risk>.3?.65:.4;musicTick();AU.so.frequency.setTargetAtTime(Math.sin(T*5)>0?760:560,now,.02);
   }
 
   updateCamera(dt,T);
