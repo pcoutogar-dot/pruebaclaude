@@ -4,4 +4,5 @@ lancha.glb
   Obtenido a través de Objaverse (Allen Institute for AI). Optimizado (simplificación de malla y texturas WebP).
 
 Escenario (piedras, árboles, vegetación): Kenney Nature Kit, CC0 1.0 — www.kenney.nl
+Iconos de interfaz y teclas: Kenney Game Icons e Input Prompts, CC0 1.0 — www.kenney.nl
 Voces en gallego: Proxecto Nós, Universidade de Santiago de Compostela — modelo Celtia, Apache 2.0

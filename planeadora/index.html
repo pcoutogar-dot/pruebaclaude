@@ -75,8 +75,12 @@ canvas{display:block}
 #msg.show{opacity:1}
 #msg.bad{color:var(--alert)}
 #msg.good{color:var(--sodium)}
-#radio{position:absolute;top:calc(92px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);font-size:19px;color:var(--radio);background:var(--panel);padding:6px 14px;border-left:3px solid var(--radio);opacity:0;transition:opacity .3s;max-width:min(560px,86vw)}
-#radio.show{opacity:1}
+#radio{position:absolute;top:calc(88px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-10px);display:flex;gap:12px;align-items:center;font-size:19px;color:var(--ink);background:linear-gradient(90deg,rgba(18,40,32,.92),rgba(5,12,18,.85));padding:8px 16px 8px 10px;border:1px solid rgba(159,227,196,.35);border-radius:4px;opacity:0;transition:opacity .3s,transform .3s;max-width:min(600px,90vw);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#radio.show{opacity:1;transform:translate(-50%,0)}
+#radio .rtag{display:block;font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--radio)}
+#radio .rico{width:34px;height:40px;flex:none;color:var(--radio)}
+#radio .rico .wv{animation:wv 1s infinite;opacity:.2}#radio .rico .wv2{animation-delay:.2s}
+@keyframes wv{0%,100%{opacity:.15}40%{opacity:1}}
 #ptr{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
 #ptrarrow{width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-bottom:20px solid var(--sodium);filter:drop-shadow(0 0 6px rgba(255,179,65,.6))}
 #ptrlab{font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sodium);text-shadow:0 1px 4px #000;white-space:nowrap}
@@ -151,13 +155,68 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   background:var(--panel);padding:7px 16px;opacity:0;transition:opacity .25s,transform .25s;font-size:22px;font-weight:600;max-width:min(620px,88vw)}
 #shout.show{opacity:1;transform:translateX(-50%)}
 #shout b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+
+/* ---------- iconos de Kenney (Game Icons + Input Prompts, CC0), tintados con currentColor ---------- */
+.ki{display:inline-block;width:1.5em;height:1.5em;vertical-align:middle;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat;flex:none}
+.ki-w{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTMxIDIyIEwyOCAzMSAyNSAyMiAyMSAyMiAyMSAyNCAyNyA0MiAyOSA0MiAzMiAzMyAzNSA0MiAzNyA0MiA0MyAyNCA0MyAyMiAzOSAyMiAzNiAzMSAzMyAyMiAzMSAyMiIvPgogIDwvZz4KPC9zdmc+)}
+.ki-a{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTM4IDQyIEw0MiA0MiAzNCAyMiAzMCAyMiAyMiA0MiAyNiA0MiAyNy42IDM4IDM2LjQgMzggMzggNDIgTTMyIDI3IEwzNC44IDM0IDI5LjIgMzQgMzIgMjciLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-s{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTM0IDMwIEwzMCAzMCBRMjkuMiAzMCAyOC42IDI5LjQgMjggMjguOCAyOCAyOCAyOCAyNy4yIDI4LjU1IDI2LjY1IEwyOC42NSAyNi41NSBRMjkuMiAyNiAzMCAyNiBMMzQuMDUgMjYgUTM0LjggMjYgMzUuMzUgMjYuNTUgTDM1LjQ1IDI2LjY1IFEzNiAyNy4yIDM2IDI4IEwzOS44NSAyNi41IDM5LjcgMjYgUTM5LjI1IDI0LjggMzguMjUgMjMuOCBMMzguMiAyMy43NSBRMzYuNSAyMi4wNSAzNC4xNSAyMiBMMzAgMjIgUTI3LjU1IDIyIDI1LjggMjMuNzUgTDI1Ljc1IDIzLjggUTI0IDI1LjU1IDI0IDI4IDI0IDMwLjUgMjUuNzUgMzIuMjUgMjcuNSAzNCAzMCAzNCBMMzQgMzQgUTM0LjggMzQgMzUuNCAzNC42IDM2IDM1LjIgMzYgMzYgMzYgMzYuOCAzNS40NSAzNy4zNSBMMzUuMzUgMzcuNDUgUTM0LjggMzggMzQgMzggTDI5Ljk1IDM4IFEyOS4yIDM4IDI4LjY1IDM3LjQ1IEwyOC41NSAzNy4zNSBRMjggMzYuOCAyOCAzNiBMMjQuMiAzNy41NSAyNC4zNSAzOCBRMjQuNzUgMzkuMiAyNS43NSA0MC4yIEwyNS44IDQwLjI1IFEyNy41IDQxLjk1IDI5Ljg1IDQyIEwzNCA0MiBRMzYuNDUgNDIgMzguMiA0MC4yNSBMMzguMjUgNDAuMiBRNDAgMzguNDUgNDAgMzYgNDAgMzMuNSAzOC4yNSAzMS43NSAzNi41IDMwIDM0IDMwIE0xNiA4IEw0OCA4IFE1NiA4IDU2IDE2IEw1NiA0OCBRNTYgNTYgNDggNTYgTDE2IDU2IFE4IDU2IDggNDggTDggMTYgUTggOCAxNiA4Ii8+CiAgPC9nPgo8L3N2Zz4=)}
+.ki-d{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTI4IDI2IEwzMC4xNSAyNiBRMzIuNSAyNi4wNSAzNC4yNSAyNy44IDM2IDI5LjU1IDM2IDMyIDM2IDM0LjQ1IDM0LjI1IDM2LjI1IDMyLjUgMzcuOTUgMzAuMTUgMzggTDI4IDM4IDI4IDI2IE0yNCAyMiBMMjQgNDIgMzAuMjUgNDIgUTM0LjI1IDQxLjkgMzcuMSAzOS4xIEwzOC4wNSAzOCBRNDAgMzUuNCA0MCAzMiA0MCAyOC41NSAzOC4wNSAyNiBMMzcuMSAyNC45NSBRMzQuMjUgMjIuMSAzMC4yNSAyMiBMMjQgMjIiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-q{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTI4IDMwIFEyOCAyOC4zNSAyOS4yIDI3LjIgMzAuMzUgMjYgMzIgMjYgMzMuNjUgMjYgMzQuODUgMjcuMiAzNiAyOC4zNSAzNiAzMCBMMzYgMzQuMSAzNS45IDM0LjkgMzUgMzQgMzIgMzQgMzIgMzcgMzIuOSAzNy45IDMyIDM4IFEzMC4zNSAzOCAyOS4yIDM2Ljg1IDI4LjA1IDM1LjcgMjggMzQuMSBMMjggMzAgTTI0IDMwIEwyNCAzNC4yIFEyNC4wNSAzNy4zNSAyNi4zNSAzOS42NSBMMjggNDAuOTUgUTI5LjggNDIgMzIgNDIgMzQuMiA0MiAzNiA0MSBMMzcgNDIgNDAgNDIgNDAgMzkgMzkgMzggUTM5Ljk1IDM2LjI1IDQwIDM0LjIgTDQwIDMwIFE0MCAyNi43IDM3LjY1IDI0LjM1IDM1LjMgMjIgMzIgMjIgMjguNyAyMiAyNi4zNSAyNC4zNSAyNCAyNi43IDI0IDMwIi8+CiAgPC9nPgo8L3N2Zz4=)}
+.ki-up{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTU2IDE2IEw1NiA0OCBRNTYgNTYgNDggNTYgTDE2IDU2IFE4IDU2IDggNDggTDggMTYgUTggOCAxNiA4IEw0OCA4IFE1NiA4IDU2IDE2IE0zMiAyMiBMMjQgMzAgMjQgMzIgMjggMzIgMjggNDIgMzYgNDIgMzYgMzIgNDAgMzIgNDAgMzAgMzIgMjIiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-down{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTggNDggTDggMTYgUTggOCAxNiA4IEw0OCA4IFE1NiA4IDU2IDE2IEw1NiA0OCBRNTYgNTYgNDggNTYgTDE2IDU2IFE4IDU2IDggNDggTTMyIDQyIEw0MCAzNCA0MCAzMiAzNiAzMiAzNiAyMiAyOCAyMiAyOCAzMiAyNCAzMiAyNCAzNCAzMiA0MiIvPgogIDwvZz4KPC9zdmc+)}
+.ki-left{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTIyIDMyIEwzMCA0MCAzMiA0MCAzMiAzNiA0MiAzNiA0MiAyOCAzMiAyOCAzMiAyNCAzMCAyNCAyMiAzMiIvPgogIDwvZz4KPC9zdmc+)}
+.ki-right{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTQyIDMyIEwzNCAyNCAzMiAyNCAzMiAyOCAyMiAyOCAyMiAzNiAzMiAzNiAzMiA0MCAzNCA0MCA0MiAzMiBNNDggNTYgTDE2IDU2IFE4IDU2IDggNDggTDggMTYgUTggOCAxNiA4IEw0OCA4IFE1NiA4IDU2IDE2IEw1NiA0OCBRNTYgNTYgNDggNTYiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-m{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTIyIDQyIEwyNiA0MiAyNiAzMiAzMSA0MiAzMyA0MiAzOCAzMiAzOCA0MiA0MiA0MiA0MiAyMiAzOCAyMiAzMiAzNCAyNiAyMiAyMiAyMiAyMiA0MiBNMTYgOCBMNDggOCBRNTYgOCA1NiAxNiBMNTYgNDggUTU2IDU2IDQ4IDU2IEwxNiA1NiBROCA1NiA4IDQ4IEw4IDE2IFE4IDggMTYgOCIvPgogIDwvZz4KPC9zdmc+)}
+.ki-v{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDU2IFE4IDU2IDggNDggTDggMTYgUTggOCAxNiA4IEw0OCA4IFE1NiA4IDU2IDE2IEw1NiA0OCBRNTYgNTYgNDggNTYgTDE2IDU2IE0zOCAyMiBMMzIgMzcgMjYgMjIgMjIgMjIgMzAgNDIgMzQgNDIgNDIgMjIgMzggMjIiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-r{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTI1IDIyIEwyNCAyMyAyNCA0MiAyOCA0MiAyOCAzNiAzNCAzNiAzNC41IDM2IDM2IDQyIDQwIDQyIDM4LjEgMzQuMzUgMzguMiAzNC4yNSAzOC4yNSAzNC4yIFE0MCAzMi40NSA0MCAzMCBMNDAgMjggUTQwIDI1LjUgMzguMjUgMjMuNzUgTDM4LjIgMjMuNyAzNyAyMi44IFEzNS43NSAyMi4wNSAzNC4yIDIyIEwyNSAyMiBNMjggMjYgTDM0IDI2IFEzNC44IDI2IDM1LjQgMjYuNiBMMzUuNDUgMjYuNiBRMzYgMjcuMTUgMzYgMjggTDM2IDMwIFEzNiAzMC44IDM1LjQ1IDMxLjM1IEwzNS4zNSAzMS40NSBRMzQuOCAzMiAzNCAzMiBMMjggMzIgMjggMjYgTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDgiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-p{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTI1IDIyIEwyNCAyMyAyNCA0MiAyOCA0MiAyOCAzNiAzNCAzNiAzNC4yIDM2IFEzNS43NSAzNS45NSAzNyAzNS4yIEwzOC4xIDM0LjQgMzguMSAzNC4zNSAzOC4yIDM0LjI1IDM4LjI1IDM0LjIgMzkuNiAzMi4zIDQwIDMwIDQwIDI4IFE0MCAyNS41IDM4LjI1IDIzLjc1IEwzOC4yIDIzLjcgMzcgMjIuOCBRMzUuNzUgMjIuMDUgMzQuMiAyMiBMMjUgMjIgTTI4IDI2IEwzNCAyNiBRMzQuOCAyNiAzNS40IDI2LjYgTDM1LjQ1IDI2LjYgUTM2IDI3LjE1IDM2IDI4IEwzNiAzMC40IDM1LjQ1IDMxLjM1IDM1LjM1IDMxLjQ1IDM0LjkgMzEuOCAzNC4wNSAzMiAyOCAzMiAyOCAyNiBNMTYgOCBMNDggOCBRNTYgOCA1NiAxNiBMNTYgNDggUTU2IDU2IDQ4IDU2IEwxNiA1NiBROCA1NiA4IDQ4IEw4IDE2IFE4IDggMTYgOCIvPgogIDwvZz4KPC9zdmc+)}
+.ki-enter{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCA0MCA4IDM4Ljk1IDggMzYgUTggMjggMTYgMjggTDI4IDI4IDI4IDE2IFEyOCA4IDM2IDggTDM4Ljk1IDggNDAgOCA0OCA4IE00Ni4xIDQzIEw0NSA0MyA0NSA0MSA0Ni4wNSA0MSBRNDYuNDUgNDEgNDYuNyA0MS4yNSBMNDcgNDIgNDYuNzUgNDIuNyA0Ni43IDQyLjcgNDYuNDUgNDIuOSA0Ni4xIDQzIE00OC4xIDQ0LjEgUTQ5IDQzLjI1IDQ5IDQyIDQ5IDQwLjc1IDQ4LjEgMzkuODUgNDcuMjUgMzkgNDYuMDUgMzkgTDQ0IDM5IFE0My42IDM5IDQzLjMgMzkuMyA0MyAzOS42IDQzIDQwIEw0MyA0OCBRNDMgNDguNCA0My4zIDQ4LjcgNDMuNiA0OSA0NCA0OSBMNDQuNyA0OC43IDQ1IDQ4IDQ1IDQ1IDQ1LjQgNDUgNDcuMSA0OC40NSBRNDcuMyA0OC44IDQ3LjcgNDguOTUgTDQ4LjQ1IDQ4LjkgNDguOTUgNDguMzUgUTQ5LjEgNDcuOTUgNDguOSA0Ny41NSBMNDcuNDUgNDQuNjUgNDguMSA0NC4xNSA0OC4xIDQ0LjEgTTM2IDQwIEwzNiA0OCBRMzYgNDguNCAzNi4zIDQ4LjcgTDM3IDQ5IDQxIDQ5IDQxLjcgNDguNyA0MiA0OCA0MS43IDQ3LjMgUTQxLjQgNDcgNDEgNDcgTDM4IDQ3IDM4IDQ1IDQxIDQ1IDQxLjcgNDQuNyA0MiA0NCA0MS43IDQzLjMgUTQxLjQgNDMgNDEgNDMgTDM4IDQzIDM4IDQxIDQxIDQxIDQxLjcgNDAuNyA0MiA0MCA0MS43IDM5LjMgUTQxLjQgMzkgNDEgMzkgTDM3IDM5IFEzNi42IDM5IDM2LjMgMzkuMyAzNiAzOS42IDM2IDQwIE0yMCA0MyBMMTcgNDMgMTcgNDEgMjAgNDEgMjAuNyA0MC43IDIxIDQwIDIwLjcgMzkuMyBRMjAuNCAzOSAyMCAzOSBMMTYgMzkgUTE1LjYgMzkgMTUuMyAzOS4zIDE1IDM5LjYgMTUgNDAgTDE1IDQ4IFExNSA0OC40IDE1LjMgNDguNyBMMTYgNDkgMjAgNDkgMjAuNyA0OC43IDIxIDQ4IDIwLjcgNDcuMyBRMjAuNCA0NyAyMCA0NyBMMTcgNDcgMTcgNDUgMjAgNDUgMjAuNyA0NC43IDIxIDQ0IDIwLjcgNDMuMyBRMjAuNCA0MyAyMCA0MyBNMjggNDggTDI4IDQwIDI3LjcgMzkuMyBRMjcuNCAzOSAyNyAzOSAyNi42IDM5IDI2LjMgMzkuMyAyNiAzOS42IDI2IDQwIEwyNiA0My43NSAyMy45IDM5LjU1IDIzLjQ1IDM5LjEgMjIuOCAzOS4wNSAyMi4yNSAzOS40IFEyMiAzOS42NSAyMiA0MCBMMjIgNDggUTIyIDQ4LjQgMjIuMyA0OC43IDIyLjYgNDkgMjMgNDkgTDIzLjcgNDguNyAyNCA0OCAyNCA0NC4yNSAyNi4xIDQ4LjQ1IFEyNi4yNSA0OC43NSAyNi42IDQ4LjkgTDI3LjI1IDQ5IDI3LjggNDguNjUgMjggNDggTTMwIDQxIEwzMSA0MSAzMSA0OCBRMzEgNDguNCAzMS4zIDQ4LjcgMzEuNiA0OSAzMiA0OSBMMzIuNyA0OC43IDMzIDQ4IDMzIDQxIDM0IDQxIFEzNC40IDQxIDM0LjcgNDAuNyBMMzUgNDAgMzQuNyAzOS4zIFEzNC40IDM5IDM0IDM5IEwzMCAzOSBRMjkuNiAzOSAyOS4zIDM5LjMgMjkgMzkuNiAyOSA0MCAyOSA0MC40IDI5LjMgNDAuNyBMMzAgNDEiLz4KICA8L2c+Cjwvc3ZnPg==)}
+.ki-esc{--i:url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogIDxkZWZzLz4KICA8Zz4KICAgIDxwYXRoIHN0cm9rZT0ibm9uZSIgZmlsbD0iI0ZGRkZGRiIgZD0iTTE2IDggTDQ4IDggUTU2IDggNTYgMTYgTDU2IDQ4IFE1NiA1NiA0OCA1NiBMMTYgNTYgUTggNTYgOCA0OCBMOCAxNiBROCA4IDE2IDggTTQ0LjggMzcgUTQ2LjA1IDM1LjggNDYgMzQuMyBMNDYgMzIuOCA0MyAzMi44IDQzIDM0LjMgNDIuNzUgMzQuOCA0MiAzNSA0MS4yIDM0LjggNDEgMzQuMyA0MSAyOC43NSA0MS4yIDI4LjMgNDEuMjUgMjguMjUgUTQxLjU1IDI4IDQyIDI4IDQyLjQ1IDI4IDQyLjggMjguMyBMNDMgMjguNzUgNDMgMzAuMjUgNDYgMzAuMjUgNDYgMjguNzUgUTQ2IDI3LjE1IDQ0Ljc1IDI2LjA1IDQzLjU1IDI1IDQyIDI1IDQwLjQgMjUgMzkuMjUgMjYuMDUgTDM5LjIgMjYuMDUgUTM4IDI3LjE1IDM4IDI4Ljc1IEwzOCAzNC4zIFEzOCAzNS44IDM5LjE1IDM2Ljk1IEwzOS4yIDM3LjA1IDM5LjMgMzcuMSBRNDAuNCAzOCA0MiAzOCA0My41NSAzOCA0NC43IDM3LjEgTDQ0LjggMzcgTTE4IDI1IEwxOCAzOCAyNiAzOCAyNiAzNSAyMSAzNSAyMSAzMyAyNiAzMyAyNiAzMCAyMSAzMCAyMSAyOCAyNiAyOCAyNiAyNSAxOCAyNSBNMzIgMjggTDM2IDI4IDM2IDI1IDMyIDI1IFEzMC40IDI1IDI5LjIgMjYuMiAyOCAyNy40IDI4IDI5IDI4IDMwLjYgMjkuMiAzMS44IDMwLjQgMzMgMzEuOTUgMzMgTDMyLjA1IDMzIFEzMi40IDMzIDMyLjcgMzMuMyBMMzMgMzQgMzIuNyAzNC43IDMyIDM1IDI4IDM1IDI4IDM4IDMyIDM4IFEzMy42IDM4IDM0LjggMzYuOCAzNiAzNS42IDM2IDM0IDM2IDMyLjQgMzQuOCAzMS4yIDMzLjYgMzAgMzIuMDUgMzAgTDMxLjk1IDMwIDMxLjMgMjkuNyBRMzEgMjkuNCAzMSAyOSAzMSAyOC42IDMxLjMgMjguMyAzMS42IDI4IDMyIDI4Ii8+CiAgPC9nPgo8L3N2Zz4=)}
+.ki-pause{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABOUlEQVR42u2XPU7DQBSEv7UxCRF/JQ00lIgCRMVl4AxwExpuRJkUUYo0IMEJiCL/BOxHszLx/sjBAQrYceHVG8/O03qLeRDw56G89cioCILUrLKUVc2uYdtB5dtqwAXbiOYFxQvjJf6UwwY7Z8h8tT4i4Jh7fSSfzxNXxAAk3PBo8XccaHULEuAWISUjJyPTb+GVHQD2EaTBphQI11rdwIbTJOcNRb9RW7Cr+xMWFptRsuc7EFc1sf5OvHRLNi1dREy5ukG3u6XWNeiEYBAMgkEwCAbBIBj8a4OKylEtHas2jSfZ9YnIrQ22dPJRxGRGazk9I+t5DQSYMnMEwREFAAUjzgyux4ypVrekMYUw4JIj4+N3hkz0+oRzozXFMw+kqK+MIT84Qiki5whV1kHYNUJVv959QMD34ANyWWQZm49nvgAAAABJRU5ErkJggg==)}
+.ki-audioOn{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACSklEQVR42u3Xu2pUURTG8d8+Z3IkKihklChELUQk4B0bbQRrbUQUfArBZxAbn8DWLjEJiJWNtTfEQlGCpIt4q8w9c7bFjJPMTCY5J5mAQlY98/3XWnvtb+3DTuzEPx+h5O8TKXK17UknKZ9YWko+V3XLWcu+bU/2VSOi6J3rLfX0IFIcMCqaNyd6i75eyz8RLYlyy6Z6CajLjzXko1w02TtABVXjomV5E/ClBVBR2bx8UDWxSr4TkJaex3XlWwFBwG03NtOytClfWyXfCkhw2U/TrpStopv8akAiOOK5KJp0vnFiG7pTRcUuiQHja8ivADIJbooWLIomHBaKX799xtaUb2/RXndFNQtq7mzUpgqumTZl2o+m2HqAgOCBaE404kC7hXQWtMegIwYNFHLNKBWN+mQXLhpq/08noCaaFwsPQ47XXghmHC0CqM928UUUZZhCDVn3FdKbzRiKAP4eZpkm7WmI52vNTac99Je6kMsOuoB+s77TmlqlLXd++WBRZr/DiBueRsAVV9WkPppuB3SPYa8KXLSAqqdyM6KHso0HJJHJ7MZpr9p8tNOLGGos0uinS8XcqB4Zznq5jtllUty25LcluXtl31l1RGcVKxUEQZ/7ouixQ9KyY79SRbeFU2/SC88Mbm6rZTjXhmhdmQHHHC/T/U7EmUaj1t7JyVY9oa8N0fmqSLZqOX041UTkcp97+7Kr93fYG9GcWYu+9hpQR5z0unEOj4oeaihlazXHncC8934IJRy39AfINn5ChcYO6Hn2O/Hfxh/bTD73073D0gAAAABJRU5ErkJggg==)}
+.ki-audioOff{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABd0lEQVR42u2XwUrDQBRFzzRpirpQaARxLSIFtX6Ibv03+wlq63dYFXHhQkRciohLW2syz8W0aUxjIeQFFHp3geSe9zIz9zGw0EJ/Xqbg+zU8wBJXU06teGFeIXtLyDFtIl6rqT7kFEG45ehHPwrygHXOEIYMEG6Aurb9OcIXgiXiWRPg7Ltje8EiPOoBfCCkhxBhE8CTFsDHEHKRslcF5NkrArzEPk7ZqwF+sy8NMPj4NKjRpJdjr9bBKt1c+4IAP/MUccgJnzSo0wRM4bydCwBYYQNJbI1eAE8UIwwR/YRPL7MpX/k8QEUzaqrJblGLstl4WNLrwM/UDu/cMyJgjU1I7Sd1tehrHLS8VQkIWAb26GdyVDUqAqDNpX7YZRGzXSgOnGkXlQycCeIgg1AFOMT++EdVAnBGaYQ6wFntJgiL5UEX4E58i2uEAR+MeNEGOMQOV+N16OTmWMkLiEfMFtvAkDveMHpjqcT0KH6Fcl9Y/eoX+rf6BpAF8oBDTjAbAAAAAElFTkSuQmCC)}
+.ki-musicOn{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACOUlEQVR42u2Wv2sUQRTHPzO7exf15LZWEFSIWAmCiAoJWisINlqKiGidQlIIWqTWxr/B0tJOLGwipgioRUAIWKUyJMa9/THP4ibL7e7t3m5ur5F7wxU3P973fed9972Buc1tbqrmLo2uWBcMZtZhqGkYwDJn6Jfs3mOHLbaOGr0DPOQXUjF2+cwVu7exdYGvCBFByYiIEVaBTvG4WwskwaDolqY4oFOWZF2Th67IlkLjlK3rFsU81txGuwdjAvTaBOjOkoFBc5P9jIATbvCasB0AAT4hudkTgKnKkW7E10ePDA9Nr90kZ0uaLvCZGiBrsf3NBMDhNve5xHmEhTHynQJAIXissYLU+QB1YwABnrNSrZ26DBSgCo6u8gpTNzR3YrQBpNpRgMvLsZejmgEoBDiJj0/C8Ux6bxWcqXI9uRXVc4nHXOdcLlsKL8dA6BCzbRnXbpN32EEwhAwwCDGCDywQk2QaZojwhQv1JaOBa/wkIcCkbg4BOvyw/4YjQjA8m9CUcr3L5z1CkInzEEDx1DoOCYkQdnlBr677YVbu8ptoJPohgKFvL3CVb+n8Jo+aqUgBp+kTFtZUWvLW+MA9eij2eccmHklZ03dLklw8YDhIVeKxwcaIj6jphxbg5ABCOrzlwMoywklPxpMralGil9nGMLC3bAgQPnKqrfe2xuUJMcIfAv4SIqyz2OaTXnGMB3y3DBLesHjU15GqqEQXOYug2GOdgZ1rlcV0faPGo1CPKL/V6Of2n9k/kUbcxRoN2EAAAAAASUVORK5CYII=)}
+.ki-musicOff{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAADKUlEQVR42u3XzW8VZRQG8N/MvZdSQFti3FAr1mJbMCZowgIbwI+4MTHxY6GsSFzIwsSEEBNIjHHhAhDt9U8w/gMuXDX4waIJtDFpFKsGNVE3Woh8Kbe9nZnXBcPYlPvV24ULe87u3jPznOe8zznnHdZt3dYt6jCq1DIyyGT/UapR27wzqbJxg/qbRN8w76KLa8ntsD+EFn7NlD0o3flwuelLg632GXDWnN9EqIkbxpZs9rhnzChJO816A46Yt2Taw3jK74K0Yf6ZmxLH8qdWWNziyIbcK7XHR8Z87qBL4oZaicRtVNbAKnjJNYmaYNYoDrgkyBpwWBAcb8yg+cGWbfauTGJRcMFD2OeyzMIyr3cLQCyyxSlBoi6YM4xxV1bHoNwUIBP7yzsiR0USO33qWVP22lKoJzWuqt59B8TodVqQSgTf274i4oCg1opB3BIgE6t5ywdiscyoSdvFuVfEBZuWObaGiCw4bkIkFoyYNCDLx1vorAitLYjUvamad8eIMwYFEYJk7VOyjBOGUS1U84P7sc2XliTdyvS29WDWjK0rIB7Afn8KsrUDnBdMugfVopO/M1R0d61bgEhko8iMIDhjIyak+dib8yCeNC+Vdc8AzgkWBf1iVAuIC3bgab8KzaZp6wV4l0GP2OUbQV2mL9fdhESQCL42iidc9fZqACIR9vvYT8WxJoI+lAwUEHXBrDG84uXGG02THcVz5gWZukVZDtCPTc66D9UC4iujq59Ae/0stbBs+t8G6HHFZ4ZzFrckOmNX5/nHIv0+ydsn3AEQOSL41qM4XUBMG+0UooznXbW0Yncl+SETOeZH172o4n1pDnG+U4gKXs9luZJBX1HC3d5zVKzHKalUTXDOWCd3xQreyHfxcq+77u6cQaUoZ2yDk1Kpm4IpO9oP0Apey/Xxry8Kqsv2X0mPCkpiPU7KLLksOJS/oY1EH/OLrCjSrRp/YVuT+FivE0LRdnG7JouVHZYI/ragpi6YNtIypU1e8Krdnfdxr4PmcgapD420PL6o+WU6anozZachQeSGaYv5b+1v4quaRqtZrV184cTFvx2t93X739o/O6mU83/U5IAAAAAASUVORK5CYII=)}
+.ki-warning{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACqElEQVR42u3Xv4tcVRQH8M/7sWuyhixJ0AQFf6Qw+ANtgkGMpoqgoCJaBRRSGZAUEZtkC6tYWdnqX5A2dluIgtgpRohIxARdEi1UNCyJM3vfsZib3ZnN29nZ2QmI7LnV3HfnnfP9cc6dYSu2YiuqDZ+vFP+dcjb4lVLjKU/b5dqdqL7AYRcsuuQdlJOnZ6eLQggLdqgnz/57wpIk6Tg5niJr01Pb72eNEBrhkgfVk/PTFD7O9ERO8lHen0CUpjzrDyHpuKkjCb86ZGoyNNX4NFOzgqBxDtOTkLfykr+E8KOTDnrfZSH87qh68xhqfCl0hTfyzjGhI8zn55uU94R/hCVhNptzX05ww/HNSV0q7PGNkCwJO3NH7xW6kvCVWcX4XT2NMxqhWUZQZARdjbDk1PhSV3jCD0Lqo2glQW//WweGdXW5jrxve0SseaoUnnR8vLFR46iFXGc7gt6zy55f203lkPlTedP90lCUpeQhxzZ+z9V4zW+aXH+0uCgyhsZVL26sI0qV7c5nt0cfRaVK0UdR5DPnbFONbteevDekvvmThCP5+QsDCRrJordGx1DiXl8MvKQ36uYdcdjLPls1+npjY/eoF2mt8q60zP76q5EkJ1SjYKjxqO+lgfpvrSvmfd6y35VcsH/9jijUZpxdRc+t9Z1XzNrn/HJ39KcIc7atZ9gKz7iWR1n/SsLr+dTjLQUkHQsODtehUNrtkwF79tv0brXtCntaEXaED8wo1sZQ4TnXLbUI3AhnVbjLhznhagzJTx4b1KG+7dfbPXbotlwiBU474KoHvNoqZqnrYfe5uNozKxH4xRV7dVWiJUlPhZut9CZT/vT3ek02bW5k/9++5sxktH3AB+sIuxwa4xIMheu+tnin/9IUQz8um3XcaFqU24r/e/wLQCGbGceZTwgAAAAASUVORK5CYII=)}
+.ki-target{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAD4ElEQVR42u3XX4hVVRQG8N85995xZkyzGMvSTMhQGigVH+zFzELRKKQSHyIKCQIJeiqICKKgyOgPFVQ4+FDQQ0IUmJAklfSPCH3oIYqsSBoVnERLvXPvOWf3MNvT3HHu3BnzocC1OC/nrL2/vff61rf24YJdsP+8JZOOSyUt0UEhCOdnEbW2X6qdlph0nLwiw3TXWuCS8n1h0M8OjIo4J4AUhVnWW2u561q+nbTfl/baJajJzuWwUnCXdwVBkKuP8pF3f3rTqills7SK1EIvOyHINWQxqaGEaxoWBL+5V01lahCJLqk3BEFDEUHqTkeva8gFuWHBX7agNhWICh5wXEMWQcI4PgLdFBy1AenZEEmb0y9s8po+hRSZqiP22Fnypctqa8xTSCRyFYM2+0gymWRXpW7wY1xb0NT0jKWjSAozLPWcIbk87nCfhRKVyVX31vJY6oItqnHdPXr06NYFau4p018XPDoZNlVxo0FBFkFekKIypp5rkcZPxKhMcEB/zN8Eq0/wdDkos9vlsV65zTYDttlqdTxKerwj14gjHi7nmKC45tsTGZIJ1qGiiu2OlzVwzEuoqWKDIFdoCN43uyzRtvS82VAspGCn2ajhEXkLRU97EF242meCplwwaMnEAFXcKcgUhgXPxuAljgijIHLBAYsi918UDMcdr2zNQjoOgy5GJlFgv0I3bndpS3SCK61Ft+AXBIkmLhpP0NpbESdbEIk6GqDb/M60TDtI+Jnv+bij884NIG0zLInPFWhgj3qLCAQcsxdNzCwnD2NB03GO5FdDuqIK9euVq3jPPgllkuErH6pqmOX6qF/TDDoU4Seg6SLfKGRyhZ/0oyqx3HctNP1af+zWS/ygkMsUPnHVxJlNJWZ6KwpdXfBkvFPQa5fD/jDkoB0qSFWlpVg0BK/o7ZT4Cu4zrKlQyJ2yIUpFiltsdLdlqES2r3NEHiu5bn1nZqYSV/s07iFX+N2mWITTyqhpaqjYaH8UuqbgA3MmVqJ/9nC/k5qxVQbBQ1FLE2nZt6Z7vKzqXOa4OyZRWUhVzDQQy/+MKr1qlcvUos9xqwEhttRcXfC83rNbf9JmD4VrvG2FXCoRFCqGfO5wjJhnpRky1Ujd1G6bDUrblOS4orcsynYuRDEe2/KDIIuqu7hTqxkPYp4dQstRNaI348mPXMAG9E11elHr53rKMUFhWCYf5WeuXYc8pi/2jCnbyJrW2B4nG+snvO6mUZHncLtOBcEMy621wmKpgFTT977wsW+dksTecY4/IElkRsVcfeW7wlEHS8b969+QdtepSVx4kymAjI09Tz9QF+x/b38DCPfVgbrMTGEAAAAASUVORK5CYII=)}
+.ki-star{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACVklEQVR42u3WP2sUURQF8N/MziaB4HYSJAYFQcU/iCCSSixSqHXwc9gFi3wBbS2sbOwVrKyCpRBUglhoCgNJkdVCSUTj7uw8i51szOrOzmq2UPY+GJg38845975773uMbGT/nUWi4cLvPYdkNbXhgScq7rsvkgwHnluC4Hb+duDw87a0tDTNHzRFBZfVhXzUXc5nDyh3EtOWBS0hfy47IjmYfKoYx0NB1vGgJXiEib/zIlJVBXelufqfKe6AqurgnkQqnWWz7kn36Q/5W+qe2Y6USnmaRAymLHpuowP4u7HhuUVTIC6fWeNuemLNzk96fx27szvWPHHTeH/gGDMeWLfVAemlvfv7lnUPzOQo+wpov2WOOwpCid4Zdf485JDjsv5JGblhW9aVNf1GS2bbDVG/xG1rXhQ0ByJoChbLnRcxjlkaiKIpWHKsO/5FjW1OvdMa+ocnqJsbpAEmWJBK++RQO49SqYXB+mssVvO4VJiagsdq4nLh2bUqrtssqOG9Ytt0LV9hEB+Y9FSQFhKkgqcme29vkVtjJVVVi3K/iCAT+oIHfPZFpde/cWHRxaUIPslUexEkPRfGvvv6y2yGuKta45xoIA+CxDcfkeXAqQYqKmhI+7e1Yg/afbJdp+1jvy1lBReMgYZIlkv4AwJoapkAm5a9tuoVLjrlkvP5OdbwvihExR5MSzzzzgur3viQf1nBjJPOOOeK00LRhTgqOBlarjrspXWNXEyUb3KmlVfKWSe89VrcK1BR6Z3K9kHEYpFm2Rt/0fnW7kW9KyXqoh7ZyP49+wFauodyigzgegAAAABJRU5ErkJggg==)}
+.ki-trophy{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAACQ0lEQVR42u2WPUscQRjHfzOzewqCKUQ4EQ6LcAEtUglBSGeagJVdqnyNfIGk8zOkSqdlmqRLkzagQpY0prryIpyytzv7pHA972VmdiIksdj/wsKyzzzvz/8ZaNGiRYtGqODfBBOhw1I+yAgSSl7xDBuMwmL4ygeSP49iGThBIp6TWtrj5yIMBkUHYUhBQRpwoyBlyBIdBMFiYwzciOXAFSkSNCCkXJGTx9VAIaQ85zU9AJ7QRYKdJigGfAfgJ+/5QoFCfOIG2OUiKvOu54LdWssEeiGeLXrkWEpyqqh2qMgpseT02JrPSuJImiAYT31c0CzVBXekUzuzWgBHbHAMFEHlBXDMBkfgzr72lA6GDBhFRTBiwLA+RZyBm+SpKCYCg/KnUwdbMBYSKtBfhg7QoGog8yhJv4Ecaeigu04SP1VoJ3koYJNt1hpXkgLW2GZz6mRwg8EhwvW9iOIa4XB+QJO5oYdzMvqMESzJVIRmxjuZIuaKEoNimYzzWkuQWw84u1cEZxwsMrRyjI2lzxtWqCb+K4SXrMxM78cpYqjQjHhHhllcOXFbDjKECqnfWexJl7ISUxPFLVWkFHRmZDqskk7a2GIRStfiTzx3hcVAx3Nfl3GTnHiKLSQ85QWrCApNxfqkYgpY5y2aCkFxySe+UYZWpcvsPqfR/XPKvs/ZxDvfe+zwC4VCUMhcDWA8+SPssMdnN+34DXSBRw0Xszt0fbymPAYq+jyemoTw0tf8IENHXhL+1eVXR26DW276H963eBj4DamDFjFPjsoYAAAAAElFTkSuQmCC)}
+.ki-info{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAB9UlEQVR42u3XPWsUURQG4OdOJpuoq4KgIBJECFb+BcHOwtpG8B+I/0CbNJY2gl2wtlBs7LURxEpsAum0EBPJosHNzse1cEk2upmZ3Z2tzLnNDPcy7/l633uGYzu2WS1MeDoZPpVi+84kFW8tRBBEZ1wTUPhoV6JsN5Ur1m3Z9t1XT1wUJkxwDUDHS3FkPZM0TVOz7N8TZQqFQi6Tu4u0HYBFfFIo9/0vld5gabLOqLLuoYxHnJ689apsSxyBCKIvQ6AWAEo8lciHHywVEm+bADQv87LnolxfXyFad95Ce40acMEjA1G064FzzWgaGvi+MDw50LXqJH7a0G+XyVPXrzqCVO62h7pKgX1xyLzzwePZY1jGq0MCcbB23GnC5KQBi6N8DMBZ9xnWpzIJ9RwIY3SzFCy2U6jkSD/L2QEiNvTs6M27JdkUR9S0EL1voqZpgxiDRdm0opA2ErpEMVc2zp3u/zdA2siJdOwMFHSk8uoGqAcISr+Q/7MzMDCgWlMXar2PrrrhlptO/CXvidKK6Jtk2rs5SHS90Bujpn9Y/cNrl6ef8TpYk4n2RmTiAGJPVFobnpyiixJcl8p0jijynuBK1c1YX+SevuLIMmai3Vm7aLlidwmnqiIINSkqrbpUeWMEn23Of4SZafCqOzOXH8Jja89+A7e+uR9f8NJfAAAAAElFTkSuQmCC)}
+.ki-signal{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABsElEQVR42u2XvU7DMBDHf3aiUhASXwsCoUqVKoYO3XgDhAQLCwMvwcIrdEPMfQQWFgZegg2pS4tAYmGEDRea5FiMldAUNU0q8ZHLYl/Od/5f/nd2oJRSfryo3B402noRIqJfiGCdHdaI0Lxww1ORm9PAFpeIe66oW30h4gG7CG8YBhgGCIeAHzfycwapEBKwAMArIZU0mHlE8JwPjTfKIj1r0vgZlvpuOxEBMtkyP0MyhtNAmjzABsccoIGIay54KqCGEoTsYBzfDR1gDthHnN4gHE1HU03IHlVCO6+yNylBsnxksW1NkMnTozN8ZJUIVniAHA1rpuKP6TDaFtR7sQgUsMQp9xgMhh4nLOY7NfTIbIczNokQImqc08qXyFEEK8AAjUIzwGO5SASfdFQuYAZC/lWalgHKAIn6GD/LGCBMHcdLLn42hGNWpnZTAQI8Xq3DIVUC+84QurGPsaM0a/keT5N+7DrbpQFUgHZMK7SttkE3pu3T/JoVNXLu+mxTQ1AIigfuCFEIq7SYd2hueUYheDSoO+tHegT5+1fuHxAd04q7zqoE9MjtMt26lP8kH1J2jtnDAVHrAAAAAElFTkSuQmCC)}
+.ki-return{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAADAElEQVR42u3WzWtcZRQG8N+9c2cmiDSxBlRKVRA3sQqiqOCmVFFQN4oUK4ggrbiwUBDcqlvxT1AEQRddiBS1FAtCBReCC60uJLYWC1ISSVqTmjgz9x4Xvp3MTCbJJMaFkPNuLjP3vs85z3nOBzu2Yzv2/7dsk2/n8vQcQiW205X6KncyTbX1nRw1glry9n5TQqY045KzoBDKfwfQ0DLmoCfc7Q4hU5kz6yfnfOxb1LU3R0fDmCLBN3GXDyyKIedH79mHxlZ4r8s1cdhZIbR1VOmUOtraQvjB06iNrqsJb/nc8+mXIxaESjU0go6OMOOZUSEKHFQJcz4z5Sm/C52hl187LWHGo6NB1HFMJMYvmE16Xzn/EFStgjhtr3wQIh8KUgqFEG4z2ae1Skcmk8v6yqzQst+Tq0uvWCcTGWJAyrnc98KCSbcbUyUXM7mal3zhnFy1EUVHheWhbB93n3Hjdplwp1Mi6SiEZZWXB2sr36Rwb3DBFVf84bJph51S6HSrPXPAbrF++a4fQeU3jyUva9gvdFLCS+GSe/vdzjfd8m5xwrNCLnDeV2qJ81zbTW7sJynfdHWHprdJABedodvqytUtI9/k5WSWfZOeyYa08C0CREreRa94LnmbafTVScagRIuRL88x41OvWpKrZGo6pjwiUvWGpstmR2kV/SoqhTDvpIeQq3Xj3u14TyW0VU66eSNe+gFKbaH0tUPp36z73pR3+wrtL+H1wbwUa1JCKBVy533oTZWGjjYy9zhg0gv2anVVU6qb9yXytQfoSjetLAjhZx95ALUeV64z3SWlt59W3tDceAjX8aIQFp3wcJrJvZ9NCFe1Um5W2vUZe0aZCJnMHu/4xBENNFd9Mp6mWO9Uq8x5fFTZr4z64TkaH5hwLR2Ljio22pH6u77uVjFou1xNE63StiS0vabo2fpGimJtX673iyV/Wk5Z+M4hNdkW+tqaa8H7XRWddsy+9Va4bEsQt3oQYd60X1Eot3MNHsxXbfvW934RXFvhd2zH/mP7G+0beDajV0zhAAAAAElFTkSuQmCC)}
+.ki-exclamation{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABMUlEQVR42u2WsUoEMRCGv2TX5cDazmcQC0F9CK18AEFf4d7iXslWGwuRg2tsDl0sDhSF40R2Z2yGvetMJBEO8qeZDAl/ZjKT/FBQUJAdLmJlhTdb6NGti2CXU45wgHLPHcuUx6iAMS1qo2Vs3kTYAWYoXzaUmXl/RR1MMkJoLEXCKHSbDyaQjbUeSU/g/lYcPneZFoJCUAj+oZPriMMoYo+dzxHB1D5NT4VjmjaCDphQsWfzBRPzbhM8zWA34amtI6rom2NqYMlDyv94XQxXvPLOG09cp+4gj+OEz0FVfHCIi5A8QariFqWjp6dDuInsoQCClh5BUQShDZUt4Zl8Rk1LCB2L9Fd8jqKsWKEolzkeyjPmKMqci/D8x1XCAfvAC495ernasFyeCPygTQsK1vgB3rVVL33bHpgAAAAASUVORK5CYII=)}
+.ki-arrowR{--i:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAABt0lEQVR42u2Wvy4EURTGf/feWTQ7Sg9AIxKWhk60Kq0EGxIqwit4ELFUXkNrV0MjdEqNCHbHrrlHMbtixswucqeR+W41f3K+8/e7BwoUKKB+/b9BASE2b9d0PhGUmWeSNmc8YQjd+33IA4JwzChg3NfrESHgDaGG75pCAQEhguUd4QQf5ZJCAU0EyYtCAa0uQY/iFB/dj8L79sZ0Oz2NQGJPGss6sMuLu45qfkYQRREinFDOjsJLeOixyDbj2IxBGv6WNMsGsMsretB0G6DCfczHwSeKokYZNWi6DbCMEBBmniwKy3E6hZdCJD/VmS+JEqoI+zwnE+U5a2DLJsIBz4luS0lR65dV6J0OwhF+XEK1YympMJYXgcVwySp38SrolBL/BSGaS9a4xQwqskL6DIxO7TrB0KDKTX/JMMAC7T8NWoOp9J5UCd999ljJFAqYS3wRBE2DLa4p0XEvdu8IdaaB0s/kWuFleq+QWMRR7uvscMUQ7XwunDoVYCivK/PCpfmvEfTMz7o0HxE80SYgQKgz49Z8hLNuiiLzJfer4wRLjCCcu+r7/nOfw/Lb2x5sHotvgQL/FR8Pdw0My7CaQAAAAABJRU5ErkJggg==)}
+.lab .ki{width:1.35em;height:1.35em;margin:-.2em .25em 0 0;opacity:.9}
+#ctrls{display:flex;gap:6px;pointer-events:auto;margin-top:4px}
+.ib{width:36px;height:36px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink);cursor:pointer;border-radius:4px;padding:0}
+.ib:hover{border-color:var(--sodium);color:var(--sodium)}
+.ib.off{color:var(--dim);opacity:.6}
+.ib:focus-visible{outline:2px solid var(--sodium);outline-offset:2px}
+#dump{position:absolute;bottom:calc(150px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);pointer-events:auto;display:flex;align-items:center;gap:10px;
+  font-family:var(--display);font-size:22px;letter-spacing:.06em;color:#fff;background:#c8261b;border:2px solid #ff7a6b;padding:10px 20px;cursor:pointer;border-radius:4px;animation:dp .6s infinite alternate;box-shadow:0 0 24px rgba(255,60,40,.5)}
+#dump .ki{width:1.4em;height:1.4em}
+@keyframes dp{to{background:#8f1810;box-shadow:0 0 8px rgba(255,60,40,.3)}}
+#hint{position:absolute;bottom:calc(150px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;background:var(--panel);padding:8px 16px;font-size:17px;color:var(--ink);border-radius:4px;transition:opacity .6s;white-space:nowrap}
+#hint span{display:flex;align-items:center;gap:4px}
+#hint .ki{width:1.7em;height:1.7em}
+#objtxt .ki{width:1.2em;height:1.2em;margin:-.15em .35em 0 0;color:var(--sodium)}
+#shout .ava{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;border:2px solid currentColor;background:rgba(255,255,255,.05);align-self:center}
+#shout .ava svg{width:26px;height:26px}
+#shout{align-items:center}
+#shout .stx{display:grid;gap:1px}
+.keys .kk{display:flex;gap:3px;align-items:center}
+.keys .kk .ki{width:1.9em;height:1.9em;color:var(--ink)}
+.stars{display:flex;gap:4px;color:var(--sodium)}.stars .ki{width:1.7em;height:1.7em}.stars .dim{color:var(--dim);opacity:.35}
+body.touch #hint{display:none}
+@media (max-width:640px){#dump{font-size:18px;bottom:calc(190px + env(safe-area-inset-bottom,0px))}.ib{width:32px;height:32px}}
 @media (prefers-reduced-motion:reduce){#timer.hurry{animation:none}}
 </style>
 </head>
 <body>
 <div id="hud">
   <div id="tl">
-    <div class="lab">A bordo</div>
+    <div class="lab"><i class="ki ki-exclamation" style="display:none"></i>A bordo</div>
     <div class="row"><span class="big" id="cargo">0/10</span><span class="sm">fardos</span></div>
     <div id="slots"></div>
     <div class="lab" style="margin-top:6px">En tierra</div>
@@ -166,9 +225,15 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   <div id="tc"><div class="lab">Amanece en</div><div id="timer">4:00</div></div>
   <div id="tr">
     <canvas id="mm" aria-label="Mapa de la ría"></canvas>
-    <div class="lab">Riesgo</div>
+    <div class="lab"><i class="ki ki-warning"></i>Riesgo</div>
     <div id="riskbar"><div id="riskfill"></div></div>
     <div id="risktxt">Sin contacto</div>
+    <div id="ctrls">
+      <button class="ib" id="bMusic" aria-label="Música" title="Música"><i class="ki ki-musicOn"></i></button>
+      <button class="ib" id="bSound" aria-label="Sonido (M)" title="Sonido (M)"><i class="ki ki-audioOn"></i></button>
+      <button class="ib" id="bVoice" aria-label="Voces (V)" title="Voces (V)"><i class="ki ki-signal"></i></button>
+      <button class="ib" id="bPause" aria-label="Pausa (P)" title="Pausa (P)"><i class="ki ki-pause"></i></button>
+    </div>
   </div>
   <div id="bl">
     <div class="gauge"><div id="thr"><div id="thrfill"></div><div id="thrtgt"></div></div><div class="lab">Gas</div></div>
@@ -179,8 +244,10 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
     </div>
   </div>
   <div id="obj"><div id="objtxt">Rumbo a la nodriza</div><div id="prog"><div id="progfill"></div></div></div>
-  <div id="radio"></div>
-  <div id="shout"><b id="shoutwho"></b><span id="shouttxt"></span></div>
+  <div id="radio" role="status"><svg class="rico" viewBox="0 0 34 40" aria-hidden="true"><rect x="9" y="12" width="16" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/><line x1="21" y1="12" x2="21" y2="2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><rect x="12.5" y="16" width="9" height="6" rx="1" fill="currentColor" opacity=".55"/><g fill="currentColor"><circle cx="14" cy="27" r="1.2"/><circle cx="17" cy="27" r="1.2"/><circle cx="20" cy="27" r="1.2"/><circle cx="14" cy="31" r="1.2"/><circle cx="17" cy="31" r="1.2"/><circle cx="20" cy="31" r="1.2"/></g><path class="wv" d="M26 4 a6 6 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="wv wv2" d="M29 1 a10 10 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div><span class="rtag">RADIO · CANAL 16</span><span id="radiotxt"></span></div></div>
+  <div id="shout"><span class="ava" id="shoutava"></span><div class="stx"><b id="shoutwho"></b><span id="shouttxt"></span></div></div>
+  <button id="dump" hidden><i class="ki ki-q"></i>TIRAR FARDOS AL AGUA</button>
+  <div id="hint" hidden><span><i class="ki ki-w"></i>Acelerar</span><span><i class="ki ki-a"></i><i class="ki ki-d"></i>Girar</span><span><i class="ki ki-s"></i>Frenar</span><span><i class="ki ki-p"></i>Pausa</span></div>
   <div id="msg"></div>
   <div id="ptr"><div id="ptrarrow"></div><div id="ptrlab"></div></div>
 </div>
@@ -283,7 +350,7 @@ const CFG = {
   time: 240,          // segundos hasta el amanecer
   goal: 9,            // fardos a dejar en tierra
   capacity: 3,        // fardos grandes por viaje
-  stock: 11,          // fardos en la nodriza
+  stock: 15,          // fardos en la nodriza (margen para tirar una carga al agua)
   loadEvery: 1.1,     // s por fardo cargado
   unloadEvery: 0.9,   // s por fardo descargado
   maxLoadSpeed: 3.6,  // m/s para poder cargar / descargar
@@ -1131,7 +1198,7 @@ const MELODY=[ // [paso en el bucle de 128 semicorcheas, nota midi, duración]
   [0,69,4],[4,74,4],[8,77,4],[12,76,2],[14,74,2],[16,74,8],[24,72,4],[28,70,4],[32,72,4],[36,77,4],[40,76,8],[48,74,4],[52,73,4],[56,76,8]];
 function musicStart(){
   if(!AU||MUS.on)return;const ctx=AU.ctx;MUS.on=true;
-  MUS.bus=ctx.createGain();MUS.bus.gain.value=0;MUS.bus.connect(AU.master);MUS.bus.gain.setTargetAtTime(.42,ctx.currentTime,1.2);
+  MUS.bus=ctx.createGain();MUS.bus.gain.value=0;MUS.bus.connect(AU.master);MUS.bus.gain.setTargetAtTime(musicVol(),ctx.currentTime,1.2);
   // reverberación de sala grande (impulso generado)
   const len=ctx.sampleRate*2.6,ir=ctx.createBuffer(2,len,ctx.sampleRate);
   for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4);}
@@ -1239,7 +1306,7 @@ function musicTick(){
    ========================================================= */
 const S={};
 function resetGame(){
-  trail.length=0;S.cd={};S.newsT=25;S.idleT=0;
+  trail.length=0;S.hintT=14;S.cd={};S.newsT=25;S.idleT=0;
   Object.assign(S,{sunrise:0,
     mode:S.mode||'menu',time:CFG.time,cargo:0,delivered:0,stock:CFG.stock,lost:0,hits:0,
     loadT:0,unloadT:0,drop:null,risk:0,shake:0,hitCd:0,boundsMsgCd:0,endReason:'',
@@ -1264,8 +1331,10 @@ addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if((e.code==='Enter'||e.code==='Space')&&S.mode!=='play'&&S.ready&&!(document.activeElement&&document.activeElement.tagName==='BUTTON'))startGame();
-  if(e.code==='KeyM'){muted=!muted;if(AU)AU.master.gain.value=muted?0:.9;if(muted&&'speechSynthesis' in window)speechSynthesis.cancel();}
-  if(e.code==='KeyV'){VOICE.on=!VOICE.on;say(VOICE.on?'Voces activadas':'Voces desactivadas','',1.2);if(!VOICE.on&&'speechSynthesis' in window)speechSynthesis.cancel();}
+  if(e.code==='KeyM')toggleSound();
+  if(e.code==='KeyV')toggleVoice();
+  if(e.code==='KeyQ')dumpCargo();
+  if((e.code==='KeyP'||e.code==='Escape')&&(S.mode==='play'||S.mode==='pause'))togglePause();
   if(e.code==='KeyR'&&S.mode==='play')startGame();
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1299,7 +1368,12 @@ function updateSlotsUI(){
 }
 let msgT=0,radioT=0;
 function say(text,cls='',dur=2){ui.msg.textContent=text;ui.msg.className='show '+cls;msgT=dur;}
-function radio(text,dur=4){ui.radio.textContent=text;ui.radio.classList.add('show');radioT=dur;beep(1400,.05,.05);setTimeout(()=>beep(1700,.05,.05),70);}
+function radio(text,dur=4){
+  document.getElementById('radiotxt').textContent=text.replace(/^Radio:\s*/,'');ui.radio.classList.add('show');radioT=dur;
+  if(AU&&!muted){const ctx=AU.ctx,t=ctx.currentTime,n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*.18,ctx.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);n.buffer=b;const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=2200;const g=ctx.createGain();g.gain.value=.08;n.connect(f);f.connect(g);g.connect(AU.master);n.start(t);}
+  beep(1400,.05,.04);setTimeout(()=>beep(1700,.05,.04),70);
+}
 const fmt=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');};
 
 function showMenu(){
@@ -1309,9 +1383,9 @@ function showMenu(){
     <div class="logo" style="--stripe:#0a1118;justify-self:start" role="img" aria-label="Planeadora: Amigos de verano"><div class="logo-sun"></div><div class="logo-main">PLANEADORA</div><div class="logo-sub">Amigos de verano</div></div>
     <p>La nodriza espera mar adentro con las luces apagadas. Carga los fardos, llévalos a tierra y descárgalos antes de que amanezca.</p>
     <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="how" class="btn sec">Instrucciones</button></div>`;
-  $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
+  $('go').onclick=startGame;$('how').onclick=()=>showHelp();ui.overlay.hidden=false;$('go').focus();
 }
-function showHelp(){
+function showHelp(back=showMenu){
   ui.card.className='wide';
   ui.card.innerHTML=`
     <div class="kick">Cómo se hace una descarga</div>
@@ -1319,15 +1393,20 @@ function showHelp(){
     <div class="help">
       <section><h3>El encargo</h3><p>Deja ${CFG.goal} fardos en tierra antes de que amanezca. Tienes ${fmt(CFG.time)} de noche y caben ${CFG.capacity} fardos por viaje, así que harán falta al menos tres viajes.</p></section>
       <section><h3>Mandos</h3><div class="keys">
-        <b>W / ↑</b><span>Gas</span><b>S / ↓</b><span>Marcha atrás y frenar</span><b>A D / ← →</b><span>Timón</span><b>M · V · R</b><span>Silencio · Voces · Reiniciar</span></div></section>
+        <span class="kk"><i class="ki ki-w"></i><i class="ki ki-up"></i></span><span>Gas</span>
+        <span class="kk"><i class="ki ki-s"></i><i class="ki ki-down"></i></span><span>Marcha atrás y frenar</span>
+        <span class="kk"><i class="ki ki-a"></i><i class="ki ki-d"></i><i class="ki ki-left"></i><i class="ki ki-right"></i></span><span>Timón</span>
+        <span class="kk"><i class="ki ki-q"></i></span><span>Tirar los fardos al agua</span>
+        <span class="kk"><i class="ki ki-p"></i><i class="ki ki-esc"></i></span><span>Pausa</span>
+        <span class="kk"><i class="ki ki-m"></i><i class="ki ki-v"></i><i class="ki ki-r"></i></span><span>Sonido · Voces · Reiniciar</span></div></section>
       <section><h3>Cargar en la nodriza</h3><p>Entra en el círculo naranja junto al costado del barco grande y quédate casi parado. Los fardos pasan solos de una cubierta a otra.</p></section>
       <section><h3>Descargar en tierra</h3><p>La radio te dice si toca la Praia da Lagoa o el Peirao Vello. Busca la linterna que parpadea, entra en el círculo y frena.</p></section>
       <section><h3>El barco</h3><ul><li>El motor y el timón tardan en responder.</li><li>En las curvas rápidas el barco derrapa hacia fuera.</li><li>Cargado pesa más, acelera menos y corre menos.</li></ul></section>
-      <section><h3>Vigilancia Aduanera</h3><ul><li>Su foco barre el agua. Si te mantiene dentro, sube el riesgo.</li><li>Con el riesgo al máximo te persigue. Aléjate y sal del haz para perderla.</li><li>Un golpe fuerte contra las piedras tira un fardo al agua.</li></ul></section>
+      <section><h3>Vigilancia Aduanera</h3><ul><li>Su foco barre el agua. Si te mantiene dentro, sube el riesgo.</li><li>Con el riesgo al máximo te persigue. Aléjate y sal del haz para perderla.</li><li>Si te van a pillar, tira los fardos (Q o el botón rojo): vas más rápido y, sin carga a bordo, no hay pruebas.</li><li>Un golpe fuerte contra las piedras tira un fardo al agua.</li></ul></section>
     </div>
     <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="back" class="btn sec">Volver</button></div>
-    <p class="lab" style="font-size:12px;line-height:1.5">Piedras, árboles y vegetación: Kenney Nature Kit (CC0) · kenney.nl<br>Lancha: «Small Yacht» de miguelangelo2k en Sketchfab (CC BY 4.0), optimizada<br>Voces en gallego: Proxecto Nós, Universidade de Santiago de Compostela (modelo Celtia, Apache 2.0)<br>Los personajes y declaraciones del juego son ficticios.</p>`;
-  $('go').onclick=startGame;$('back').onclick=showMenu;$('go').focus();
+    <p class="lab" style="font-size:12px;line-height:1.5">Piedras, árboles, vegetación e iconos: Kenney (Nature Kit, Game Icons, Input Prompts · CC0) · kenney.nl<br>Lancha: «Small Yacht» de miguelangelo2k en Sketchfab (CC BY 4.0), optimizada<br>Voces en gallego: Proxecto Nós, Universidade de Santiago de Compostela (modelo Celtia, Apache 2.0)<br>Los personajes y declaraciones del juego son ficticios.</p>`;
+  $('go').onclick=back===showPause?togglePause:startGame;$('back').onclick=back;$('go').focus();
 }
 function showEnd(){
   const win=S.endReason==='win';
@@ -1337,11 +1416,11 @@ function showEnd(){
     dawn:`Sale el sol sobre la ría y aún faltan fardos. Con luz de día no hay descarga posible.`,
     caught:`La patrullera os ha cerrado el paso. Fin del viaje para el patrón y su acompañante.`,
     short:`Se han perdido demasiados fardos en el agua. Ya no llega para completar el encargo.`}[S.endReason];
-  const stars=win?(S.time>70?'★★★':S.time>35?'★★☆':'★☆☆'):'☆☆☆';
+  const ns=win?(S.time>70?3:S.time>35?2:1):0,stars='<span class="stars">'+[0,1,2].map(i=>'<i class="ki ki-star'+(i<ns?'':' dim')+'"></i>').join('')+'</span>';
   ui.card.className='';
   ui.card.innerHTML=`
     <div class="logo sm" role="img" aria-label="Planeadora: Amigos de verano" style="--stripe:#0a1118;justify-self:start"><div class="logo-sun"></div><div class="logo-main">PLANEADORA</div><div class="logo-sub">Amigos de verano</div></div>
-    <div class="kick">${win?'Encargo cumplido · '+stars:'Encargo fallido'}</div>
+    <div class="kick" style="display:flex;gap:10px;align-items:center">${win?'<i class="ki ki-trophy"></i>Encargo cumplido':'Encargo fallido'} ${win?stars:''}</div>
     <h1>${titles[S.endReason]}</h1>
     <p>${text}</p>
     <div class="stats">
@@ -1350,7 +1429,7 @@ function showEnd(){
       <div><span class="lab">Golpes · perdidos</span><strong>${S.hits} · ${S.lost}</strong></div>
     </div>
     <div class="btns"><button id="go" class="btn pri">Otra descarga</button><button id="how" class="btn sec">Instrucciones</button></div>`;
-  $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
+  $('go').onclick=startGame;$('how').onclick=()=>showHelp();ui.overlay.hidden=false;$('go').focus();
 }
 function startGame(){
   initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();musicStart();loadVoices();
@@ -1373,6 +1452,13 @@ function endGame(reason){
 const VOICE={on:true,v:null};
 function pickVoice(){try{const vs=speechSynthesis.getVoices();VOICE.v=vs.find(v=>/^gl/i.test(v.lang))||vs.find(v=>/^es-ES/i.test(v.lang))||vs.find(v=>/^es/i.test(v.lang))||null;}catch(e){}}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+const AVA={
+  patron:'<svg viewBox="0 0 26 26"><path d="M5 10h16l-2-5H7z" fill="currentColor"/><rect x="3" y="10" width="20" height="2" rx="1" fill="currentColor"/><circle cx="13" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8" y="14" width="10" height="3" rx="1.5" fill="currentColor"/></svg>',
+  mate:'<svg viewBox="0 0 26 26"><path d="M8 11c0-4 2-6 5-6s5 2 5 6z" fill="currentColor"/><path d="M3 12h20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="13" cy="18" r="5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  nodriza:'<svg viewBox="0 0 26 26"><path d="M2 16h22l-3 6H5z" fill="currentColor"/><rect x="11" y="9" width="7" height="6" fill="currentColor"/><path d="M8 15V5" stroke="currentColor" stroke-width="2"/></svg>',
+  terra:'<svg viewBox="0 0 26 26"><rect x="4" y="11" width="11" height="5" rx="1" fill="currentColor"/><path d="M15 10l4-3v12l-4-3z" fill="currentColor"/><path d="M21 9l3-2M21 13h3M21 17l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  radio:'<svg viewBox="0 0 26 26"><rect x="7" y="8" width="12" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="9.5" y="11" width="7" height="4" fill="currentColor"/><circle cx="13" cy="19.5" r="2" fill="currentColor"/></svg>',
+};
 const ROLES={
   patron:{name:'Patrón',col:'#ffb341',pitch:.7,rate:1.05},
   mate:{name:'Acompañante',col:'#9fe3c4',pitch:1.2,rate:1.15},
@@ -1381,6 +1467,8 @@ const ROLES={
   radio:{name:'Radio Ría',col:'#ff8fd8',pitch:1,rate:1},
 };
 const LINES={
+  dump:['Ao mar con eles! Sen probas non hai delito!','Fóra, fóra, todo ao mar!'],
+  free:['Nin un fardo a bordo, señores. Boas noites.','Que miran? Isto é un paseo de verán.'],
   start:['Imos alá. E sen luces, eh?','Bo, veña. Rumbo á nodriza.'],
   dalle:['Dalle, hostia! Dalle!','Acelera, carallo!','Vai, vai, vai!','Mete gas, home!'],
   ollo:['Ollo coas pedras!','Coidado, que hai baixos!','Que nos esnafranos!','Esa pedra, esa pedra!'],
@@ -1415,7 +1503,7 @@ function playVoice(buf){
   if(!AU||!VOICE.on||muted)return false;
   try{if(vSrc)vSrc.stop();}catch(e){}
   const ctx=AU.ctx,src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=1.25;src.connect(g);g.connect(AU.master);src.start();vSrc=src;
-  if(MUS.bus){const t=ctx.currentTime;MUS.bus.gain.cancelScheduledValues(t);MUS.bus.gain.setTargetAtTime(.22,t,.08);MUS.bus.gain.setTargetAtTime(.42,t+buf.duration,.5);}
+  if(MUS.bus){const t=ctx.currentTime;MUS.bus.gain.cancelScheduledValues(t);MUS.bus.gain.setTargetAtTime(musicVol()*.5,t,.08);MUS.bus.gain.setTargetAtTime(musicVol(),t+buf.duration,.5);}
   return true;
 }
 function speak(text,r){
@@ -1429,10 +1517,10 @@ function talk(key,role,cd=8,force=false){
   S.cd[key]=T+cd;
   const arr=LINES[key],idx=(Math.random()*arr.length)|0,text=arr[idx],r=ROLES[role];
   const who=document.getElementById('shoutwho'),tx=document.getElementById('shouttxt'),el=document.getElementById('shout');
-  who.textContent=r.name;who.style.color=r.col;tx.textContent=role==='radio'?'Última hora. '+text:text;el.classList.add('show');
+  who.textContent=r.name;who.style.color=r.col;const av=document.getElementById('shoutava');av.innerHTML=AVA[role]||'';av.style.color=r.col;tx.textContent=role==='radio'?'Última hora. '+text:text;el.classList.add('show');
   shoutT=role==='radio'?5.5:2.8;
   const buf=VBUF[key]&&VBUF[key][idx];
-  if(buf){playVoice(buf);shoutT=Math.max(shoutT,buf.duration+.6);}else if(!VBUF[key])speak(role==='radio'?'Última hora. '+text:text,r);
+  if(buf){playVoice(buf);shoutT=Math.max(shoutT,buf.duration+.6);}
   return true;
 }
 function talkTriggers(dt,inp){
@@ -1449,6 +1537,42 @@ function talkTriggers(dt,inp){
   if(S.time<30)talk('clarea','mate',999);
   S.newsT=(S.newsT??25)-dt;if(S.newsT<=0){S.newsT=talk('news','radio',0)?45+Math.random()*20:3;}
 }
+
+/* =========================================================
+   TIRAR FARDOS · PAUSA · BOTONES DE SONIDO
+   ========================================================= */
+function dumpCargo(){
+  if(S.mode!=='play'||S.cargo<=0)return;
+  const n=S.cargo;
+  for(let i=0;i<n;i++){
+    const z=boat.slotZ?boat.slotZ[i]:-3,[px,pz]=boatPoint((i%2?1:-1)*1.8,z),m=fardoGrande();m.position.set(px,.4,pz);m.rotation.y=Math.random()*3;scene.add(m);
+    const side=i%2?1:-1;sinking.push({m,t:-.6,vx:-Math.cos(S.h)*side*3+S.vx*.2,vz:Math.sin(S.h)*side*3+S.vz*.2});
+    for(let k=0;k<6;k++)emit(px,pz,(Math.random()-.5)*6,(Math.random()-.5)*6,1.2,4,1.2,.6);
+  }
+  S.lost+=n;S.cargo=0;updateSlotsUI();thud();
+  if(S.drop){S.drop.zone.visible=false;S.drop=null;}
+  say('¡Fardos al agua!','bad',1.8);talk('dump','mate',4,true);
+  if(S.stock+S.delivered+flying.length<CFG.goal)setTimeout(()=>endGame('short'),1200);
+}
+let musicOff=false;
+const musicVol=()=>musicOff?0:.42;
+function setIcon(id,ic,off){const b=document.getElementById(id);b.firstElementChild.className='ki ki-'+ic;b.classList.toggle('off',!!off);}
+function toggleSound(){muted=!muted;if(AU)AU.master.gain.value=muted?0:.9;setIcon('bSound',muted?'audioOff':'audioOn',muted);}
+function toggleMusic(){musicOff=!musicOff;if(MUS.bus)MUS.bus.gain.setTargetAtTime(musicVol(),AU.ctx.currentTime,.3);setIcon('bMusic',musicOff?'musicOff':'musicOn',musicOff);}
+function toggleVoice(){VOICE.on=!VOICE.on;setIcon('bVoice','signal',!VOICE.on);say(VOICE.on?'Voces activadas':'Voces desactivadas','',1.2);}
+function togglePause(){
+  if(S.mode==='play'){S.mode='pause';if(AU)AU.ctx.suspend();showPause();}
+  else if(S.mode==='pause'){S.mode='play';ui.overlay.hidden=true;if(AU)AU.ctx.resume();clock.getDelta();}
+}
+function showPause(){
+  ui.card.className='';
+  ui.card.innerHTML=`<div class="kick">En pausa</div><h1 style="font-size:clamp(48px,9vw,86px)">PAU<span>SA</span></h1>
+    <p>La nodriza espera. Quedan ${fmt(S.time)} de noche y llevas ${S.delivered} de ${CFG.goal} fardos en tierra.</p>
+    <div class="btns"><button id="go" class="btn pri">Continuar</button><button id="rs" class="btn sec">Reiniciar</button><button id="how" class="btn sec">Instrucciones</button></div>`;
+  ui.overlay.hidden=false;$('go').onclick=togglePause;$('rs').onclick=startGame;$('how').onclick=()=>showHelp(showPause);$('go').focus();
+}
+for(const [id,fn] of [['bMusic',toggleMusic],['bSound',toggleSound],['bVoice',toggleVoice],['bPause',()=>{if(S.mode==='play'||S.mode==='pause')togglePause();}],['dump',dumpCargo]])
+  document.getElementById(id).addEventListener('click',e=>{e.currentTarget.blur();fn();});
 
 /* =========================================================
    MINIMAPA
@@ -1598,8 +1722,9 @@ function stepPatrol(dt,t){
   if(P.state==='chase')P.sweep+=clamp(rel-P.sweep,-dt*2,dt*2);
   else P.sweep=Math.sin(t*.75)*.75;
   P.sweep=clamp(P.sweep,-1.3,1.3);
-  const inCone=dist<76&&Math.abs(wrapA(rel-P.sweep))<.28;
-  const near=dist<16;
+  P.ignore=Math.max(0,(P.ignore||0)-dt);
+  const inCone=P.ignore<=0&&dist<76&&Math.abs(wrapA(rel-P.sweep))<.28;
+  const near=P.ignore<=0&&dist<16;
   if(S.mode==='play'){
     if(inCone||near){S.risk+=dt*(.75+(1-dist/76)*1.4);}
     else S.risk-=dt*(P.state==='chase'?.1:.28);
@@ -1608,7 +1733,13 @@ function stepPatrol(dt,t){
     if(P.state==='chase'){
       if(dist>95&&!inCone)P.lost+=dt;else P.lost=Math.max(0,P.lost-dt*.5);
       if(P.lost>4.5){P.state='patrol';S.risk=.45;P.wp=nearestWp();say('Les has dado esquinazo','good',1.8);talk('lost','patron',6);}
-      if(dist<9){S.vx*=.3;S.vz*=.3;endGame('caught');}
+      if(dist<9){
+        S.vx*=.3;S.vz*=.3;
+        if(S.cargo===0&&S.pendingIn===0){ // sin fardos a bordo no hay pruebas
+          P.state='patrol';P.ignore=10;S.risk=.15;P.wp=nearestWp();P.lost=0;S.time=Math.max(1,S.time-20);
+          say('Registro: nada a bordo · −20 s','good',2.4);radio('Aduanas: «Podedes marchar... por esta vez.»',3.5);talk('free','patron',5,true);
+        }else endGame('caught');
+      }
     }
   }
   // visual
@@ -1679,7 +1810,7 @@ function stepMission(dt){
   const goShore=S.cargo>0&&(S.cargo>=CFG.capacity||S.stock<=0||!inLoad);
   if(goShore&&S.drop){target={x:S.drop.x,z:S.drop.z};label=S.drop.name;if(!objective)objective=`Descarga en ${S.drop.name}`;}
   else if(S.stock>0){target={x:NOD.zx,z:NOD.zz};label='Nodriza';if(!objective)objective='Rumbo a la nodriza';}
-  ui.objtxt.textContent=objective;
+  ui.objtxt.innerHTML='<i class="ki ki-target"></i>'+objective;
   ui.prog.style.visibility=prog>=0?'visible':'hidden';ui.progfill.style.width=(clamp(prog,0,1)*100)+'%';
   return {target,label};
 }
@@ -1750,6 +1881,7 @@ await new Promise(r=>setTimeout(r,Math.max(250,2600-(performance.now()-LT0))));
 clearInterval(window.__tipT);S.ready=true;showMenu();
 $L('loader').classList.add('out');setTimeout(()=>$L('loader').remove(),800);
 function frame(){
+  if(S.mode==='pause'){clock.getDelta();renderer.render(scene,camera);requestAnimationFrame(frame);return;}
   const dt=Math.min(clock.getDelta(),.05);T+=dt;
   const playing=S.mode==='play';
   const inp=playing?input():{thr:0,steer:0};
@@ -1850,6 +1982,9 @@ function frame(){
 
   updateCamera(dt,T);
   updateHUD();
+  const dmp=document.getElementById('dump'),showD=playing&&patrol.state==='chase'&&S.cargo>0;if(dmp.hidden===showD)dmp.hidden=!showD;
+  const hint=document.getElementById('hint');
+  if(playing&&(S.hintT??0)>0&&!showD){S.hintT-=dt;if(Math.hypot(S.vx,S.vz)>8)S.hintT=Math.min(S.hintT,1);hint.hidden=false;hint.style.opacity=Math.min(1,S.hintT);}else if(!hint.hidden)hint.hidden=true;
   ui.hud.style.visibility=S.mode==='menu'?'hidden':'';
   updatePointer(tgt.target,tgt.label);
   if(msgT>0){msgT-=dt;if(msgT<=0)ui.msg.classList.remove('show');}
