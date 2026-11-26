@@ -963,7 +963,7 @@ await step(.8,'Botando la lancha');
 /* ---------- lancha offshore: modelo "Small Yacht" de miguelangelo2k (Sketchfab, CC BY 4.0), optimizado ----------
    Se coloca encima del casco procedural (que queda de respaldo si el modelo no carga). */
 try{
-  const gl=await Promise.race([new GLTFLoader().loadAsync('models/lancha.glb'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))]);
+  const gl=await Promise.race([window.__LANCHA_B64?new GLTFLoader().parseAsync(b64buf(window.__LANCHA_B64),''):new GLTFLoader().loadAsync('models/lancha.glb'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))]);
   const m=gl.scene,sc=12.4/10162;
   m.scale.setScalar(sc);m.rotation.y=Math.PI/2;
   const wrap=new THREE.Group();wrap.add(m);wrap.updateMatrixWorld(true);
