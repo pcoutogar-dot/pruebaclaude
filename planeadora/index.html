@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Planeadora: A Descarga</title>
+<meta name="description" content="Planeadora: Amigos de verano. Una noche en la ría, una planeadora, tres fardos por viaje y la lancha de Aduanas detrás. Minijuego en el navegador.">
+<meta name="theme-color" content="#050c12">
+<meta property="og:title" content="Planeadora: Amigos de verano">
+<meta property="og:description" content="Una noche en la ría, una planeadora y la lancha de Aduanas detrás. ¿Llegas a tierra antes de que amanezca?">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='30' r='22' fill='%23ff8a3d'/%3E%3Cpath d='M6 40h52l-8 10H16z' fill='%2314080f'/%3E%3Crect x='28' y='32' width='8' height='8' fill='%2314080f'/%3E%3C/svg%3E">
+<title>Planeadora: Amigos de verano</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;600;700&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;600;700&family=Caveat:wght@600&family=Yellowtail&display=swap">
 <style>
 /* Layout: canvas a pantalla completa; HUD en las esquinas como instrumentos de a bordo, luz de sodio sobre noche atlántica */
 :root{
@@ -64,7 +71,7 @@ canvas{display:block}
 #objtxt{font-size:22px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 #prog{width:240px;height:6px;margin:8px auto 0;background:rgba(255,255,255,.08);border:1px solid var(--line);visibility:hidden}
 #progfill{height:100%;width:0;background:var(--sodium)}
-#msg{position:absolute;top:28%;left:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:clamp(28px,5vw,54px);text-align:center;text-shadow:0 2px 18px rgba(0,0,0,.8);opacity:0;transition:opacity .25s;white-space:nowrap}
+#msg{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:clamp(28px,5vw,54px);text-align:center;text-shadow:0 2px 18px rgba(0,0,0,.8);opacity:0;transition:opacity .25s;white-space:nowrap}
 #msg.show{opacity:1}
 #msg.bad{color:var(--alert)}
 #msg.good{color:var(--sodium)}
@@ -127,6 +134,23 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .help .keys{font-size:17px}
 #card.wide{max-width:780px}
 @media (max-width:640px){.help{grid-template-columns:1fr}}
+
+/* ---------- logotipo: titular de videojuego de los 90, atardecer de neón ---------- */
+.logo{--stripe:#070c11;position:relative;display:inline-grid;justify-items:center;padding:.12em .25em .5em;font-size:clamp(44px,10vw,104px);line-height:.92;isolation:isolate;user-select:none}
+.logo-sun{position:absolute;left:50%;top:44%;width:1.75em;height:1.75em;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;
+  background:linear-gradient(#ffe08a 0%,#ff9a3c 42%,#f0436a 72%,#7c1f72 100%);box-shadow:0 0 .6em rgba(255,90,90,.35);overflow:hidden}
+.logo-sun::after{content:"";position:absolute;inset:52% 0 0;background:repeating-linear-gradient(180deg,transparent 0 .07em,var(--stripe) .07em .13em)}
+.logo-main{font-family:var(--display);letter-spacing:.015em;transform:skewX(-8deg);
+  background:linear-gradient(180deg,#fffbe8 0%,#ffd76e 36%,#ff8c3a 62%,#e0324f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:.03em #14080f;paint-order:stroke fill;filter:drop-shadow(.035em .055em 0 #14080f) drop-shadow(0 0 .22em rgba(255,110,60,.45))}
+.logo-sub{font-family:'Yellowtail','Brush Script MT',cursive;font-size:.46em;color:#ffe6fa;transform:rotate(-7deg);margin:-.42em 0 0 1.1em;white-space:nowrap;
+  text-shadow:0 0 .05em #fff,0 0 .18em #ff3fc4,0 0 .45em #ff3fc4,0 0 .9em rgba(255,63,196,.6),.04em .06em 0 #14080f}
+.logo.sm{font-size:clamp(34px,6vw,58px)}
+/* ---------- frases de la tripulación ---------- */
+#shout{position:absolute;top:calc(142px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(6px);display:flex;gap:10px;align-items:baseline;
+  background:var(--panel);padding:7px 16px;opacity:0;transition:opacity .25s,transform .25s;font-size:22px;font-weight:600;max-width:min(620px,88vw)}
+#shout.show{opacity:1;transform:translateX(-50%)}
+#shout b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){#timer.hurry{animation:none}}
 </style>
 </head>
@@ -156,6 +180,7 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   </div>
   <div id="obj"><div id="objtxt">Rumbo a la nodriza</div><div id="prog"><div id="progfill"></div></div></div>
   <div id="radio"></div>
+  <div id="shout"><b id="shoutwho"></b><span id="shouttxt"></span></div>
   <div id="msg"></div>
   <div id="ptr"><div id="ptrarrow"></div><div id="ptrlab"></div></div>
 </div>
@@ -230,7 +255,7 @@ body.touch #bl{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
         <span class="stamp">'89 8 12</span>
       </figure>
     </div>
-    <h1 class="ltitle">PLANEA<span>DORA</span></h1>
+    <div class="logo" role="img" aria-label="Planeadora: Amigos de verano"><div class="logo-sun"></div><div class="logo-main">PLANEADORA</div><div class="logo-sub">Amigos de verano</div></div>
     <div class="lbar"><div id="lfill"></div></div>
     <div class="lrow"><span id="lstep">Cargando motor 3D</span><span id="lpct">4%</span></div>
     <p id="ltip">Una planeadora no frena: suelta el gas con tiempo o mete marcha atrás.</p>
@@ -884,6 +909,8 @@ const boat={group:new THREE.Group(),slots:[],engines:[],props:[]};
     for(const sd of [-1,1]){const a=new THREE.Mesh(new THREE.CylinderGeometry(.065,.06,.62,5),o.bareArms?skin:top);a.position.set(sd*.33,1.3,.2);a.rotation.x=-1.0;a.rotation.z=sd*.15;p.add(a);}
     const hd=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),skin);hd.position.y=1.74;p.add(hd);
     const hair=new THREE.Mesh(new THREE.SphereGeometry(.155,10,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x2a1d14}));hair.position.y=1.76;hair.rotation.x=-.3;p.add(hair);
+    if(o.longHair){const hm=hair.material,tail=new THREE.Mesh(new THREE.CapsuleGeometry(.07,.32,3,6),hm);tail.position.set(0,1.55,-.16);tail.rotation.x=.35;p.add(tail);
+      for(const sd of [-1,1]){const lk=new THREE.Mesh(new THREE.BoxGeometry(.05,.22,.1),hm);lk.position.set(sd*.14,1.68,-.02);p.add(lk);}}
     if(o.hat){const hm=new THREE.MeshStandardMaterial({color:o.hat,roughness:1});
       const brim=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.03,14),hm);brim.position.y=1.82;p.add(brim);
       const crown=new THREE.Mesh(new THREE.CylinderGeometry(.14,.16,.14,12),hm);crown.position.y=1.89;p.add(crown);}
@@ -891,7 +918,7 @@ const boat={group:new THREE.Group(),slots:[],engines:[],props:[]};
     p.position.set(o.x,.5,-.4);p.scale.setScalar(1.18);B.add(p);return p;
   }
   boat.captain=person({x:-.36,top:0x6b4a32,legs:0x23324a,glasses:true});
-  boat.mate=person({x:.42,top:0xc9c4b4,legs:0x2a2e33,hat:0xece6d4,bareArms:true});
+  boat.mate=person({x:.42,top:0xc9c4b4,legs:0x2a2e33,hat:0xece6d4,bareArms:true,longHair:true});
   // garrafas de gasolina a popa (petacas de 25-30 l), algo desordenadas
   const canW=new THREE.MeshStandardMaterial({color:0xd9dccf,roughness:.6}),canB=new THREE.MeshStandardMaterial({color:0x2f62a8,roughness:.6}),canR=new THREE.MeshStandardMaterial({color:0xa8322a,roughness:.6});
   const canG=new THREE.BoxGeometry(.3,.42,.22),hdlG=new THREE.BoxGeometry(.06,.08,.14);
@@ -1138,7 +1165,7 @@ function musicTick(){
    ========================================================= */
 const S={};
 function resetGame(){
-  trail.length=0;
+  trail.length=0;S.cd={};S.newsT=25;S.idleT=0;
   Object.assign(S,{sunrise:0,
     mode:S.mode||'menu',time:CFG.time,cargo:0,delivered:0,stock:CFG.stock,lost:0,hits:0,
     loadT:0,unloadT:0,drop:null,risk:0,shake:0,hitCd:0,boundsMsgCd:0,endReason:'',
@@ -1163,7 +1190,8 @@ addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if((e.code==='Enter'||e.code==='Space')&&S.mode!=='play'&&S.ready&&!(document.activeElement&&document.activeElement.tagName==='BUTTON'))startGame();
-  if(e.code==='KeyM'){muted=!muted;if(AU)AU.master.gain.value=muted?0:.9;}
+  if(e.code==='KeyM'){muted=!muted;if(AU)AU.master.gain.value=muted?0:.9;if(muted&&'speechSynthesis' in window)speechSynthesis.cancel();}
+  if(e.code==='KeyV'){VOICE.on=!VOICE.on;say(VOICE.on?'Voces activadas':'Voces desactivadas','',1.2);if(!VOICE.on&&'speechSynthesis' in window)speechSynthesis.cancel();}
   if(e.code==='KeyR'&&S.mode==='play')startGame();
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1204,7 +1232,7 @@ function showMenu(){
   ui.card.className='';
   ui.card.innerHTML=`
     <div class="kick">Costa da Morte · noche de levante</div>
-    <h1>PLANEA<span>DORA</span></h1>
+    <div class="logo" style="--stripe:#0a1118;justify-self:start" role="img" aria-label="Planeadora: Amigos de verano"><div class="logo-sun"></div><div class="logo-main">PLANEADORA</div><div class="logo-sub">Amigos de verano</div></div>
     <p>La nodriza espera mar adentro con las luces apagadas. Carga los fardos, llévalos a tierra y descárgalos antes de que amanezca.</p>
     <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="how" class="btn sec">Instrucciones</button></div>`;
   $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
@@ -1217,14 +1245,14 @@ function showHelp(){
     <div class="help">
       <section><h3>El encargo</h3><p>Deja ${CFG.goal} fardos en tierra antes de que amanezca. Tienes ${fmt(CFG.time)} de noche y caben ${CFG.capacity} fardos por viaje, así que harán falta al menos tres viajes.</p></section>
       <section><h3>Mandos</h3><div class="keys">
-        <b>W / ↑</b><span>Gas</span><b>S / ↓</b><span>Marcha atrás y frenar</span><b>A D / ← →</b><span>Timón</span><b>M · R</b><span>Silencio · Reiniciar</span></div></section>
+        <b>W / ↑</b><span>Gas</span><b>S / ↓</b><span>Marcha atrás y frenar</span><b>A D / ← →</b><span>Timón</span><b>M · V · R</b><span>Silencio · Voces · Reiniciar</span></div></section>
       <section><h3>Cargar en la nodriza</h3><p>Entra en el círculo naranja junto al costado del barco grande y quédate casi parado. Los fardos pasan solos de una cubierta a otra.</p></section>
       <section><h3>Descargar en tierra</h3><p>La radio te dice si toca la Praia da Lagoa o el Peirao Vello. Busca la linterna que parpadea, entra en el círculo y frena.</p></section>
       <section><h3>El barco</h3><ul><li>El motor y el timón tardan en responder.</li><li>En las curvas rápidas el barco derrapa hacia fuera.</li><li>Cargado pesa más, acelera menos y corre menos.</li></ul></section>
       <section><h3>Vigilancia Aduanera</h3><ul><li>Su foco barre el agua. Si te mantiene dentro, sube el riesgo.</li><li>Con el riesgo al máximo te persigue. Aléjate y sal del haz para perderla.</li><li>Un golpe fuerte contra las piedras tira un fardo al agua.</li></ul></section>
     </div>
     <div class="btns"><button id="go" class="btn pri">Jugar</button><button id="back" class="btn sec">Volver</button></div>
-    <p class="lab" style="font-size:12px">Piedras, árboles y vegetación: Kenney Nature Kit (CC0) · kenney.nl</p>`;
+    <p class="lab" style="font-size:12px;line-height:1.5">Piedras, árboles y vegetación: Kenney Nature Kit (CC0) · kenney.nl<br>Voces en gallego: Proxecto Nós, Universidade de Santiago de Compostela (modelo Celtia, Apache 2.0)<br>Los personajes y declaraciones del juego son ficticios.</p>`;
   $('go').onclick=startGame;$('back').onclick=showMenu;$('go').focus();
 }
 function showEnd(){
@@ -1238,6 +1266,7 @@ function showEnd(){
   const stars=win?(S.time>70?'★★★':S.time>35?'★★☆':'★☆☆'):'☆☆☆';
   ui.card.className='';
   ui.card.innerHTML=`
+    <div class="logo sm" role="img" aria-label="Planeadora: Amigos de verano" style="--stripe:#0a1118;justify-self:start"><div class="logo-sun"></div><div class="logo-main">PLANEADORA</div><div class="logo-sub">Amigos de verano</div></div>
     <div class="kick">${win?'Encargo cumplido · '+stars:'Encargo fallido'}</div>
     <h1>${titles[S.endReason]}</h1>
     <p>${text}</p>
@@ -1250,15 +1279,100 @@ function showEnd(){
   $('go').onclick=startGame;$('how').onclick=showHelp;ui.overlay.hidden=false;$('go').focus();
 }
 function startGame(){
-  initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();musicStart();
+  initAudio();if(AU&&AU.ctx.state==='suspended')AU.ctx.resume();musicStart();loadVoices();
   S.mode='play';resetGame();S.mode='play';ui.overlay.hidden=true;
   say('¡A la nodriza!','good',1.8);
   setTimeout(()=>S.mode==='play'&&radio('Radio: «A nodriza está no sitio. Non acendades luces.»'),900);
+  setTimeout(()=>talk('start','patron',99),4200);
 }
 function endGame(reason){
-  if(S.mode!=='play')return;S.mode='end';S.endReason=reason;
+  if(S.mode!=='play')return;S.mode='end';S.endReason=reason;if(reason==='win')talk('win','patron',0,true);
   if(reason==='win'){beep(660,.12,.15);setTimeout(()=>beep(880,.2,.15),130);}else thud();
   setTimeout(showEnd,reason==='caught'?900:600);
+}
+
+
+/* =========================================================
+   FRASES: la tripulación habla en gallego; la radio da noticias con un concejal ficticio
+   Voz: síntesis del propio navegador (sin servicios externos). Tecla V para activar/desactivar.
+   ========================================================= */
+const VOICE={on:true,v:null};
+function pickVoice(){try{const vs=speechSynthesis.getVoices();VOICE.v=vs.find(v=>/^gl/i.test(v.lang))||vs.find(v=>/^es-ES/i.test(v.lang))||vs.find(v=>/^es/i.test(v.lang))||null;}catch(e){}}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+const ROLES={
+  patron:{name:'Patrón',col:'#ffb341',pitch:.7,rate:1.05},
+  mate:{name:'Acompañante',col:'#9fe3c4',pitch:1.2,rate:1.15},
+  nodriza:{name:'Nodriza',col:'#c9d6ff',pitch:.85,rate:1.1},
+  terra:{name:'Desde terra',col:'#ffd9a0',pitch:1,rate:1.15},
+  radio:{name:'Radio Ría',col:'#ff8fd8',pitch:1,rate:1},
+};
+const LINES={
+  start:['Imos alá. E sen luces, eh?','Bo, veña. Rumbo á nodriza.'],
+  dalle:['Dalle, hostia! Dalle!','Acelera, carallo!','Vai, vai, vai!','Mete gas, home!'],
+  ollo:['Ollo coas pedras!','Coidado, que hai baixos!','Que nos esnafranos!','Esa pedra, esa pedra!'],
+  golpe:['Me cago no mar!','Carallo! Que lle deches!','Ai, a miña planeadora!'],
+  fardo:['O fardo! Perdémolo!','Iso eran cartos, ho!','Xa vai un ao fondo...'],
+  chase:['Que vén a lancha! Fuxe!','Aduanas! Dalle, que nos collen!','Corre, corre, que nos ven!'],
+  lost:['Despistámolos, ho!','Esa lancha non nos colle nin de broma.'],
+  nodriza:['Rápido, que non temos toda a noite!','Veña, veña, colle isto!'],
+  full:['Xa está! Para terra, dalle!','Cargados. Agora ata a costa, e sen parar.'],
+  terra:['Aquí, aquí! Descarga!','Veña, ao coche, rápido!'],
+  trip:['Outra viaxe e imos para casa.','Isto vai ben, ho. Volvemos.'],
+  clarea:['Que xa clarea, ho!','Dálle, que vén o día!'],
+  idle:['Que facemos aquí parados?','Ho, que non estamos de paseo.'],
+  win:['Amigos de verán, ho! Ata o ano que vén.'],
+  news:[
+    'Un concelleiro declara: «Eu estaba de vacacións, non vin nada».',
+    'O concelleiro insiste: «Iso é un bulo da oposición».',
+    'Preguntado polas planeadoras, o concelleiro responde: «Non me consta».',
+    'O concelleiro, desde a praia: «Eu só sei que o mar estaba moi bonito».',
+    'O concelleiro promete: «Investigaremos ata o final... se hai tempo».',
+    'O concelleiro, sobre as lanchas: «Serán de pesca, digo eu».',
+  ],
+};
+let shoutT=0;
+// Voces gallegas pregrabadas (Proxecto Nós, USC: modelo Celtia, Apache 2.0), decodificadas al empezar
+const VBUF={};let vSrc=null,voicesLoading=false;
+async function loadVoices(){
+  if(!AU||voicesLoading||typeof VOICES==='undefined')return;voicesLoading=true;
+  for(const [k,v] of Object.entries(VOICES)){VBUF[k]=[];for(const c of v.clips){try{VBUF[k].push(await AU.ctx.decodeAudioData(b64buf(c.a)));}catch(e){VBUF[k].push(null);}}}
+}
+function playVoice(buf){
+  if(!AU||!VOICE.on||muted)return false;
+  try{if(vSrc)vSrc.stop();}catch(e){}
+  const ctx=AU.ctx,src=ctx.createBufferSource(),g=ctx.createGain();src.buffer=buf;g.gain.value=1.25;src.connect(g);g.connect(AU.master);src.start();vSrc=src;
+  if(MUS.bus){const t=ctx.currentTime;MUS.bus.gain.cancelScheduledValues(t);MUS.bus.gain.setTargetAtTime(.22,t,.08);MUS.bus.gain.setTargetAtTime(.6,t+buf.duration,.5);}
+  return true;
+}
+function speak(text,r){
+  if(!VOICE.on||muted||!('speechSynthesis' in window))return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.replace(/[«»]/g,''));if(VOICE.v)u.voice=VOICE.v;u.lang=VOICE.v?VOICE.v.lang:'es-ES';u.pitch=r.pitch;u.rate=r.rate;speechSynthesis.speak(u);}catch(e){}
+}
+function talk(key,role,cd=8,force=false){
+  if(!force&&S.mode!=='play')return;
+  S.cd=S.cd||{};if((S.cd[key]||-1e9)>T)return;
+  if(!force&&shoutT>1.2&&key!=='chase')return;
+  S.cd[key]=T+cd;
+  const arr=LINES[key],idx=(Math.random()*arr.length)|0,text=arr[idx],r=ROLES[role];
+  const who=document.getElementById('shoutwho'),tx=document.getElementById('shouttxt'),el=document.getElementById('shout');
+  who.textContent=r.name;who.style.color=r.col;tx.textContent=role==='radio'?'Última hora. '+text:text;el.classList.add('show');
+  shoutT=role==='radio'?5.5:2.8;
+  const buf=VBUF[key]&&VBUF[key][idx];
+  if(buf){playVoice(buf);shoutT=Math.max(shoutT,buf.duration+.6);}else if(!VBUF[key])speak(role==='radio'?'Última hora. '+text:text,r);
+}
+function talkTriggers(dt,inp){
+  const sp=Math.hypot(S.vx,S.vz);
+  if(inp.thr>.9&&sp<6&&S.thr>.5)talk('dalle','mate',16);
+  S.rockChk=(S.rockChk||0)-dt;
+  if(S.rockChk<=0&&sp>8){
+    S.rockChk=.3;const fx=S.vx/sp,fz=S.vz/sp;let warn=terrainH(S.x+S.vx*1.3,S.z+S.vz*1.3)>-.4;
+    if(!warn)for(const c of colliders){if(c.kind!=='rock')continue;const dx=c.x-S.x,dz=c.z-S.z,ah=dx*fx+dz*fz;if(ah>0&&ah<sp*1.6&&Math.abs(dx*fz-dz*fx)<c.r+3){warn=true;break;}}
+    if(warn)talk('ollo','mate',9);
+  }
+  const busy=Math.hypot(S.x-NOD.zx,S.z-NOD.zz)<24||(S.drop&&Math.hypot(S.x-S.drop.x,S.z-S.drop.z)<20);
+  S.idleT=(sp<.8&&!busy)?(S.idleT||0)+dt:0;if(S.idleT>8){talk('idle','patron',25);S.idleT=0;}
+  if(S.time<30)talk('clarea','mate',999);
+  S.newsT=(S.newsT??25)-dt;if(S.newsT<=0){S.newsT=45+Math.random()*20;talk('news','radio',0);}
 }
 
 /* =========================================================
@@ -1341,9 +1455,9 @@ function impact(speed,n){
   if(speed>7.5&&S.cargo>0){
     S.cargo--;S.lost++;updateSlotsUI();
     const [px,pz]=boatPoint(0,-1);const m=fardoGrande();m.position.set(px,.3,pz);scene.add(m);sinking.push({m,t:0,vx:-n[0]*3+(Math.random()-.5)*2,vz:-n[1]*3+(Math.random()-.5)*2});
-    say('¡Golpe! Fardo al agua','bad',1.6);
+    say('¡Golpe! Fardo al agua','bad',1.6);talk('fardo','patron',3);
     if(S.stock+S.cargo+S.delivered+flying.length<CFG.goal)setTimeout(()=>endGame('short'),800);
-  }else say('¡Cuidado con las piedras!','bad',1.2);
+  }else{say('¡Cuidado con las piedras!','bad',1.2);talk('golpe','patron',5);}
 }
 function collideBoat(){
   let maxImp=0,nI=[0,1];
@@ -1415,10 +1529,10 @@ function stepPatrol(dt,t){
     if(inCone||near){S.risk+=dt*(.75+(1-dist/76)*1.4);}
     else S.risk-=dt*(P.state==='chase'?.1:.28);
     S.risk=clamp(S.risk,0,1);
-    if(P.state!=='chase'&&S.risk>=1){P.state='chase';P.lost=0;say('¡ADUANAS! ¡Corre!','bad',2);radio('Radio: «Lancha de Aduanas enriba de vós! Fuxide!»',3.5);}
+    if(P.state!=='chase'&&S.risk>=1){P.state='chase';P.lost=0;say('¡ADUANAS! ¡Corre!','bad',2);radio('Radio: «Lancha de Aduanas enriba de vós! Fuxide!»',3.5);talk('chase','mate',6);}
     if(P.state==='chase'){
       if(dist>95&&!inCone)P.lost+=dt;else P.lost=Math.max(0,P.lost-dt*.5);
-      if(P.lost>4.5){P.state='patrol';S.risk=.45;P.wp=nearestWp();say('Les has dado esquinazo','good',1.8);}
+      if(P.lost>4.5){P.state='patrol';S.risk=.45;P.wp=nearestWp();say('Les has dado esquinazo','good',1.8);talk('lost','patron',6);}
       if(dist<9){S.vx*=.3;S.vz*=.3;endGame('caught');}
     }
   }
@@ -1457,7 +1571,8 @@ function stepMission(dt){
           S.pendingIn--;if(S.mode!=='play')return;S.cargo++;beep(520+S.cargo*30,.06,.08);updateSlotsUI();
           if(S.cargo===1&&!S.drop){S.drop=DROPS[Math.random()<.5?0:1];S.drop.zone.visible=true;
             radio(S.drop===BEACH_DROP?'Radio: «Praia da Lagoa limpa. Alí vos agardamos co coche.»':'Radio: «Ide ao Peirao Vello. A garda civil está na praia.»',4.5);}
-          if(S.cargo>=CFG.capacity)say('¡Carga completa!','good',1.5);
+          if(S.cargo===1)talk('nodriza','nodriza',40);
+          if(S.cargo>=CFG.capacity){say('¡Carga completa!','good',1.5);talk('full','mate',10,true);}
         });
         updateSlotsUI();
       }
@@ -1469,7 +1584,7 @@ function stepMission(dt){
     if(slow){
       S.unloadT+=dt;prog=S.unloadT/CFG.unloadEvery;
       if(S.unloadT>=CFG.unloadEvery){
-        S.unloadT=0;S.cargo--;updateSlotsUI();
+        S.unloadT=0;S.cargo--;updateSlotsUI();if(S.cargo===CFG.capacity-1)talk('terra','terra',20);
         const [px,pz]=boatPoint(0,-2);const dd=D;
         flyBox({x:px,y:1.5,z:pz},{x:dd.landX+(Math.random()-.5)*3,y:dd.landY,z:dd.landZ+(Math.random()-.5)*2},.6,()=>{
           if(S.mode!=='play')return;S.delivered++;ui.deliv.textContent=S.delivered;beep(880,.05,.07);
@@ -1477,7 +1592,7 @@ function stepMission(dt){
         });
         if(S.cargo===0){
           D.zone.visible=false;S.drop=null;
-          if(S.delivered+1<CFG.goal){say('¡Descargado! Vuelve a la nodriza','good',1.8);}
+          if(S.delivered+1<CFG.goal){say('¡Descargado! Vuelve a la nodriza','good',1.8);talk('trip','patron',10,true);}
         }
       }
       objective=`Descargando · quedan ${S.cargo}`;
@@ -1570,7 +1685,7 @@ function frame(){
   if(playing){
     S.time-=dt;
     if(S.time<=0){S.time=0;endGame('dawn');}
-    tgt=stepMission(dt);
+    tgt=stepMission(dt);talkTriggers(dt,inp);
   }
   stepPatrol(dt,T);
 
@@ -1664,6 +1779,7 @@ function frame(){
   updatePointer(tgt.target,tgt.label);
   if(msgT>0){msgT-=dt;if(msgT<=0)ui.msg.classList.remove('show');}
   if(radioT>0){radioT-=dt;if(radioT<=0)ui.radio.classList.remove('show');}
+  if(shoutT>0){shoutT-=dt;if(shoutT<=0)document.getElementById('shout').classList.remove('show');}
   renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }
